@@ -1,14 +1,31 @@
-from rest_framework.serializers import ModelSerializer
-from .models import Student, Comprehensive, Finance, Instructor, Advisor, YearlyReview
+from rest_framework.serializers import ModelSerializer, CharField
+from .models import *
+from .validators import StudentValidator
 
 class StudentSerializer(ModelSerializer):
     class Meta:
         model = Student
         fields = '__all__'
 
+    def validate(self, data):
+        if self.instance is not None:
+            jd = data.get('joiningDate')
+            tsd = data.get('thesisSubmissionDate')
+            tdd = data.get('thesisDefenceDate')
+            yol = data.get('yearOfLeaving')
+            tddy = None if tdd is None else tdd.year
+            StudentValidator.dateSequence(jd, tsd, tdd, tddy, yol)
+        return super().validate(data)
+    
+class StudentTableSerializer(ModelSerializer):
+    advisor1 = CharField()
+    class Meta:
+        model = Student
+        fields = ['name', 'rollNumber', 'emailId', 'gender', 'department', 'batch', 'admissionThrough', 'studentStatus', 'contingencyPoints', 'advisor1']
+
 class ComprehensiveSerializer(ModelSerializer):
     class Meta:
-        model = Comprehensive 
+        model = Comprehensive
         fields = '__all__'
 
 class FinanceSerializer(ModelSerializer):

@@ -16,12 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from django.conf import settings
-from django.conf.urls import static
+from rest_framework.routers import DefaultRouter
+from api.views import *
+
+router = DefaultRouter()
+router.register('student', StudentViewSet, basename='student')
+router.register('instructor', InstructorViewSet, basename='instructor')
+router.register('advisor', AdvisorViewSet, basename='advisor')
+router.register('studentTable', StudentTableViewSet, basename='studentTable')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("api/", include("api.urls")),
+    path("api/", include(router.urls)),
 ]
 
 # if settings.DEBUG:

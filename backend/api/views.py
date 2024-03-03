@@ -1,60 +1,40 @@
-from django.shortcuts import render
-from .middleware import advisorMiddleware, comprehensiveMiddleware, financeMiddleware, instructorMiddleware, studentMiddleware, yearlyReviewMiddleware
-from rest_framework.decorators import api_view
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.filters import SearchFilter
+from rest_framework.parsers import FileUploadParser
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import F
+from .models import *
+from .serializers import *
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def advisor_by_id_requests(request, pk):
-    if request.method == 'GET':
-        return advisorMiddleware.get_advisor_by_id(request, pk)
-    if request.method == 'PUT':
-        return advisorMiddleware.update_advisor(request, pk)
-    if request.method == 'DELETE':
-        return advisorMiddleware.delete_advisor(request, pk)
-    
-@api_view(['GET', 'POST'])
-def advisors_requests(request):
-    if request.method == 'GET':
-        return advisorMiddleware.get_advisors(request)
-    if request.method == 'POST':
-        return advisorMiddleware.create_advisor(request)
-    
+class StudentViewSet(ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    lookup_field = 'rollNumber'
+    lookup_url_kwarg = 'rollNumber'
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['name', 'rollNumber', 'studentStatus', 'fundingType', 'gender', 'department', 'region', 'batch', 'admissionThrough']
+    search_fields = ['$name', '$emailId', '$rollNumber']
 
-@api_view(['GET', 'POST'])
-def instructors_requests(request):
-    if request.method == 'GET':
-        return instructorMiddleware.get_instructors(request)
-    if request.method == 'POST':
-        return instructorMiddleware.create_instructor(request)
+class StudentTableViewSet(ReadOnlyModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentTableSerializer
+    parser_classes = [FileUploadParser]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['name', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough']
+    search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__instructor__name']
+ 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.annotate(advisor1=F('advisor_set__instructor__name'))
+        return queryset.values(
+            'name', 'rollNumber', 'emailId', 'gender', 'department', 'batch',
+            'admissionThrough', 'advisor1', 'studentStatus', 'contingencyPoints'
+        )
 
+class InstructorViewSet(ModelViewSet):
+    queryset = Instructor.objects.all()
+    serializer_class = InstructorSerializer
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def instructor_by_id_requests(request, pk):
-    if request.method == 'GET':
-        return instructorMiddleware.get_instructor_by_id(request, pk)
-    if request.method == 'PUT':
-        return instructorMiddleware.update_instructor(request, pk)
-    if request.method == 'DELETE':
-        return instructorMiddleware.delete_instructor(request, pk)
-    
-@api_view(['GET', 'PUT', 'DELETE'])
-def student_by_id_requests(request, pk):
-    if request.method == 'GET':
-        return studentMiddleware.get_student_by_id(request, pk)
-    if request.method == 'PUT':
-        return studentMiddleware.update_student(request, pk)
-    if request.method == 'DELETE':
-        return studentMiddleware.delete_student(request, pk)
-    
-@api_view(['GET', 'POST'])
-def students_requests(request):
-    if request.method == 'GET':
-        return studentMiddleware.get_students(request)
-    if request.method == 'POST':
-        return studentMiddleware.add_students(request)
-    
-@api_view(['GET', 'POST'])
-def misc_student(request):
-    if request.method == 'GET':
-        return studentMiddleware.get_students_table(request)
-    if request.method == 'POST':
-        return studentMiddleware.add_students_by_file(request)
+class AdvisorViewSet(ModelViewSet):
+    queryset = Advisor.objects.all()
+    serializer_class = AdvisorSerializer
