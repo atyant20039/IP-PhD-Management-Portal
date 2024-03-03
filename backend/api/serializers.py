@@ -8,13 +8,12 @@ class StudentSerializer(ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        if self.instance is not None:
-            jd = data.get('joiningDate')
-            tsd = data.get('thesisSubmissionDate')
-            tdd = data.get('thesisDefenceDate')
-            yol = data.get('yearOfLeaving')
-            tddy = None if tdd is None else tdd.year
-            StudentValidator.dateSequence(jd, tsd, tdd, tddy, yol)
+        jd = data.get('joiningDate')
+        tsd = data.get('thesisSubmissionDate')
+        tdd = data.get('thesisDefenceDate')
+        yol = data.get('yearOfLeaving')
+        tddy = None if tdd is None else tdd.year
+        StudentValidator.dateSequence(jd, tsd, tdd, tddy, yol)
         return super().validate(data)
     
 class StudentTableSerializer(ModelSerializer):

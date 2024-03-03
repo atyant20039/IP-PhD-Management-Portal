@@ -22,24 +22,28 @@ class Student(models.Model):
     yearOfLeaving = models.PositiveIntegerField(help_text="Use the following format: YYYY", null=True, blank=True, validators=[MinValueValidator(2000)])
     comment = models.TextField(blank=True, null=True)
 
+    class Meta:
+        ordering=['rollNumber']
+
     def __str__(self):
         return f"RollNo. {self.rollNumber}"
     
 class Instructor(models.Model):
-    emailId = models.EmailField(max_length=255, unique=True)
+    emailId = models.EmailField(max_length=255, unique=True, validators = [StudentValidator.email])
     name = models.CharField(max_length=255)
-    department = models.CharField(max_length=255)
+    department = models.CharField(max_length=10, choices=[('CSE', 'CSE'), ('CB', 'CB'), ('ECE', 'ECE'), ('HCD', 'HCD'), ('SSH', 'SSH'), ('MATHS', 'MATHS')])
 
     def __str__(self):
         return f"Name: {self.name} Department: {self.department}"
     
 class Advisor(models.Model):
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, null=True, blank=True, related_name="student_set")
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name="advisor_set")
-    advisorType = models.CharField(max_length=255, choices=[('Advisor-1', 'Advisor-1'), ('Advisor-2', 'Advisor-2'), ('Co-Advisor', 'Co-Advisor')])
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name="advisor_set")
+    advisor1 = models.ForeignKey(Instructor, on_delete=models.SET_NULL, null=True, blank=True, related_name="student_set1")
+    advisor2 = models.ForeignKey(Instructor, on_delete=models.SET_NULL, null=True, blank=True, related_name="student_set2")
+    coadvisor = models.ForeignKey(Instructor, on_delete=models.SET_NULL, null=True, blank=True, related_name="student_set3")
 
-    def __str__(self):
-        return f"RollNo: {self.student.rollNumber} Instructor: {self.instructor} Advisor Type: {self.advisorType}"
+    class Meta:
+        ordering=['student']
 
 class Comprehensive(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='comprehensive_review')
