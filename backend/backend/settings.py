@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    'api',
     'rest_framework',
+    'django_filters',
     'corsheaders',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -132,3 +133,8 @@ MEDIA_URL ="/media/"
 
 CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = ['http://*', 'https://*'] # TODO: Update after deployement
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
+}

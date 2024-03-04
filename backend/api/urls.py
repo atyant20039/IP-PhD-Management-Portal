@@ -1,12 +1,16 @@
-from django.urls import path
-from . import views
+from rest_framework.routers import DefaultRouter
+from .views import *
 
-urlpatterns = [
-    path('advisor/<int:pk>', views.advisor_by_id_requests, name="Single Advisor Requests"),
-    path('advisor/', views.advisors_requests, name="All Advisors Requests"),
-    path('instructor/', views.instructors_requests, name="All Instructors Requests"),
-    path('instructor/<str:pk>', views.instructor_by_id_requests, name="Single Instructor Requests"),
-    path('student/<str:pk>', views.student_by_id_requests, name="Single Student Requests"),
-    path('student/', views.students_requests, name="All Students Requests"),
-    path('studentTable/', views.misc_student, name="Miscellaneous Student APIs"),
-]
+router = DefaultRouter()
+router.register('student', StudentViewSet, basename='student')
+router.register('instructor', InstructorViewSet, basename='instructor')
+router.register('advisor', AdvisorViewSet, basename='advisor')
+router.register('studentTable', StudentTableViewSet, basename='studentTable')
+router.register('studentFile', StudentImportViewSet, basename='studentFile')
+router.register('comprehensive', ComprehensiveViewSet, basename='comprehensive')
+router.register('yearlyReview', YearlyReviewViewSet, basename='yearlyReview')
+router.register('finance', FinanceViewSet, basename='finance')
+
+urlpatterns = []
+
+urlpatterns += router.urls
