@@ -49,7 +49,7 @@ class Comprehensive(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='comprehensive_review')
     dateOfReview = models.DateField()
     comment = models.TextField(blank=True, null=True)
-    comprehensiveReviewFile = models.FileField(upload_to="comprehensive_review_files/", max_length=255, validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])])
+    comprehensiveReviewFile = models.FileField(upload_to="comprehensive_review_files/", validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])])
 
     def __str__(self):
         return f"RollNo: {self.student.rollNumber} Date: {self.dateOfReview}"
@@ -63,7 +63,7 @@ class Finance(models.Model):
         return f"RollNo: {self.student.rollNumber} StipendMonths: {self.stipendMonths} ContingencyYears: {self.contingencyYears}"
 
 class YearlyReview(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='yearly_reviews') # The related_name attribute is set to 'yearly_reviews', allowing you to access the associated reviews for a student using the attribute yearly_reviews on a Student instance.
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='yearly_reviews')
     dateOfReview = models.DateField()
     reviewYear = models.PositiveIntegerField(help_text="Enter the review year as a number (e.g., 1, 2, 3, etc.)")
     comment = models.TextField(blank=True, null=True)
@@ -71,3 +71,6 @@ class YearlyReview(models.Model):
 
     def __str__(self):
         return f"RollNo: {self.student.rollNumber} Review Year: {self.reviewYear} Date: {self.dateOfReview}"
+
+    class Meta:
+        unique_together = ('student', 'reviewYear')

@@ -7,7 +7,7 @@ fake = Faker()
 def seed_all():
     seed_student(150)
     seed_instr(50)
-    seed_advisor(1,49)
+    seed_advisor(1,40)
 
 def seed_student(n):
     for i in range(0, n):
@@ -40,10 +40,10 @@ def seed_instr(n):
             department = random.choices(['CSE','CB', 'ECE', 'SSH', 'MATHS', 'HCD'])[0]
         )
 
-def seed_advisor(a = 0, b = 10):
+def seed_advisor(a = 1, b = 10):
     for i in range(a, b):
         Advisor.objects.create(
-            student_id=i+1,
+            student_id=i,
             advisor1_id=random.randint(a, b),
             advisor2_id=random.randint(a, b),
             coadvisor_id=random.randint(a, b)

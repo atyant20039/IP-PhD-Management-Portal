@@ -20,7 +20,7 @@ class StudentTableSerializer(ModelSerializer):
     advisor1 = CharField()
     class Meta:
         model = Student
-        fields = ['name', 'rollNumber', 'emailId', 'gender', 'department', 'batch', 'admissionThrough', 'studentStatus', 'contingencyPoints', 'advisor1']
+        fields = ['id', 'name', 'rollNumber', 'emailId', 'gender', 'department', 'batch', 'admissionThrough', 'studentStatus', 'contingencyPoints', 'advisor1']
 
 class ComprehensiveSerializer(ModelSerializer):
     class Meta:

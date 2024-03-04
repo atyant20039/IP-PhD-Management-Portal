@@ -22,6 +22,8 @@ class StudentViewSet(ModelViewSet):
 class StudentTableViewSet(ReadOnlyModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentTableSerializer
+    lookup_field = 'rollNumber'
+    lookup_url_kwarg = 'rollNumber'
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough']
     search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__instructor__name']
@@ -30,7 +32,7 @@ class StudentTableViewSet(ReadOnlyModelViewSet):
         queryset = super().get_queryset()
         queryset = queryset.annotate(advisor1=F('advisor_set__advisor1__name'))
         return queryset.values(
-            'name', 'rollNumber', 'emailId', 'gender', 'department', 'batch',
+            'id','name', 'rollNumber', 'emailId', 'gender', 'department', 'batch',
             'admissionThrough', 'advisor1', 'studentStatus', 'contingencyPoints'
         )
 
@@ -107,7 +109,6 @@ class StudentImportViewSet(CreateModelMixin, GenericViewSet):
         except Exception as e:
             return Response({'error': f'Error processing the Excel file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 class InstructorViewSet(ModelViewSet):
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
@@ -118,5 +119,29 @@ class InstructorViewSet(ModelViewSet):
 class AdvisorViewSet(ModelViewSet):
     queryset = Advisor.objects.all()
     serializer_class = AdvisorSerializer
-    filter_backends = [DjangoFilterBackend]
+    lookup_field = 'student__rollNumber'
+    lookup_url_kwarg = 'student__rollNumber'
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['student', 'advisor1', 'advisor2', 'coadvisor']
+    search_fields = ['$student__rollNumber']
+
+class ComprehensiveViewSet(ModelViewSet):
+    queryset = Comprehensive.objects.all()
+    serializer_class = ComprehensiveSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['$student__rollNumber']
+
+class YearlyReviewViewSet(ModelViewSet):
+    queryset = YearlyReview.objects.all()
+    serializer_class = YearlyReviewSerializer
+    filter_backends = [SearchFilter, DjangoFilterBackend]
+    filter_fields = ['reviewYear']
+    search_fields = ['$student__rollNumber']
+
+class FinanceViewSet(ModelViewSet):
+    queryset = Finance.objects.all()
+    serializer_class = FinanceSerializer
+    lookup_field = 'student__rollNumber'
+    lookup_url_kwarg = 'student__rollNumber'
+    filter_backends = [SearchFilter]
+    search_fields = ['$student__rollNumber']
