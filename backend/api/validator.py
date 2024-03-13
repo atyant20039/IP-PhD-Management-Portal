@@ -1,11 +1,16 @@
-import datetime
 import re
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 def rollNo(value):
-    if not value.startswith('PhD') or not value[3:].isdigit() or len(value) < 6:
-        raise ValidationError('Invalid Roll Number format. Please use the following format: PhDxxxxx')
+    if value.startswith('PhD'):
+        if not value[3:].isdigit() or len(value) < 8:
+            raise ValidationError('Invalid Roll Number format. Please use the following format: PhDxxxxx')
+    elif value.startswith('MT'):
+        if not value[2:].isdigit() or len(value) < 7:
+            raise ValidationError('Invalid Roll Number format. Please use the following format: MTxxxxx')
+    else:
+        raise ValidationError('Invalid Roll Number format. Please use the following format: PhDxxxxx or MTxxxxx')   
 
 def email(value):
     if not value.endswith('@iiitd.ac.in') or value.count('@') != 1:

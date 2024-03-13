@@ -10,6 +10,8 @@ router.register('studentFile', StudentImportViewSet, basename='studentFile')
 router.register('comprehensive', ComprehensiveViewSet, basename='comprehensive')
 router.register('yearlyReview', YearlyReviewViewSet, basename='yearlyReview')
 router.register('finance', FinanceViewSet, basename='finance')
+router.register('stipend', StipendViewSet, basename='stipend')
+router.register('contingency', ContingencyViewSet, basename='contingency')
 
 urlpatterns = []
 

@@ -74,7 +74,9 @@ class StudentImportViewSet(CreateModelMixin, GenericViewSet):
         try:
             df = pd.read_excel(uploaded_file, dtype=column_data_types)
             
-            required_columns = ['rollNumber', 'name', 'emailId', 'gender', 'department', 'joiningDate', 'batch', 'admissionThrough', 'fundingType', 'contingencyPoints', 'studentStatus', 'region', 'educationalQualification', 'sourceOfFunding', 'thesisSubmissionDate', 'thesisDefenceDate', 'yearOfLeaving', 'comment']
+            required_columns = column_data_types.keys
+            print(required_columns)
+            # required_columns = ['rollNumber', 'name', 'emailId', 'gender', 'department', 'joiningDate', 'batch', 'admissionThrough', 'fundingType', 'contingencyPoints', 'studentStatus', 'region', 'educationalQualification', 'sourceOfFunding', 'thesisSubmissionDate', 'thesisDefenceDate', 'yearOfLeaving', 'comment']
             if not all(col in df.columns for col in required_columns):
                 return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -141,6 +143,22 @@ class YearlyReviewViewSet(ModelViewSet):
 class FinanceViewSet(ModelViewSet):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
+    lookup_field = 'student__rollNumber'
+    lookup_url_kwarg = 'student__rollNumber'
+    filter_backends = [SearchFilter]
+    search_fields = ['$student__rollNumber']
+
+class StipendViewSet(ModelViewSet):
+    queryset = Stipend.objects.all()
+    serializer_class = StipendSerializer
+    lookup_field = 'student__rollNumber'
+    lookup_url_kwarg = 'student__rollNumber'
+    filter_backends = [SearchFilter]
+    search_fields = ['$student__rollNumber']
+
+class ContingencyViewSet(ModelViewSet):
+    queryset = ContingencyLogs.objects.all()
+    serializer_class = ContingencySerializer
     lookup_field = 'student__rollNumber'
     lookup_url_kwarg = 'student__rollNumber'
     filter_backends = [SearchFilter]
