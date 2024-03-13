@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer, CharField
 from .models import *
-from .validators import StudentValidator
+from . import validator
 
 class StudentSerializer(ModelSerializer):
     class Meta:
@@ -13,7 +13,7 @@ class StudentSerializer(ModelSerializer):
         tdd = data.get('thesisDefenceDate')
         yol = data.get('yearOfLeaving')
         tddy = None if tdd is None else tdd.year
-        StudentValidator.dateSequence(jd, tsd, tdd, tddy, yol)
+        validator.dateSequence(jd, tsd, tdd, tddy, yol)
         return super().validate(data)
     
 class StudentTableSerializer(ModelSerializer):
@@ -45,4 +45,14 @@ class AdvisorSerializer(ModelSerializer):
 class YearlyReviewSerializer(ModelSerializer):
     class Meta:
         model = YearlyReview 
+        fields = '__all__'
+
+class StipendSerializer(ModelSerializer):
+    class Meta:
+        model = Stipend 
+        fields = '__all__'
+
+class ContingencySerializer(ModelSerializer):
+    class Meta:
+        model = ContingencyLogs 
         fields = '__all__'
