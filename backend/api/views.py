@@ -1,6 +1,9 @@
-import pandas as pd
+import openpyxl
+import os
+from django.http import HttpResponse
+from django.conf import settings
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.filters import SearchFilter
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -36,10 +39,22 @@ class StudentTableViewSet(ReadOnlyModelViewSet):
             'admissionThrough', 'advisor1', 'studentStatus', 'contingencyPoints'
         )
 
-class StudentImportViewSet(CreateModelMixin, GenericViewSet):
-    queryset = Student.objects.all()
+class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = StudentSerializer
     parser_classes = [MultiPartParser]
+
+    def get_queryset(self):
+        if self.action == 'list':
+            return Student.objects.none()
+        else:
+            return Student.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        file_path = os.path.join(settings.BASE_DIR, 'templates', 'StudentTemplate.xlsm')
+        with open(file_path, 'rb') as file:
+            response = HttpResponse(file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = 'attachment; filename="StudentTemplate.xlsm"'
+            return response
 
     def create(self, request, *args,**kwargs):
         if 'file' not in request.data:
@@ -47,61 +62,43 @@ class StudentImportViewSet(CreateModelMixin, GenericViewSet):
         
         uploaded_file = request.data['file']
 
-        if not uploaded_file.name.endswith('.xlsx'):
-            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+        if not uploaded_file.name.endswith('.xlsm'):
+            return Response({'error': 'Invalid file format. Please upload an Excel-Macro file (.xlsm)'}, status=status.HTTP_400_BAD_REQUEST)
 
-        column_data_types = {
-            'rollNumber': str,
-            'name': str,
-            'emailId': str,
-            'gender': str,
-            'department': str,
-            'joiningDate': 'datetime64[ns]',
-            'batch': str,
-            'educationalQualification': str,
-            'region': str,
-            'admissionThrough': str,
-            'fundingType': str,
-            'sourceOfFunding': str,
-            'contingencyPoints': int,
-            'studentStatus': str,
-            'thesisSubmissionDate': 'datetime64[ns]',
-            'thesisDefenceDate': 'datetime64[ns]',
-            'yearOfLeaving': pd.Int64Dtype(),
-            'comment': str,
-        }
+        # Get the list of required columns from the Student model aka all fields
+        fields = Student._meta.fields
+        required_columns = [field.name for field in fields]
+        required_columns.remove('id')
 
         try:
-            df = pd.read_excel(uploaded_file, dtype=column_data_types)
+            workbook = openpyxl.load_workbook(uploaded_file)
+            sheet = workbook.active
+
+            data = []
+            keys = [cell.value for cell in sheet[1]]
             
-            required_columns = column_data_types.keys
-            print(required_columns)
-            # required_columns = ['rollNumber', 'name', 'emailId', 'gender', 'department', 'joiningDate', 'batch', 'admissionThrough', 'fundingType', 'contingencyPoints', 'studentStatus', 'region', 'educationalQualification', 'sourceOfFunding', 'thesisSubmissionDate', 'thesisDefenceDate', 'yearOfLeaving', 'comment']
-            if not all(col in df.columns for col in required_columns):
+            if not all(col in keys for col in required_columns):
                 return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                if all(cell is None for cell in row):
+                    continue
+                data.append(dict(zip(keys, row)))
             
             invalid_rows = []
+            for row in data:
+                row_dict = {}
+                for key, value in row.items():
+                    row_dict[key] = value
+                    if key == 'joiningDate' or key == 'thesisSubmissionDate' or key == 'thesisDefenceDate':
+                        if value is not None:
+                            row_dict[key] = value.strftime('%Y-%m-%d')
 
-            for row in df.itertuples(index=False):
-                data_dict = row._asdict()
-                data_dict['joiningDate'] = pd.to_datetime(data_dict['joiningDate'], errors='coerce')
-
-                if 'thesisSubmissionDate' in data_dict and pd.notnull(data_dict['thesisSubmissionDate']):
-                    data_dict['thesisSubmissionDate'] = pd.to_datetime(data_dict['thesisSubmissionDate'], errors='coerce')
-
-                if 'thesisDefenceDate' in data_dict and pd.notnull(data_dict['thesisDefenceDate']):
-                    data_dict['thesisDefenceDate'] = pd.to_datetime(data_dict['thesisDefenceDate'], errors='coerce')
-
-                data_dict['joiningDate'] = data_dict['joiningDate'].strftime('%Y-%m-%d')
-                data_dict['thesisSubmissionDate'] = data_dict.get('thesisSubmissionDate', None).strftime('%Y-%m-%d') if 'thesisSubmissionDate' in data_dict and pd.notnull(data_dict['thesisSubmissionDate']) else None
-                data_dict['thesisDefenceDate'] = data_dict.get('thesisDefenceDate', None).strftime('%Y-%m-%d') if 'thesisDefenceDate' in data_dict and pd.notnull(data_dict['thesisDefenceDate']) else None
-                data_dict = {key: value if not pd.isna(value) else None for key, value in data_dict.items()}
-                
-                serializer = StudentSerializer(data=data_dict)
+                serializer = StudentSerializer(data=row_dict)
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    invalid_rows.append({'student': data_dict, 'error': serializer.errors})
+                    invalid_rows.append({'student': row_dict, 'error': serializer.errors})
 
             if not invalid_rows:
                 return Response({'message': 'Data successfully imported'}, status=status.HTTP_201_CREATED)
