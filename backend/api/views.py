@@ -2,6 +2,7 @@ import openpyxl
 import os
 from django.http import HttpResponse
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.filters import SearchFilter
@@ -28,16 +29,23 @@ class StudentTableViewSet(ReadOnlyModelViewSet):
     lookup_field = 'rollNumber'
     lookup_url_kwarg = 'rollNumber'
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough']
-    search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__instructor__name']
+    filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
+    search_fields = ['$name', '$emailId', '$rollNumber', '$advisor1', '$advisor2', '$coadvisor']
  
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.annotate(advisor1=F('advisor_set__advisor1__name'))
-        return queryset.values(
-            'id','name', 'rollNumber', 'emailId', 'gender', 'department', 'batch',
-            'admissionThrough', 'advisor1', 'studentStatus', 'contingencyPoints'
-        )
+        queryset = queryset.annotate(
+            advisor1=F('advisor_set__advisor1__name'),
+            advisor2=F('advisor_set__advisor2__name'),
+            coadvisor=F('advisor_set__coadvisor__name')
+            )
+        sort_by = self.request.query_params.get('sort')
+        if sort_by:
+            if sort_by not in self.serializer_class.Meta.fields:
+                raise ValidationError('Invalid field for sorting')
+
+            queryset = queryset.order_by(sort_by)
+        return queryset
 
 class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = StudentSerializer
@@ -114,6 +122,16 @@ class InstructorViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['emailId','name', 'department']
     search_fields = ['$emailId', '$name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        sort_by = self.request.query_params.get('sort')
+        if sort_by:
+            if sort_by not in [field.name for field in Instructor._meta.get_fields()]:
+                raise ValidationError('Invalid field for sorting')
+
+            queryset = queryset.order_by(sort_by)
+        return queryset
 
 class AdvisorViewSet(ModelViewSet):
     queryset = Advisor.objects.all()

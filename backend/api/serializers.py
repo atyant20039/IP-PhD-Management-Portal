@@ -17,10 +17,12 @@ class StudentSerializer(ModelSerializer):
         return super().validate(data)
     
 class StudentTableSerializer(ModelSerializer):
-    advisor1 = CharField()
+    advisor1 = CharField(required = False)
+    advisor2 = CharField(required = False)
+    coadvisor = CharField(required = False)
     class Meta:
         model = Student
-        fields = ['id', 'name', 'rollNumber', 'emailId', 'gender', 'department', 'batch', 'admissionThrough', 'studentStatus', 'contingencyPoints', 'advisor1']
+        fields = ['id', 'rollNumber', 'name', 'emailId', 'gender', 'department', 'joiningDate', 'batch', 'educationalQualification', 'region', 'admissionThrough', 'fundingType', 'sourceOfFunding', 'contingencyPoints', 'studentStatus', 'thesisSubmissionDate', 'thesisDefenceDate', 'yearOfLeaving', 'comment', 'advisor1', 'advisor2', 'coadvisor']   
 
 class ComprehensiveSerializer(ModelSerializer):
     class Meta:

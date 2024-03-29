@@ -1,362 +1,576 @@
-/*
-class Student(models.Model):
-    rollNumber = models.CharField(max_length=255, primary_key=True) 
-    name = models.CharField(max_length=255)
-    emailId = models.EmailField(max_length=255, unique=True)
-    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Others', 'Others')])
-    department = models.CharField(max_length=255, choices=[('CSE', 'CSE'), ('CB', 'CB'), ('ECE', 'ECE'), ('HCD', 'HCD'), ('SSH', 'SSH'), ('MATHS', 'MATHS')])
-    joiningDate = models.DateField()
-    batch = models.CharField(max_length=225, help_text="Use the following format: Month YYYY", validators=[validate_batch_format])
-    educationalQualification = models.CharField(max_length=255, null=True, blank=True)
-    region = models.CharField(max_length=255, null=True, blank=True, choices=[('Delhi','Delhi'), ('Outside Delhi','Outside Delhi')])
-    admissionThrough = models.CharField(max_length=255, choices=[('Regular','Regular'),('Rolling','Rolling'),('Sponsored','Sponsored'),('Migrated','Migrated'),('Direct','Direct')])
-    fundingType = models.CharField(max_length=255, choices=[('Institute', 'Institute'), ('Sponsored', 'Sponsored'), ('Others', 'Others')])
-    sourceOfFunding = models.CharField(max_length=255, null=True, blank=True)
-    contingencyPoints = models.PositiveIntegerField(default=20000)
-    studentStatus = models.CharField(max_length=255, default='Active', choices=[('Terminated','Terminated'), ('Graduated','Graduated'), ('Shifted','Shifted'), ('Semester Leave','Semester Leave'), ('Active','Active')])
-    thesisSubmissionDate = models.DateField(blank=True, null=True)
-    thesisDefenceDate = models.DateField(blank=True, null=True)
-    yearOfLeaving = models.PositiveIntegerField(help_text="Use the following format: YYYY", null=True, blank=True, validators=[MinValueValidator(2000)])
-    comment = models.TextField(blank=True, null=True)
-
-    properties are:
-    rollNumber, name, email, gender, department, joiningDate, batch, educationalQualification, region, admissionThrough, fundingType, sourceOfFunding, contingencyPoints, studentStatus, thesisSubmissionDate, thesisDefenceDate, yearOfLeaving, comment
-*/
 import {
-	MagnifyingGlassIcon,
-	ChevronUpDownIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  XCircleIcon,
+  ChevronUpDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ChevronDoubleLeftIcon,
+  ChevronDoubleRightIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
-import {
-	Card,
-	CardHeader,
-	Input,
-	Typography,
-	Button,
-	CardBody,
-	Chip,
-	CardFooter,
-	Tabs,
-	TabsHeader,
-	Tab,
-	Avatar,
-	IconButton,
-	Tooltip,
-} from "@material-tailwind/react";
-import { useState } from "react";
+import { UserPlusIcon } from "@heroicons/react/24/solid";
 
-const TABS = [
-	{
-		label: "All",
-		value: "all",
-	},
-	{
-		label: "Monitored",
-		value: "monitored",
-	},
-	{
-		label: "Unmonitored",
-		value: "unmonitored",
-	},
+import {
+  Card,
+  CardHeader,
+  Input,
+  Typography,
+  Button,
+  CardBody,
+  CardFooter,
+  Chip,
+  Spinner,
+  IconButton,
+} from "@material-tailwind/react";
+
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import StudentContext from "../context/StudentContext";
+import FilterDialog from "../components/FilterDialog";
+import AddMemberDialog from "../components/AddMemberDialog";
+
+const TABLE_HEAD = [
+  {
+    head: "Roll No.",
+    value: "rollNumber",
+  },
+  {
+    head: "Name",
+    value: "name",
+  },
+  {
+    head: "Email ID",
+    value: "emailId",
+  },
+  {
+    head: "Gender",
+    value: "gender",
+  },
+  {
+    head: "Dept.",
+    value: "department",
+  },
+  {
+    head: "C.Points",
+    value: "contingencyPoints",
+  },
+  {
+    head: "Status",
+    value: "studentStatus",
+  },
+  {
+    head: "Advisor 1",
+    value: "advisor1",
+  },
+  {
+    head: "Advisor 2",
+    value: "advisor2",
+  },
+  {
+    head: "Co-Advisor",
+    value: "coadvisor",
+  },
+  {
+    head: "Joining Date",
+    value: "joiningDate",
+  },
+  {
+    head: "Batch",
+    value: "batch",
+  },
+  {
+    head: "Funding Type",
+    value: "fundingType",
+  },
+  {
+    head: "Source of Funding",
+    value: "sourceOfFunding",
+  },
+  {
+    head: "Admission",
+    value: "admissionThrough",
+  },
+  {
+    head: "Qualification",
+    value: "educationalQualification",
+  },
+  {
+    head: "Region",
+    value: "region",
+  },
+  {
+    head: "Thesis Submission Date",
+    value: "thesisSubmissionDate",
+  },
+  {
+    head: "Thesis Defence Date",
+    value: "thesisDefenceDate",
+  },
+  {
+    head: "Year of Leaving",
+    value: "yearOfLeaving",
+  },
+  {
+    head: "Comment",
+    value: "comment",
+  },
 ];
 
-export default function DatabasePage() {
-	const TABLE_HEAD = [
-		"Roll Number",
-		"Name",
-		"Gender",
-		"Department",
-		"Batch",
-		"Admission Through",
-		"Advisor 1",
-		"Student Status",
-	];
+export default function Database() {
+  const { students, fetchData } = useContext(StudentContext);
+  const [page, setPage] = useState(1);
+  const [total_pages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("rollNumber");
+  const [isExpanded, setExpanded] = useState(false);
+  const [isFilterDialogOpen, setFilterDialog] = useState(false);
+  const [isAddDialogOpen, setAddDialog] = useState(false);
+  const navigate = useNavigate();
 
-	const [data, setData] = useState([
-		// 5 rows made using TABLE_HEAD properties
-		{
-			rollNumber: "20D17001",
-			name: "Rahul",
-			gender: "Male",
-			department: "CSE",
-			batch: "July 2020",
-			admissionThrough: "Regular",
-			advisor1: "Dr. XYZ",
-			studentStatus: "Active",
-		},
-		{
-			rollNumber: "20D17002",
-			name: "Rohit",
-			gender: "Male",
-			department: "CSE",
-			batch: "July 2020",
-			admissionThrough: "Regular",
-			advisor1: "Dr. XYZ",
-			studentStatus: "Active",
-		},
-		{
-			rollNumber: "20D17003",
-			name: "Raj",
-			gender: "Male",
-			department: "CSE",
-			batch: "July 2020",
-			admissionThrough: "Regular",
-			advisor1: "Dr. XYZ",
-			studentStatus: "Active",
-		},
-		{
-			rollNumber: "20D17004",
-			name: "Riya",
-			gender: "Female",
-			department: "CSAI",
-			batch: "July 2020",
-			admissionThrough: "Regular",
-			advisor1: "Dr. XYZ",
-			studentStatus: "Active",
-		},
-		{
-			rollNumber: "20D17005",
-			name: "Ritu",
-			gender: "Female",
-			department: "CSD",
-			batch: "July 2020",
-			admissionThrough: "Regular",
-			advisor1: "Dr. XYZ",
-			studentStatus: "Active",
-		},
-	]);
+  useEffect(() => {
+    if (students == null) {
+      fetchData(page, search, sort, setLoading);
+    }
+  }, []);
 
-	function sortByHead(head) {
-		const headToProperty = {
-			"Roll Number": "rollNumber",
-			Name: "name",
-			Gender: "gender",
-			Department: "department",
-			Batch: "batch",
-			"Admission Through": "admissionThrough",
-			"Advisor 1": "advisor1",
-			"Student Status": "studentStatus",
-		};
-		head = headToProperty[head];
+  useEffect(() => {
+    students && students.total_pages && setTotalPages(students.total_pages);
+    students && students.page && setPage(students.page);
+  }, [students]);
 
-		data.sort((a, b) => {
-			// console.log(a[headToProperty[head]], b[headToProperty[head]]); // a[headToProperty[head]] is same as a[head]
-			if (a[head] < b[head]) {
-				return -1;
-			}
-			if (a[head] > b[head]) {
-				return 1;
-			}
-			return 0;
-		});
+  useEffect(() => {
+    fetchData(1, search, sort, setLoading);
+  }, [sort]);
 
-		console.log(data);
-		setData([...data]);
-	}
-	return (
-		<Card className="h-full w-full">
-			<CardHeader floated={false} shadow={false} className="rounded-none">
-				<div className="mb-8 flex items-center justify-between gap-8">
-					<div>
-						<Typography variant="h5" color="blue-gray">
-							Members list
-						</Typography>
-						<Typography color="gray" className="mt-1 font-normal">
-							See information about all members
-						</Typography>
-					</div>
-					<div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-						<Button variant="outlined" size="sm">
-							view all
-						</Button>
-						<Button className="flex items-center gap-3" size="sm">
-							<UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add member
-						</Button>
-					</div>
-				</div>
-				<div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-					<Tabs value="all" className="w-full md:w-max">
-						<TabsHeader>
-							{TABS.map(({ label, value }) => (
-								<Tab key={value} value={value}>
-									&nbsp;&nbsp;{label}&nbsp;&nbsp;
-								</Tab>
-							))}
-						</TabsHeader>
-					</Tabs>
-					<div className="w-full md:w-72">
-						<Input
-							label="Search"
-							icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-						/>
-					</div>
-				</div>
-			</CardHeader>
-			<CardBody className="overflow-scroll px-0">
-				<table className="mt-4 w-full min-w-max table-auto text-left">
-					<thead>
-						<tr>
-							{TABLE_HEAD.map((head, index) => (
-								<th
-									onClick={() => sortByHead(head)}
-									key={index}
-									className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50">
-									<Typography
-										variant="small"
-										color="blue-gray"
-										className="flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-										{head}{" "}
-										{index !== TABLE_HEAD.length - 1 && (
-											<button
-												onClick={() => {
-													console.log("Sort by", head);
-												}}>
-												<ChevronUpDownIcon
-													strokeWidth={2}
-													className="h-4 w-4"
-												/>
-											</button>
-										)}
-									</Typography>
-								</th>
-							))}
-						</tr>
-					</thead>
-					<tbody>
-						{data.map(
-							(
-								{
-									rollNumber,
-									name,
-									gender,
-									department,
-									batch,
-									admissionThrough,
-									advisor1,
-									studentStatus,
-								},
-								index
-							) => {
-								const isLast = index === data.length - 1;
-								const classes = isLast
-									? "p-4"
-									: "p-4 border-b border-blue-gray-50";
+  useEffect(() => {
+    const delay = 500;
+    const timer = setTimeout(() => {
+      fetchData(1, search, sort, setLoading);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-								return (
-									<tr key={rollNumber} className="hover:bg-blue-gray-400">
-										<td
-											className={classes}
-											onClick={() => console.log(rollNumber)}>
-											<div className="flex items-center gap-3">
-												<div className="flex flex-col">
-													<Typography
-														variant="small"
-														color="blue-gray"
-														className="font-normal">
-														{rollNumber}
-													</Typography>
-												</div>
-											</div>
-										</td>
-										<td className={classes}>
-											<div className="flex flex-col">
-												<Typography
-													variant="small"
-													color="blue-gray"
-													className="font-normal">
-													{name}
-												</Typography>
-											</div>
-										</td>
-										<td className={classes}>
-											<div className="flex flex-col">
-												<Typography
-													variant="small"
-													color="blue-gray"
-													className="font-normal opacity-70">
-													{gender}
-												</Typography>
-											</div>
-										</td>
-										<td className={classes}>
-											<div className="flex flex-col">
-												<Typography
-													variant="small"
-													color="blue-gray"
-													className="font-normal">
-													{department}
-												</Typography>
-											</div>
-										</td>
-										<td className={classes}>
-											<div className="flex flex-col">
-												<Typography
-													variant="small"
-													color="blue-gray"
-													className="font-normal opacity-70">
-													{batch}
-												</Typography>
-											</div>
-										</td>
-										<td className={classes}>
-											<div className="flex flex-col">
-												<Typography
-													variant="small"
-													color="blue-gray"
-													className="font-normal opacity-70">
-													{admissionThrough}
-												</Typography>
-											</div>
-										</td>
-										<td className={classes}>
-											<div className="flex flex-col">
-												<Typography
-													variant="small"
-													color="blue-gray"
-													className="font-normal opacity-70">
-													{advisor1}
-												</Typography>
-											</div>
-										</td>
-										<td className={classes}>
-											<div className="w-max">
-												<Chip
-													variant="ghost"
-													size="sm"
-													value={
-														studentStatus === "Active" ? "Active" : "Inactive"
-													}
-													color={studentStatus === "Active" ? "green" : "red"}
-												/>
-											</div>
-										</td>
-										{/* <td className={classes}>
-											<Tooltip content="Edit User">
-												<IconButton variant="text">
-													<PencilIcon className="h-4 w-4" />
-												</IconButton>
-											</Tooltip>
-										</td> */}
-									</tr>
-								);
-							}
-						)}
-					</tbody>
-				</table>
-			</CardBody>
-			<CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-				<Typography variant="small" color="blue-gray" className="font-normal">
-					Page 1 of 10
-				</Typography>
-				<div className="flex gap-2">
-					<Button variant="outlined" size="sm">
-						Previous
-					</Button>
-					<Button variant="outlined" size="sm">
-						Next
-					</Button>
-				</div>
-			</CardFooter>
-		</Card>
-	);
+  return (
+    <div className="flex flex-col h-screen">
+      <Card className="relative h-full w-full flex flex-1 flex-col">
+        <CardHeader
+          floated={false}
+          shadow={false}
+          className="rounded-none mt-0 pt-4"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography variant="h4" color="blue-gray">
+                Students list
+              </Typography>
+            </div>
+            <div className="flex-1 mx-8">
+              <Input
+                label="Search"
+                icon={<MagnifyingGlassIcon className="size-5" />}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Button
+                variant="outlined"
+                size="sm"
+                className="flex items-center gap-3 h-10"
+                onClick={() => setFilterDialog(!isFilterDialogOpen)}
+              >
+                <FunnelIcon className="size-4" />
+                filter
+              </Button>
+              <FilterDialog
+                isOpen={isFilterDialogOpen}
+                setOpen={setFilterDialog}
+                member="Students"
+              />
+              <Button
+                className="flex items-center gap-3 h-10"
+                size="sm"
+                onClick={() => setAddDialog(!isAddDialogOpen)}
+              >
+                <UserPlusIcon strokeWidth={2} className="size-4" /> Add Student
+              </Button>
+              <AddMemberDialog
+                isOpen={isAddDialogOpen}
+                setOpen={setAddDialog}
+                member="Student"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardBody className="p-0 mt-5 flex flex-1 overflow-auto">
+          {/* TODO: students && students.results -> check this conditions works on empty (not null) students.results list or not */}
+          {students && students.results && students.results.length != 0 ? (
+            <div className="flex flex-row flex-1 w-full h-full">
+              <div className="overflow-auto flex-1">
+                <table className="w-full min-w-max table-auto text-left">
+                  <thead className="sticky top-0 bg-white z-20">
+                    <tr>
+                      {TABLE_HEAD.map(
+                        ({ head, value }, index) =>
+                          (index < 7 && (
+                            <th
+                              key={head}
+                              className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+                              onClick={() => setSort(value)}
+                            >
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+                              >
+                                {head}{" "}
+                                <ChevronUpDownIcon
+                                  strokeWidth={2}
+                                  className="h-4 w-4"
+                                />
+                              </Typography>
+                            </th>
+                          )) ||
+                          (index >= 7 && isExpanded && (
+                            <th
+                              key={head}
+                              className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+                              onClick={() => setSort(value)}
+                            >
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+                              >
+                                {head}{" "}
+                                <ChevronUpDownIcon
+                                  strokeWidth={2}
+                                  className="h-4 w-4"
+                                />
+                              </Typography>
+                            </th>
+                          ))
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {students.results.map((student) => {
+                      const classes = "px-4 py-3 border-b border-blue-gray-50";
+
+                      const handleDoubleClick = (rno) => {
+                        navigate(`/db/${rno}`);
+                      };
+
+                      return (
+                        <tr
+                          key={student.name}
+                          className="hover:bg-blue-gray-50"
+                          onDoubleClick={() =>
+                            handleDoubleClick(student.rollNumber)
+                          }
+                          style={{ userSelect: "none" }}
+                        >
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal text-xs"
+                            >
+                              {student.rollNumber}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal text-xs"
+                            >
+                              {student.name}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal text-xs"
+                            >
+                              {student.emailId}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <div className="w-max">
+                              <Chip
+                                variant="ghost"
+                                size="sm"
+                                value={student.gender}
+                                className="px-1.5"
+                                color={
+                                  student.gender == "Male"
+                                    ? "blue"
+                                    : student.gender == "Female"
+                                    ? "pink"
+                                    : "gray"
+                                }
+                              />
+                            </div>
+                          </td>
+                          <td className={classes}>
+                            <div className="w-max">
+                              <Chip
+                                variant="ghost"
+                                size="sm"
+                                className="px-1.5"
+                                value={student.department}
+                              />
+                            </div>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal text-xs"
+                            >
+                              {student.contingencyPoints}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <div className="w-max">
+                              <Chip
+                                variant="ghost"
+                                size="sm"
+                                className="px-1.5"
+                                value={student.studentStatus}
+                                color={
+                                  student.studentStatus === "Active"
+                                    ? "green"
+                                    : student.studentStatus === "Terminated"
+                                    ? "red"
+                                    : student.studentStatus === "Semester Leave"
+                                    ? "amber"
+                                    : student.studentStatus === "Shifted"
+                                    ? "blue"
+                                    : student.studentStatus === "Graduated"
+                                    ? "gray"
+                                    : "blue-gray"
+                                }
+                              />
+                            </div>
+                          </td>
+                          {isExpanded && (
+                            <>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.advisor1 ? student.advisor1 : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.advisor2 ? student.advisor2 : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.coadvisor ? student.coadvisor : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.joiningDate}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.batch}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <div className="w-max">
+                                  <Chip
+                                    variant="ghost"
+                                    size="sm"
+                                    className="px-1.5"
+                                    value={student.fundingType}
+                                  />
+                                </div>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs w-48"
+                                >
+                                  {student.sourceOfFunding
+                                    ? student.sourceOfFunding
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <div className="w-max">
+                                  <Chip
+                                    variant="ghost"
+                                    size="sm"
+                                    className="px-1.5"
+                                    value={student.admissionThrough}
+                                  />
+                                </div>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs w-48"
+                                >
+                                  {student.educationalQualification
+                                    ? student.educationalQualification
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <div className="w-max">
+                                  <Chip
+                                    variant="ghost"
+                                    size="sm"
+                                    className="px-1.5"
+                                    value={
+                                      student.region ? student.region : "-"
+                                    }
+                                  />
+                                </div>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.thesisSubmissionDate
+                                    ? student.thesisSubmissionDate
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.thesisDefenceDate
+                                    ? student.thesisDefenceDate
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs"
+                                >
+                                  {student.yearOfLeaving
+                                    ? student.yearOfLeaving
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs w-48"
+                                >
+                                  {student.comment ? student.comment : "-"}
+                                </Typography>
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="top-0 right-0 bottom-0 flex items-center mr-1">
+                <Button
+                  className="h-full p-2 focus:ring-0 hover:bg-blue-gray-50 hover:opacity-100"
+                  variant="outlined"
+                  size="sm"
+                  color="blue-gray"
+                  onClick={() => setExpanded(!isExpanded)}
+                >
+                  {isExpanded ? (
+                    <ChevronDoubleLeftIcon className="size-4" />
+                  ) : (
+                    <ChevronDoubleRightIcon className="size-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full h-full flex flex-col place-content-center place-items-center">
+              {loading ? (
+                <Spinner className="size-12" />
+              ) : (
+                <div>
+                  <XCircleIcon className="h-48 w-48" />
+                  <Typography variant="h3">No Data Found</Typography>
+                </div>
+              )}
+            </div>
+          )}
+        </CardBody>
+        <CardFooter className="flex place-content-center border-t border-blue-gray-50 p-4">
+          <div className="flex items-center gap-8">
+            <IconButton
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                if (students.previous) {
+                  fetchData(page - 1, search, sort, setLoading);
+                }
+              }}
+              disabled={page === 1}
+            >
+              <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" />
+            </IconButton>
+            <Typography color="gray" className="font-normal">
+              Page <strong className="text-gray-900">{page}</strong> of{" "}
+              <strong className="text-gray-900">{total_pages}</strong>
+            </Typography>
+            <IconButton
+              size="sm"
+              variant="outlined"
+              onClick={() => {
+                if (students.next) {
+                  fetchData(page + 1, search, sort, setLoading);
+                }
+              }}
+              disabled={page === total_pages}
+            >
+              <ArrowRightIcon strokeWidth={2} className="h-4 w-4" />
+            </IconButton>
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
 }
