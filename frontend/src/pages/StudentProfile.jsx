@@ -30,7 +30,6 @@ import StudentProfileExam from "../components/StudentProfileExam";
 import StudentProfileLog from "../components/StudentProfileLog";
 import StudentProfileReview from "../components/StudentProfileReview";
 
-import { getData } from "../utils/ReqAPI";
 import StudentContext from "../context/StudentContext";
 
 function StudentProfile() {
