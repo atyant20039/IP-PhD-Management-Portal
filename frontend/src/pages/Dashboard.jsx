@@ -55,7 +55,7 @@ function Dashboard() {
         </CardHeader>
         <CardBody className="p-0 m-5 flex-1 overflow-y-auto grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {list.map((item, index) => (
-            <Link key={index} to={item.url}>
+            <Link key={index} to={item.url} className="h-min">
               <Card className="relative w-auto h-max border shadow-none border-blue-gray-100 hover:scale-105 transition-all hover:shadow-md">
                 <CardHeader
                   floated={false}
