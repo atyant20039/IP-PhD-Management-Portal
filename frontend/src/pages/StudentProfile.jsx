@@ -35,20 +35,19 @@ import StudentContext from "../context/StudentContext";
 function StudentProfile() {
   const { id } = useParams();
   const { students, fetchData } = useContext(StudentContext);
-  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const data = students
+    ? students.results
+      ? students.results.find((student) => student.rollNumber === id)
+      : null
+    : null;
 
   useEffect(() => {
     if (students == null) {
       fetchData(undefined, undefined, undefined, setLoading);
     }
   }, []);
-
-  useEffect(() => {
-    students &&
-      students.results &&
-      setData(students.results.find((student) => student.rollNumber === id));
-  }, [students]);
 
   const tabs = [
     {

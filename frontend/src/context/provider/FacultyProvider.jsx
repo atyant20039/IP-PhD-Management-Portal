@@ -17,15 +17,18 @@ const FacultyProvider = ({ children }) => {
       const response = await axios.get(
         `${API}/api/instructor/?page=${page}&search=${search}&sort=${sort}`
       );
-      setLoading && setLoading(false);
       setFaculty(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading && setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchFaculty();
+    if (faculty === null) {
+      fetchFaculty();
+    }
   }, []);
 
   return (

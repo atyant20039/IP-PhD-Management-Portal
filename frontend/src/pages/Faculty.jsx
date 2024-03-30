@@ -51,8 +51,6 @@ const TABLE_HEAD = [
 
 function Faculty() {
   const { faculty, fetchData } = useContext(FacultyContext);
-  const [page, setPage] = useState(1);
-  const [total_pages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("name");
@@ -60,16 +58,18 @@ function Faculty() {
   const [isAddDialogOpen, setAddDialog] = useState(false);
   const navigate = useNavigate();
 
+  const page = faculty ? (faculty.page ? faculty.page : 1) : 1;
+  const total_pages = faculty
+    ? faculty.total_pages
+      ? faculty.total_pages
+      : 1
+    : 1;
+
   useEffect(() => {
-    if (faculty == null) {
+    if (faculty === null) {
       fetchData(page, search, sort, setLoading);
     }
   }, []);
-
-  useEffect(() => {
-    faculty && faculty.total_pages && setTotalPages(faculty.total_pages);
-    faculty && faculty.page && setPage(faculty.page);
-  }, [faculty]);
 
   useEffect(() => {
     fetchData(1, search, sort, setLoading);
