@@ -6,14 +6,31 @@ import {
   DialogHeader,
   DialogBody,
   DialogFooter,
+  Card,
+  CardBody,
 } from "@material-tailwind/react";
 
 function AddStudent() {
-  return <div>Form to add Student here</div>;
+  return (
+    <div>
+      <Card shadow={false}>
+        <CardBody>Upload Students by file code here</CardBody>
+      </Card>
+      <Card shadow={false}>
+        <CardBody>Add single student form code here</CardBody>
+      </Card>
+    </div>
+  );
 }
 
 function AddProfessor() {
-  return <div>Form to add professor here</div>;
+  return (
+    <div>
+      <Card shadow={false}>
+        <CardBody>Add single professor form code here</CardBody>
+      </Card>
+    </div>
+  );
 }
 
 function AddMemberDialog({ isOpen, setOpen, member }) {

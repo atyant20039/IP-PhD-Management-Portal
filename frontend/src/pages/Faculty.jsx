@@ -61,7 +61,9 @@ function Faculty() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchData(page, search, sort, setLoading);
+    if (faculty == null) {
+      fetchData(page, search, sort, setLoading);
+    }
   }, []);
 
   useEffect(() => {

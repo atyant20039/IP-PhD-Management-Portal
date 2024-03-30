@@ -6,14 +6,24 @@ import {
   DialogHeader,
   DialogBody,
   DialogFooter,
+  Card,
+  CardBody,
 } from "@material-tailwind/react";
 
 function filterStudents() {
-  return <div>Form to filter students here</div>;
+  return (
+    <Card shadow={false}>
+      <CardBody>Form to filter students here</CardBody>
+    </Card>
+  );
 }
 
 function filterProfessors() {
-  return <div>Form to filter professors here</div>;
+  return (
+    <Card shadow={false}>
+      <CardBody>Form to filter professors here</CardBody>
+    </Card>
+  );
 }
 
 function FilterDialog({ isOpen, setOpen, member }) {
