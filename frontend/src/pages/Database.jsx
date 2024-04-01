@@ -127,11 +127,17 @@ export default function Database() {
   const [isExpanded, setExpanded] = useState(false);
   const [isFilterDialogOpen, setFilterDialog] = useState(false);
   const [isAddDialogOpen, setAddDialog] = useState(false);
+  const [filters, setFilters] = useState({});
   const navigate = useNavigate();
 
+  
+  const handleFilterSelect = (selectedOptions) => {
+    setFilters(selectedOptions); // Update filters state when filters are selected
+  };
+
   useEffect(() => {
-    if (students == null) {
-      fetchData(page, search, sort, setLoading);
+    if (students === null) {
+      fetchData({ page, search, sort, setLoading, filters }); // Pass filters to fetchData
     }
   }, []);
 
@@ -141,16 +147,18 @@ export default function Database() {
   }, [students]);
 
   useEffect(() => {
-    fetchData(1, search, sort, setLoading);
-  }, [sort]);
+    console.log(filters)
+    fetchData({ page: 1, search, sort, setLoading, filters }); // Pass filters to fetchData
+  }, [sort, filters]);
 
-  useEffect(() => {
+   useEffect(() => {
     const delay = 500;
+    console.log(filters)
     const timer = setTimeout(() => {
-      fetchData(1, search, sort, setLoading);
+      fetchData({ page: 1, search, sort, setLoading, filters }); // Pass filters to fetchData
     }, delay);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, filters]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -185,10 +193,12 @@ export default function Database() {
                 filter
               </Button>
               <FilterDialog
-                isOpen={isFilterDialogOpen}
-                setOpen={setFilterDialog}
-                member="Students"
-              />
+  isOpen={isFilterDialogOpen}
+  setOpen={setFilterDialog}
+  member="Students"
+  onApplyFilters={handleFilterSelect} // Handle selected options here
+/>
+
               <Button
                 className="flex items-center gap-3 h-10"
                 size="sm"
