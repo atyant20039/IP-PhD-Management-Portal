@@ -15,10 +15,10 @@ function AdminLayout() {
 
   return (
     <div className="flex flex-row w-screen h-screen">
-      <div className="z-50 w-16">
+      <div className="z-50 w-16 absolute inset-y-0 left-0">
         <Sidebar />
       </div>
-      <div className="w-full">
+      <div className="w-[calc(100%-64px)] absolute inset-y-0 right-0">
         <Outlet />
       </div>
     </div>
