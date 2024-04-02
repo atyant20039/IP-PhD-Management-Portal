@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import FacultyContext from "../FacultyContext";
 import axios from "axios";
-
+import convertFiltersToString from "../../utils/queryStringConvertor";
 const FacultyProvider = ({ children }) => {
   const [faculty, setFaculty] = useState(null);
 
@@ -11,14 +11,18 @@ const FacultyProvider = ({ children }) => {
     page = 1,
     search = "",
     sort = "name",
-    setLoading = null
+    setLoading = null,
+    filters = {}
   ) => {
     try {
+      const filterString = convertFiltersToString(filters); 
+
       const response = await axios.get(
-        `${API}/api/instructor/?page=${page}&search=${search}&sort=${sort}`
+        `${API}/api/instructor/?page=${page}&search=${search}&sort=${sort}&${filterString}`
       );
       setLoading && setLoading(false);
       setFaculty(response.data);
+      console.log(faculty)
     } catch (error) {
       console.error("Error fetching data:", error);
     }

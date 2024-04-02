@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import StudentContext from "../StudentContext";
 import axios from "axios";
+import convertFiltersToString from "../../utils/queryStringConvertor";
 
 const StudentProvider = ({ children }) => {
   const [students, setStudents] = useState(null);
@@ -12,17 +13,15 @@ const StudentProvider = ({ children }) => {
     search = "",
     sort = "rollNumber",
     setLoading = null,
-    filters = {} // Assign default value as an empty object for filters
+    filters = {} 
   } = {}) => {
     try {
-      // Convert filter object to a string that can be passed to the API
-      const filterString = Object.entries(filters)
-        .filter(([key, value]) => value !== "") // Remove empty values
-        .map(([key, value]) => `${key}=${value}`)
-        .join("&");
+    
+      const filterString = convertFiltersToString(filters); 
+
   
       const response = await axios.get(
-        `${API}/api/studentTable/?page=${page}&search=${search}&sort=${sort}&${filterString}` // Concatenate filter parameter properly
+        `${API}/api/studentTable/?page=${page}&search=${search}&sort=${sort}&${filterString}` 
       );
       setLoading && setLoading(false);
       setStudents(response.data);
@@ -30,7 +29,6 @@ const StudentProvider = ({ children }) => {
       console.error("Error fetching data:", error);
     }
   };
-  
   useEffect(() => {
     fetchStudents();
   }, []);

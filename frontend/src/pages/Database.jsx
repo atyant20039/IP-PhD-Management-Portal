@@ -27,7 +27,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import StudentContext from "../context/StudentContext";
-import FilterDialog from "../components/FilterDialog";
+import FilterDialog from "../components/StudentFilterDialog";
 import AddMemberDialog from "../components/AddMemberDialog";
 
 const TABLE_HEAD = [
@@ -130,7 +130,6 @@ export default function Database() {
   const [filters, setFilters] = useState({});
   const navigate = useNavigate();
 
-  
   const handleFilterSelect = (selectedOptions) => {
     setFilters(selectedOptions); // Update filters state when filters are selected
   };
@@ -147,21 +146,19 @@ export default function Database() {
   }, [students]);
 
   useEffect(() => {
-    console.log(filters)
-    fetchData({ page: 1, search, sort, setLoading, filters }); // Pass filters to fetchData
+    fetchData({ page: 1, search, sort, setLoading, filters });
   }, [sort, filters]);
 
-   useEffect(() => {
+  useEffect(() => {
     const delay = 500;
-    console.log(filters)
     const timer = setTimeout(() => {
-      fetchData({ page: 1, search, sort, setLoading, filters }); // Pass filters to fetchData
+      fetchData({ page: 1, search, sort, setLoading, filters });
     }, delay);
     return () => clearTimeout(timer);
   }, [search, filters]);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen ml-4">
       <Card className="relative h-full w-full flex flex-1 flex-col">
         <CardHeader
           floated={false}
@@ -193,11 +190,11 @@ export default function Database() {
                 filter
               </Button>
               <FilterDialog
-  isOpen={isFilterDialogOpen}
-  setOpen={setFilterDialog}
-  member="Students"
-  onApplyFilters={handleFilterSelect} // Handle selected options here
-/>
+                isOpen={isFilterDialogOpen}
+                setOpen={setFilterDialog}
+          
+                onApplyFilters={handleFilterSelect} // Handle selected options here
+              />
 
               <Button
                 className="flex items-center gap-3 h-10"

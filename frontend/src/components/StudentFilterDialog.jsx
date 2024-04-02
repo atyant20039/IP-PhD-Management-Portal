@@ -8,11 +8,11 @@ import {
   Chip,
 } from "@material-tailwind/react";
 
-function FilterDialog({ isOpen, setOpen, member, onApplyFilters }) {
+function FilterDialog({ isOpen, setOpen, onApplyFilters }) {
   const handleOpen = () => setOpen(!isOpen);
 
   // Sample options
-  const genderOptions = ["Male", "Female", "Other"];
+  const genderOptions = ["Male", "Female", "Others"];
   const departmentOptions = ["CSE", "CB", "ECE", "HCD", "SSH", "MATHS"];
   const studentStatusOptions = [
     "Active",
@@ -72,10 +72,9 @@ function FilterDialog({ isOpen, setOpen, member, onApplyFilters }) {
 
   return (
     <Dialog open={isOpen} handler={handleOpen}>
-      <DialogHeader>Filter {member}</DialogHeader>
+      <DialogHeader>Filter Students</DialogHeader>
       <DialogBody>
-        {/* Option chips */}
-        {/* Gender */}
+       
         <div className="text-sm text-blue-gray-500 mb-2">Genders:</div>
         <div className="flex flex-wrap gap-2 mb-2">
           {genderOptions.map((gender) => (
@@ -186,7 +185,7 @@ function FilterDialog({ isOpen, setOpen, member, onApplyFilters }) {
         </div>
       </DialogBody>
       <DialogFooter className="flex justify-between">
-  <Button variant="text" color="gray" onClick={handleClearAll}>
+  <Button variant="text" className="p-0" color="gray" onClick={handleClearAll}>
     Clear All
   </Button>
   <div>
@@ -199,9 +198,6 @@ function FilterDialog({ isOpen, setOpen, member, onApplyFilters }) {
   </div>
 </DialogFooter>
 
-
-
-      {/* Clear all button */}
      
     </Dialog>
   );
