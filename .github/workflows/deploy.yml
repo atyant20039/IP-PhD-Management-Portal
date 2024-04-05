@@ -1,0 +1,37 @@
+name: "Atyant's Deploy to VM"
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # You can choose a different runner machine if needed
+    steps:
+      - name: Forticlient VPN
+        uses: horellana/openconnect@v1.0.1
+        with:
+          # vpn user
+          VPN_USER: ${{ secrets.FORTI_VPN_USERNAME }}
+          # vpn password
+          VPN_PWD: ${{ secrets.FORTI_VPN_PASSWORD }}
+          # vpn host
+          VPN_HOST: vpn.iiitd.edu.in
+          # vpn port
+          VPN_PORT: 10443
+          # vpn server certificate
+          # VPN_SERVER_CERT: 
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH key
+        uses: actions/upload-artifact@v3
+        with:
+          name: ssh-key
+          path: ${{ secrets.SSH_KEY_DIR }}
+
+      - name: Deploy to VM
+        run: |
+          chmod 600 ~/.ssh/id_rsa  # Set permissions on the private key
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa iiitd@192.168.3.166 "bash -c 'cd /path/to/project && git checkout main && git pull && <deployment_commands>'"
