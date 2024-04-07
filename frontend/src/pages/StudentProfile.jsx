@@ -97,12 +97,12 @@ function StudentProfile() {
   ];
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col  w-full h-full">
       {data ? (
         <div>
           <Card shadow={false}>
             <CardHeader floated={false} shadow={false}>
-              <Typography variant="h4" color="blue-gray">
+              <Typography className="ml-5" variant="h3" color="blue-gray">
                 Student Details
               </Typography>
             </CardHeader>

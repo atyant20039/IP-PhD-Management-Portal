@@ -45,13 +45,14 @@ function Dashboard() {
           shadow={false}
           className="rounded-none mt-0 pt-4"
         >
-          <div className="flex items-center justify-between">
+          <div className="flex items-center ml-6 justify-between">
             <div>
-              <Typography variant="h4" color="blue-gray">
+              <Typography variant="h3" color="blue-gray">
                 Ph.D. Management Portal
               </Typography>
             </div>
           </div>
+
         </CardHeader>
         <CardBody className="m-5 flex-1 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
           {list.map((item, index) => (
