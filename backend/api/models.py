@@ -38,7 +38,7 @@ class Instructor(models.Model):
         ordering=['emailId']
 
     def __str__(self):
-        return f"Name: {self.name} Department: {self.department}"
+        return f"{self.name}"
     
 class Advisor(models.Model):
     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name="advisor_set")

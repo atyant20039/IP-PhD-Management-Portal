@@ -8,6 +8,7 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.filters import SearchFilter
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from rest_framework.serializers import RelatedField
 from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import F
@@ -23,28 +24,28 @@ class StudentViewSet(ModelViewSet):
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'fundingType', 'gender', 'department', 'region', 'batch', 'admissionThrough']
     search_fields = ['$name', '$emailId', '$rollNumber']
 
-class StudentTableViewSet(ReadOnlyModelViewSet):
+class StudentTableViewSet(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentTableSerializer
     lookup_field = 'rollNumber'
     lookup_url_kwarg = 'rollNumber'
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
-    search_fields = ['$name', '$emailId', '$rollNumber', '$advisor1', '$advisor2', '$coadvisor']
+    search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__advisor1__name', '$advisor_set__advisor2__name', '$advisor_set__coadvisor__name']
  
     def get_queryset(self):
         queryset = super().get_queryset()
-        queryset = queryset.annotate(
-            advisor1=F('advisor_set__advisor1__name'),
-            advisor2=F('advisor_set__advisor2__name'),
-            coadvisor=F('advisor_set__coadvisor__name')
-            )
         sort_by = self.request.query_params.get('sort')
         if sort_by:
-            if sort_by not in self.serializer_class.Meta.fields:
-                raise ValidationError('Invalid field for sorting')
+            serializer_fields = self.serializer_class().get_fields()
 
-            queryset = queryset.order_by(sort_by)
+            if sort_by in ['advisor1', 'advisor2', 'coadvisor']:
+                queryset = queryset.order_by("advisor_set__"+sort_by+"__name")
+            elif sort_by not in serializer_fields:
+                raise ValidationError('Invalid field for sorting')
+            else:
+                queryset = queryset.order_by(sort_by)
+
         return queryset
 
 class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
