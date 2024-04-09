@@ -8,7 +8,7 @@ const StudentProvider = ({ children }) => {
 
   const API = import.meta.env.VITE_BACKEND_URL;
 
-  const fetchStudents = async ({
+  const fetchStudents = async (
     page = 1,
     search = "",
     sort = "rollNumber",
@@ -23,14 +23,17 @@ const StudentProvider = ({ children }) => {
       const response = await axios.get(
         `${API}/api/studentTable/?page=${page}&search=${search}&sort=${sort}&${filterString}` 
       );
-      setLoading && setLoading(false);
       setStudents(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading && setLoading(false);
     }
   };
   useEffect(() => {
-    fetchStudents();
+    if (students === null) {
+      fetchStudents();
+    }
   }, []);
 
   return (

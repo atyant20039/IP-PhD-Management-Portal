@@ -4,7 +4,10 @@ import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import AdminLayout from "./layouts/Admin";
+import AdminLayout from "./layouts/AdminView";
+import AuthLayout from "./layouts/Auth";
+import StudentLayout from "./layouts/StudentView";
+import ProfLayout from "./layouts/ProfView";
 import ErrorPage from "./pages/ErrorPage";
 import Dashboard from "./pages/Dashboard";
 import Database from "./pages/Database";
@@ -46,6 +49,30 @@ const router = createBrowserRouter([
         path: "faculty",
         element: <Faculty />,
       },
+    ],
+  },
+  {
+    path: "/auth",
+    element: <AuthLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      // define children here
+    ],
+  },
+  {
+    path: "/student",
+    element: <StudentLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      // define children here
+    ],
+  },
+  {
+    path: "/prof",
+    element: <ProfLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      // define children here
     ],
   },
 ]);

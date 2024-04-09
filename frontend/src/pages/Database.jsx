@@ -119,8 +119,6 @@ const TABLE_HEAD = [
 
 export default function Database() {
   const { students, fetchData } = useContext(StudentContext);
-  const [page, setPage] = useState(1);
-  const [total_pages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("rollNumber");

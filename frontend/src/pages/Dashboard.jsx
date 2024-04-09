@@ -56,8 +56,8 @@ function Dashboard() {
         </CardHeader>
         <CardBody className="m-5 flex-1 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
           {list.map((item, index) => (
-            <Link key={index} to={item.url}>
-              <Card className="relative w-auto h-max border shadow-none border-blue-gray-100 hover:scale-105 transition-all hover:shadow-md ">
+            <Link key={index} to={item.url} className="h-min">
+              <Card className="relative w-auto h-max border shadow-none border-blue-gray-100 hover:scale-105 transition-all hover:shadow-md">
                 <CardHeader
                   floated={false}
                   className="h-min flex place-content-center"
