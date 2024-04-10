@@ -15,6 +15,7 @@ const FacultyProvider = ({ children }) => {
     filters = {}
   ) => {
     try {
+      console.log(page)
       const filterString = convertFiltersToString(filters); 
 
       const response = await axios.get(

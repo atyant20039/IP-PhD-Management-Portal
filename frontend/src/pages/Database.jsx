@@ -119,6 +119,8 @@ const TABLE_HEAD = [
 
 export default function Database() {
   const { students, fetchData } = useContext(StudentContext);
+  const [page, setPage] = useState(1);
+  const [total_pages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("rollNumber");
@@ -141,6 +143,7 @@ export default function Database() {
   useEffect(() => {
     students && students.total_pages && setTotalPages(students.total_pages);
     students && students.page && setPage(students.page);
+
   }, [students]);
 
   useEffect(() => {
