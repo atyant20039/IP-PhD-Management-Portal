@@ -178,3 +178,10 @@ class ContingencyViewSet(ModelViewSet):
     lookup_url_kwarg = 'student__rollNumber'
     filter_backends = [SearchFilter]
     search_fields = ['$student__rollNumber']
+
+class ClassroomViewSet(ModelViewSet):
+    queryset = Classroom.objects.all()
+    serializer_class = ClassroomSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['building', 'roomNo']
+    search_fields = ['$building', '$roomNo']
