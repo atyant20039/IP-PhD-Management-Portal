@@ -12,7 +12,7 @@ router.register('yearlyReview', YearlyReviewViewSet, basename='yearlyReview')
 router.register('finance', FinanceViewSet, basename='finance')
 router.register('stipend', StipendViewSet, basename='stipend')
 router.register('contingency', ContingencyViewSet, basename='contingency')
+router.register('classroom', ClassroomViewSet, basename='classroom')
 
 urlpatterns = []
-
 urlpatterns += router.urls
