@@ -1,12 +1,41 @@
-import React from "react";
-import { Stepper, Step, Button, Typography } from "@material-tailwind/react";
+import React, { useState, useEffect } from "react";
+import { Stepper, Step, Typography } from "@material-tailwind/react";
 import { UserIcon, CogIcon, BuildingLibraryIcon } from "@heroicons/react/24/outline";
 
-export function ProgressStepper() {
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [isLastStep, setIsLastStep] = React.useState(false);
-  const [isFirstStep, setIsFirstStep] = React.useState(false);
+export function ProgressStepper({ isClassroomSubmitted, isDateSheetSubmitted, isTASubmitted, isFileSubmitted1, isFileSubmitted2 }) {
+  const [activeStep, setActiveStep] = useState(-1);
+  const [isLastStep, setIsLastStep] = useState(false);
+  const [isFirstStep, setIsFirstStep] = useState(false);
 
+  useEffect(() => {
+    if (isClassroomSubmitted) {
+      setActiveStep(0);
+    }
+  }, [isClassroomSubmitted]);
+
+  useEffect(() => {
+    if (isDateSheetSubmitted) {
+      setActiveStep(1);
+    }
+  }, [isDateSheetSubmitted]);
+
+  useEffect(() => {
+    if (isTASubmitted) {
+      setActiveStep(2);
+    }
+  }, [isTASubmitted]);
+
+  useEffect(() => {
+    if (isFileSubmitted1) {
+      setActiveStep(3);
+    }
+  }, [isFileSubmitted1]);
+
+  useEffect(() => {
+    if (isFileSubmitted2) {
+      setActiveStep(4);
+    }
+  }, [isFileSubmitted2]);
 
   const steps = [
     { icon: UserIcon, title: "Step 1", description: "Details about your account." },
@@ -29,12 +58,12 @@ export function ProgressStepper() {
             <div className="absolute -bottom-[4.5rem] w-max text-center">
               <Typography
                 variant="h6"
-                color={activeStep === index ? "blue-gray" : "gray"}
+                color={activeStep === index ? "blue-gray" : "gray"} // Set color based on active step
               >
                 {step.title}
               </Typography>
               <Typography
-                color={activeStep === index ? "blue-gray" : "gray"}
+                color={activeStep === index ? "blue-gray" : "gray"} // Set color based on active step
                 className="font-normal"
               >
                 {step.description}
@@ -43,7 +72,6 @@ export function ProgressStepper() {
           </Step>
         ))}
       </Stepper>
-    
     </div>
   );
 }

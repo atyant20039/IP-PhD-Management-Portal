@@ -11,7 +11,7 @@ import {
     AcademicCapIcon,
   
   } from "@heroicons/react/24/solid";
-function Invigilation_Files() {
+function Invigilation_Files({onSubmission1,onSubmission2}) {
 
     const [file1, setFile1] = useState(null);
     const [file2, setFile2] = useState(null);
@@ -22,12 +22,14 @@ function Invigilation_Files() {
       const selectedFile = event.target.files[0];
       setFile1(selectedFile);
       setFileName1(selectedFile.name);
+      onSubmission1()
     };
   
     const handleFile2Change = (event) => {
       const selectedFile = event.target.files[0];
       setFile2(selectedFile);
       setFileName2(selectedFile.name);
+      onSubmission2()
     };
   
     const saveFiles = () => {
