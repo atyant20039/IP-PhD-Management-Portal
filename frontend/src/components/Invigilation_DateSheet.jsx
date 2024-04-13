@@ -1,12 +1,23 @@
-import React, { useState } from 'react';import {
+import React, { useState } from "react";
+import {
   Button,
   Input,
   Card,
   Typography,
   Tooltip,
-  IconButton
+  IconButton,
+  CardHeader,
+  CardBody,
 } from "@material-tailwind/react";
-import { UserPlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+
+import { format } from "date-fns";
+import {
+  ChevronUpDownIcon,
+  PencilIcon,
+  TrashIcon,
+  UserPlusIcon,
+  BookmarkIcon
+} from "@heroicons/react/24/solid";
 
 const TABLE_HEAD = [
   {
@@ -18,8 +29,12 @@ const TABLE_HEAD = [
     value: "day",
   },
   {
-    head: "Time",
-    value: "time",
+    head: "Start Time",
+    value: "startTime",
+  },
+  {
+    head: "End Time",
+    value: "endTime",
   },
   {
     head: "Acronym",
@@ -34,151 +49,265 @@ const TABLE_HEAD = [
     value: "strength",
   },
   {
+    head: "Venue",
+    value: "venue",
+  },
+  {
     head: "Room No.",
     value: "roomNo",
   },
 ];
 
-function Invigilation_DateSheet({onSubmission}) {
+function Datesheet({onSubmit}) {
   const [tableData, setTableData] = useState([
-    { id: 1, date: '2/24/2024', day: 'Saturday', time: '10:00 AM - 11:00 AM', acronym: 'BDMH', courseCode: 'BIO543', strength: 127, roomNo: 'C101, LHC' },
-    { id: 2, date: '2/24/2024', day: 'Saturday', time: '10:00 AM - 11:00 AM', acronym: 'CV', courseCode: 'CSE344/CSE544/ ECE344/ECE544', strength: 108, roomNo: 'C201, LHC' },
-    { id: 3, date: '2/24/2024', day: 'Saturday', time: '10:00 AM - 11:00 AM', acronym: 'WCE', courseCode: 'ECE537', strength: 13, roomNo: 'C03, Old Acad' },
-    { id: 4, date: '2/24/2024', day: 'Saturday', time: '10:00 AM - 11:00 AM', acronym: 'GDD', courseCode: 'DES512', strength: 23, roomNo: 'C02, Old Acad' },
-    { id: 5, date: '2/24/2024', day: 'Saturday', time: '10:00 AM - 11:00 AM', acronym: 'SP', courseCode: 'PSY302', strength: 33, roomNo: 'C21, Old Acad' },
+    {
+      id: 1,
+      date: "2/24/2024",
+      day: "Saturday",
+      startTime: "10:00 AM",
+      endTime: "11:00 AM",
+      acronym: "BDMH",
+      courseCode: "BIO543",
+      strength: 127,
+      venue: "LHC",
+      roomNo: "C101",
+    },
+    {
+      id: 2,
+      date: "3/1/2024",
+      day: "Thursday",
+      startTime: "9:00 AM",
+      endTime: "10:00 AM",
+      acronym: "PHYS",
+      courseCode: "PHY101",
+      strength: 85,
+      venue: "SCI",
+      roomNo: "A201",
+    },
+    {
+      id: 3,
+      date: "3/5/2024",
+      day: "Monday",
+      startTime: "11:00 AM",
+      endTime: "12:00 PM",
+      acronym: "CHEM",
+      courseCode: "CHEM202",
+      strength: 95,
+      venue: "LAB",
+      roomNo: "L102",
+    },
+    {
+      id: 4,
+      date: "3/10/2024",
+      day: "Saturday",
+      startTime: "2:00 PM",
+      endTime: "3:00 PM",
+      acronym: "MATH",
+      courseCode: "MATH301",
+      strength: 70,
+      venue: "MTH",
+      roomNo: "B301",
+    },
   ]);
+
+  const [editingRowId, setEditingRowId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async () => {
-    // Filter out the id field from each object in the tableData array
-    const requestData = tableData.map(({ id, ...rest }) => rest);
-
-    console.log(JSON.stringify(requestData));
-
-    try {
-      // Simulate response
-      // const response = await fetch(`${API}/api/classroom/`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(requestData),
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error("Network response was not ok");
-      // }
-
-      setSubmitted(true);
-      onSubmission()
-    } catch (error) {
-      console.error("Error submitting data:", error);
-    }
+    console.log(tableData);
+    setSubmitted(true);
+    onSubmit()
   };
 
   const handleAddRow = () => {
-    setTableData(prevData => [
+    const newRowId = tableData.length + 1;
+    setTableData((prevData) => [
       ...prevData,
-      { id: prevData.length + 1, date: '', day: '', time: '', acronym: '', courseCode: '', strength: '', roomNo: '', editing: true },
+      {
+        id: newRowId,
+        date: "",
+        day: "",
+        startTime: "",
+        endTime: "",
+        acronym: "",
+        courseCode: "",
+        strength: "",
+        venue: "",
+        roomNo: "",
+      },
     ]);
+    setEditingRowId(newRowId); // Start editing the newly added row
   };
 
   const handleEdit = (rowId, column, value) => {
-    setTableData(prevData =>
-      prevData.map(row =>
-        row.id === rowId ? { ...row, [column]: value } : row
-      )
-    );
+    // Print day and date
+    if (column === "date") {
+      const date = new Date(value);
+      const formattedDate = format(date, "PPP");
+      const formattedDay = format(date, "EEEE");
+      setTableData((prevData) =>
+        prevData.map((row) =>
+          row.id === rowId
+            ? { ...row, [column]: value, day: formattedDay }
+            : row
+        )
+      );
+    } else {
+      setTableData((prevData) =>
+        prevData.map((row) =>
+          row.id === rowId ? { ...row, [column]: value } : row
+        )
+      );
+    }
   };
 
   const handleSave = (rowId) => {
-    const newRow = tableData.find(row => row.id === rowId);
-    if (!newRow.date || !newRow.day || !newRow.time || !newRow.acronym || !newRow.courseCode || !newRow.strength || !newRow.roomNo) {
-      alert('Please fill in all the data fields.');
+    const newRow = tableData.find((row) => row.id === rowId);
+    if (
+      Object.values(newRow).some((value) => value === "") // Check if any value is empty
+    ) {
+      alert("Please fill in all the data fields.");
       return;
     }
-    setTableData(prevData =>
-      prevData.map(row =>
-        row.id === rowId ? { ...row, editing: false } : row
-      )
-    );
+    setEditingRowId(null);
   };
 
   const handleDelete = (rowId) => {
-    setTableData(prevData => prevData.filter(row => row.id !== rowId));
+    setTableData((prevData) => prevData.filter((row) => row.id !== rowId));
+    setEditingRowId(null);
   };
 
   return (
-    <div className="flex justify-center mt-8">
-      <div className="max-w-5xl ">
-        <Button color="blue" onClick={handleAddRow}>
-          <UserPlusIcon className="h-5 w-5" /> Add Another Row
-        </Button>
-        <Card className="mt-4">
-          <table className="min-w-max table-auto text-left">
-            <thead>
+    <div className="flex flex-col h-screen">
+      <Card className="h-full w-full flex flex-1 flex-col">
+        <CardHeader
+          floated={false}
+          shadow={false}
+          className="rounded-none mt-0 pt-4"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography variant="h4" color="blue-gray">
+                Datesheet List
+              </Typography>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleAddRow}
+                size="sm"
+                color="lightBlue"
+                ripple="light"
+                className="flex items-center gap-2 h-9"
+              >
+                <UserPlusIcon className="h-5 w-5" />
+                Add Row
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                size="sm"
+                color="green"
+                ripple="light"
+                className="flex items-center gap-2 h-9"
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardBody className="p-0 mt-5 flex flex-1 overflow-y-auto">
+          <table className="w-full min-w-max table-auto text-left">
+            <thead className="sticky top-0 bg-white z-20">
               <tr>
-                {TABLE_HEAD.map((header, index) => (
-                  <th key={index} className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
-                    <Typography variant="small" color="blue-gray" className="font-normal leading-none opacity-70">
-                      {header.head}
+                {TABLE_HEAD.map(({ head, value }) => (
+                  <th
+                    key={head}
+                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+                  >
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+                    >
+                      {head}
+                      <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
                     </Typography>
                   </th>
                 ))}
-                <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">
-                  <Typography variant="small" color="blue-gray" className="font-normal leading-none opacity-70">
-                    Actions
-                  </Typography>
-                </th>
+                <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"></th>
               </tr>
             </thead>
             <tbody>
-              {tableData.map(row => (
-                <tr key={row.id}>
-                  {TABLE_HEAD.map((header, index) => (
-                    <td key={index} className="p-4 border-b border-blue-gray-50">
-                      {row.editing ? (
+              {tableData.map(({ id, ...row }) => (
+                <tr key={id} className="hover:bg-blue-gray-50">
+                  {Object.entries(row).map(([key, value]) => (
+                    <td key={key} className="p-4">
+                      {editingRowId === id ? ( // Check if the row is being edited
                         <Input
-                          type="text"
-                          value={row[header.value]}
-                          onChange={(e) => handleEdit(row.id, header.value, e.target.value)}
+                          type={
+                            key === "date"
+                              ? "date"
+                              : key === "startTime" || key === "endTime"
+                              ? "time"
+                              : "text"
+                          }
+                          value={value}
+                          onChange={(e) => handleEdit(id, key, e.target.value)}
+                          size="sm"
+                          color="lightBlue"
+                          disabled={key === "day"}
+                          outline={false}
                         />
                       ) : (
-                        <Typography variant="small" color="blue-gray" className="font-normal">
-                          {row[header.value]}
+                        <Typography variant="small" color="blue-gray" className="font-normal text-xs">
+                          {value}
                         </Typography>
                       )}
                     </td>
                   ))}
-                  <td className="p-4 border-b space-x-2 border-blue-gray-50">
-                  {row.editing ? (
+                  <td className="p-4">
+                    {editingRowId === id ? (
                       <>
-                       <Tooltip content="Save User">
-                          <IconButton variant="text">
-                            <PencilIcon
-                              className="size-4"
-                              onClick={() => handleSave(row.id)}
-                            />
+                        <Tooltip content="Save">
+                          <IconButton
+                            onClick={() => handleSave(id)}
+                            color="lightBlue"
+                            size="sm"
+                            ripple="light"
+                          >
+                            <BookmarkIcon className="h-5 w-5" />
                           </IconButton>
                         </Tooltip>
-                      
+                        <Tooltip content="Delete">
+                          <IconButton
+                            onClick={() => handleDelete(id)}
+                            color="lightBlue"
+                            size="sm"
+                            ripple="light"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </IconButton>
+                        </Tooltip>
                       </>
                     ) : (
                       <>
-                        <Tooltip content="Edit User">
-                          <IconButton variant="text">
-                            <PencilIcon
-                              className="size-4"
-                              onClick={() => handleEdit(row.id, "editing", true)}
-                            />
+                        <Tooltip content="Edit">
+                          <IconButton
+                            onClick={() => setEditingRowId(id)}
+                            color="lightBlue"
+                            size="sm"
+                            ripple="light"
+                          >
+                            <PencilIcon className="h-5 w-5" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip content="Delete User">
-                          <IconButton variant="text">
-                            <TrashIcon
-                              className="size-4"
-                              onClick={() => handleDelete(row.id)}
-                            />
+                        <Tooltip content="Delete">
+                          <IconButton
+                            onClick={() => handleDelete(id)}
+                            color="lightBlue"
+                            size="sm"
+                            ripple="light"
+                          >
+                            <TrashIcon className="h-5 w-5" />
                           </IconButton>
                         </Tooltip>
                       </>
@@ -188,18 +317,10 @@ function Invigilation_DateSheet({onSubmission}) {
               ))}
             </tbody>
           </table>
-        </Card>
-        {!submitted && (
-        <div className="mt-4">
-          <Button color="blue" onClick={handleSubmit}>
-            Submit
-          </Button>
-        </div>
-      )}
-      </div>
-    
+        </CardBody>
+      </Card>
     </div>
   );
 }
 
-export default Invigilation_DateSheet;
+export default Datesheet;

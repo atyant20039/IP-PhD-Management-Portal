@@ -1,14 +1,21 @@
 import React, { useState } from "react";
 import {
-  Button,
-  Input,
   Card,
+  CardHeader,
+  Input,
   Typography,
+  Button,
+  CardBody,
   Tooltip,
   IconButton,
-  CircularProgress,
 } from "@material-tailwind/react";
-import { UserPlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import {
+  ChevronUpDownIcon,
+  PencilIcon,
+  TrashIcon,
+  UserPlusIcon,
+  BookmarkIcon,
+} from "@heroicons/react/24/solid";
 
 const TABLE_HEAD = [
   {
@@ -25,26 +32,27 @@ const TABLE_HEAD = [
   },
 ];
 
-function Invigilation_Classroom({ onSubmission }) {
+function Classroom({ onSubmit }) {
   const [tableData, setTableData] = useState([
     { id: 1, building: "Building 1", roomNo: "Room 101", capacity: 30 },
     { id: 2, building: "Building 2", roomNo: "Room 201", capacity: 25 },
     { id: 3, building: "Building 3", roomNo: "Room 301", capacity: 35 },
   ]);
 
-  const [submitted, setSubmitted] = useState(false);
+  const [editingRowId, setEditingRowId] = useState(null);
 
   const handleAddRow = () => {
+    const newRowId = tableData.length + 1;
     setTableData((prevData) => [
       ...prevData,
       {
-        id: prevData.length + 1,
+        id: newRowId,
         building: "",
         roomNo: "",
         capacity: "",
-        editing: true,
       },
     ]);
+    setEditingRowId(newRowId);
   };
 
   const handleEdit = (rowId, column, value) => {
@@ -61,11 +69,7 @@ function Invigilation_Classroom({ onSubmission }) {
       alert("Please fill in all the data fields.");
       return;
     }
-    setTableData((prevData) =>
-      prevData.map((row) =>
-        row.id === rowId ? { ...row, editing: false } : row
-      )
-    );
+    setEditingRowId(null);
   };
 
   const handleDelete = (rowId) => {
@@ -73,115 +77,165 @@ function Invigilation_Classroom({ onSubmission }) {
   };
 
   const handleSubmit = async () => {
-    // Filter out the id field from each object in the tableData array
-    const requestData = tableData.map(({ id, ...rest }) => rest);
-
-    console.log(JSON.stringify(requestData));
-
-    try {
-      // Simulate response
-      // const response = await fetch(`${API}/api/classroom/`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(requestData),
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error("Network response was not ok");
-      // }
-
-      setSubmitted(true);
-      onSubmission();
-    } catch (error) {
-      console.error("Error submitting data:", error);
-    }
+    //
+    console.log("Table data submitted:", tableData);
+    onSubmit();
   };
-
   return (
-    <div className="mt-8 max-w-3xl mx-auto">
-      <Button color="blue" onClick={handleAddRow}>
-        <UserPlusIcon className="h-5 w-5 mr-2" /> Add Another Row
-      </Button>
-      <Card className="mt-4">
-        <div className="overflow-x-auto">
+    <div className="flex flex-col h-screen">
+      <Card className="h-full w-full flex flex-1 flex-col">
+        <CardHeader
+          className="rounded-none mt-0 pt-4"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <Typography variant="h4" color="blue-gray">
+                Classroom List
+              </Typography>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleAddRow}
+                size="sm"
+                color="blue"
+                ripple="light"
+                className="flex items-center gap-2 h-9"
+              >
+                <UserPlusIcon className="h-5 w-5" />
+                Add Row
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                size="sm"
+                color="green"
+                ripple="light"
+                className="flex items-center gap-2 h-9"
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardBody className="p-0 mt-5 flex flex-1 overflow-y-auto">
           <table className="w-full min-w-max table-auto text-left">
-            <thead>
+            <thead className="sticky top-0 bg-white z-20">
               <tr>
-                {TABLE_HEAD.map((header, index) => (
+                {TABLE_HEAD.map(({ head }) => (
                   <th
-                    key={index}
-                    className="border-b border-blue-gray-100 bg-blue-gray-50 px-2 py-2 md:px-3 md:py-3"
+                    key={head}
+                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                   >
                     <Typography
                       variant="small"
                       color="blue-gray"
-                      className="font-normal leading-none opacity-70"
+                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
                     >
-                      {header.head}
+                      {head}
+                      <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4"/>
                     </Typography>
                   </th>
                 ))}
+                <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"></th>
               </tr>
             </thead>
             <tbody>
-              {tableData.map((row) => (
-                <tr key={row.id}>
-                  {TABLE_HEAD.map((header, index) => (
-                    <td
-                      key={index}
-                      className="px-2 py-2 border-b border-blue-gray-50 md:px-3 md:py-3"
-                    >
-                      {row.editing ? (
-                        <Input
-                          type="text"
-                          value={row[header.value]}
-                          onChange={(e) =>
-                            handleEdit(row.id, header.value, e.target.value)
-                          }
-                        />
-                      ) : (
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
+              {tableData.map(({ id, building, roomNo, capacity }) => (
+                <tr key={id} className="hover:bg-blue-gray-50">
+                  <td className="p-4">
+                    {editingRowId === id ? ( 
+                      <Input
+                        value={building}
+                        onChange={(e) =>
+                          handleEdit(id, "building", e.target.value)
+                        }
+                        size="sm"
+                        color="lightBlue"
+                        outline={false}
+                      />
+                    ) : (
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal text-xs"
+                      >
+                        {building}
+                      </Typography>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    {editingRowId === id ? ( 
+                      <Input
+                        value={roomNo}
+                        onChange={(e) =>
+                          handleEdit(id, "roomNo", e.target.value)
+                        }
+                        size="sm"
+                        color="lightBlue"
+                        outline={false}
+                      />
+                    ) : (
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal text-xs"
+                      >
+                        {roomNo}
+                      </Typography>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    {editingRowId === id ? ( 
+                      <Input
+                        value={capacity}
+                        onChange={(e) =>
+                          handleEdit(id, "capacity", e.target.value)
+                        }
+                        size="sm"
+                        color="lightBlue"
+                        outline={false}
+                      />
+                    ) : (
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal text-xs"
+                      >
+                        {capacity}
+                      </Typography>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    {editingRowId === id ? ( 
+                      <Tooltip content="Save">
+                        <IconButton
+                          onClick={() => handleSave(id)}
+                          color="lightBlue"
+                          size="sm"
+                          ripple="light"
                         >
-                          {row[header.value]}
-                        </Typography>
-                      )}
-                    </td>
-                  ))}
-                  <td className="px-2 py-2 space-x-2 md:px-3 md:py-3">
-                    {row.editing ? (
-                      <>
-                        <Tooltip content="Save User">
-                          <IconButton variant="text">
-                            <PencilIcon
-                              className="size-4"
-                              onClick={() => handleSave(row.id)}
-                            />
-                          </IconButton>
-                        </Tooltip>
-                      </>
+                          <BookmarkIcon className="h-5 w-5" />
+                        </IconButton>
+                      </Tooltip>
                     ) : (
                       <>
-                        <Tooltip content="Edit User">
-                          <IconButton variant="text">
-                            <PencilIcon
-                              className="size-4"
-                              onClick={() =>
-                                handleEdit(row.id, "editing", true)
-                              }
-                            />
+                        <Tooltip content="Edit">
+                          <IconButton
+                            onClick={() => setEditingRowId(id)}
+                            color="lightBlue"
+                            size="sm"
+                            ripple="blue"
+                          >
+                            <PencilIcon className="h-5 w-5" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip content="Delete User">
-                          <IconButton variant="text">
-                            <TrashIcon
-                              className="size-4"
-                              onClick={() => handleDelete(row.id)}
-                            />
+                        <Tooltip content="Delete">
+                          <IconButton
+                            onClick={() => handleDelete(id)}
+                            color="lightBlue"
+                            size="sm"
+                            ripple="light"
+                          >
+                            <TrashIcon className="h-5 w-5" />
                           </IconButton>
                         </Tooltip>
                       </>
@@ -191,17 +245,10 @@ function Invigilation_Classroom({ onSubmission }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </CardBody>
       </Card>
-      {!submitted && (
-        <div className="mt-4">
-          <Button color="blue" onClick={handleSubmit}>
-            Submit
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
 
-export default Invigilation_Classroom;
+export default Classroom;
