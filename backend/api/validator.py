@@ -14,7 +14,7 @@ def rollNo(value):
 
 def email(value):
     if not value.endswith('@iiitd.ac.in') or value.count('@') != 1:
-        raise ValidationError('Invalid EmailId format. It should end with "@iiitd.ac.in"')
+        raise ValidationError('Invalid EmailId format. Please enter a @iiitd.ac.in domain Email-Id')
 
 def batch(value):
     if not value or not re.match(r'^(January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$', value):
