@@ -15,7 +15,12 @@ export function ProgressStepper({ setActiveStep, activeStep, completedSteps }) {
     <div className="w-full px-24 py-4 mb-20">
       <Stepper activeStep={activeStep}>
         {steps.map((step, index) => (
-          <Step key={index} onClick={() => setActiveStep(index)} disabled={index > activeStep || !completedSteps.includes(index)}>
+          <Step key={index}  onClick={() => {
+            if (completedSteps >= index) {
+              setActiveStep(index);
+            }
+          }}
+          disabled={index > activeStep || completedSteps < index}>
             <step.icon className="h-5 w-5" />
             <div className="absolute -bottom-[4.5rem] w-max text-center">
               <Typography

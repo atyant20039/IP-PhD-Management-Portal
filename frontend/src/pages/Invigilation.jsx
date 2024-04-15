@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useContext } from "react";
 import {
   Card,
   CardHeader,
@@ -7,17 +7,20 @@ import {
   Button,
 } from "@material-tailwind/react";
 import { ProgressStepper } from "../components/ProgressStepper";
-import Classroom from "../components/Invigilation_classroom";
 import Invigilation_DateSheet from "../components/Invigilation_DateSheet";
 import Invigilation_Files from "../components/Invigilation_Files";
 import Invigilation_TA from "../components/Invigilation_TA";
+import Classroom from "../components/Invigilation_Classroom"
+
+import InvigilationContext from "../context/InvigilationContext";
 
 function Invigilation() {
   const [activeStep, setActiveStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState([]);
+  const [completedSteps, setCompletedSteps] = useState(-1);
+  const {uploadData} = useContext(InvigilationContext)
 
   const handleNextStep = () => {
-    setCompletedSteps((prevSteps) => [...prevSteps, activeStep]);
+    setCompletedSteps((prevSteps) => prevSteps+1);
     setActiveStep((prevStep) => prevStep + 1);
   };
 
@@ -44,7 +47,7 @@ function Invigilation() {
       <div className="h-[33vh] overflow-auto">
         <ProgressStepper setActiveStep={setActiveStep} activeStep={activeStep} completedSteps={completedSteps} />
         <div className="flex justify-center mt-4">
-          <Button color="green" disabled={activeStep!=5}>Generate!</Button>
+          <Button color="green" disabled={activeStep!=5} onClick={uploadData}>Generate!</Button>
         </div>
       </div>
       <div className="flex-1 overflow-auto">

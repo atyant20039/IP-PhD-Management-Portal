@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState,useEffect,useContext } from "react";
+import Select from 'react-select';
+
 import {
   Button,
   Input,
@@ -8,6 +10,10 @@ import {
   IconButton,
   CardHeader,
   CardBody,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
 } from "@material-tailwind/react";
 
 import {
@@ -16,6 +22,9 @@ import {
   UserPlusIcon,
   BookmarkIcon
 } from "@heroicons/react/24/solid";
+
+
+import InvigilationContext from "../context/InvigilationContext";
 
 const TABLE_HEAD = [
   {
@@ -40,7 +49,119 @@ const TABLE_HEAD = [
   },
 ];
 
+function AddMemberDialog({ isOpen, setOpen, setTableData }) {
+  const { courseCode } = useContext(InvigilationContext);
+  const [courseCodeOptions, setCourseCodeOptions] = useState([]);
+  const [TAdata, setTAdata] = useState({
+    admissionNo: "",
+    name: "",
+    email: "",
+    courseCode: "",
+    remark: "",
+  });
+
+  useEffect(() => {
+    // Load course codes when the component mounts
+    setCourseCodeOptions(courseCode.map(option => ({ value: option, label: option })));
+  }, [courseCode]);
+
+  const handleChange = (e, name) => {
+    console
+    if (e.target) {
+      // For regular input fields
+      setTAdata((prevData) => ({
+        ...prevData,
+        [name]: e.target.value,
+      }));
+    } else {
+     
+      // For the courseCode dropdown
+     
+      setTAdata((prevData) => ({
+        ...prevData,
+        courseCode: String(e.value) || '', // Use e.value to get the selected option value
+      }));
+    }
+    console.log(TAdata)
+  };
+  
+  
+  
+  
+  const handleSubmit = async () => {
+    console.log(TAdata)
+    setTAdata({
+      admissionNo: "",
+      name: "",
+      email: "",
+      courseCode: "",
+      remark: "",
+    });
+    setOpen(false); // Close the dialog after submission
+    
+    console.log(TAdata)
+    setTableData((prevData) => [
+      ...prevData,
+      {
+        ...TAdata,
+        // Convert comma-separated room numbers to an array
+      },
+    ]);
+  };
+
+  const handleCancel = () => {
+    setOpen(false); // Close the dialog when Cancel button is clicked
+  };
+
+  return (
+    <Dialog open={isOpen} onClose={handleCancel}>
+      <DialogHeader>Add Member</DialogHeader>
+      <DialogBody>
+        <div className="space-y-4">
+          {TABLE_HEAD.map(({ head, value }) => (
+            <div key={value}>
+              <label htmlFor={value} className="text-sm text-blue-gray-500">
+                {head}
+              </label>
+              {value === "courseCode" ? (
+                <Select
+                  id={value}
+                  name={value}
+                  value={courseCodeOptions.find(option => option.value === TAdata[value])}
+                  onChange={(selectedOption) => handleChange(selectedOption, { name: value })}
+                  options={courseCodeOptions}
+                  placeholder="Select Course Code"
+                />
+              ) : (
+                <Input
+                  type="text"
+                  id={value}
+                  placeholder={`Enter ${head}`}
+                  name={value}
+                  value={TAdata[value]}
+                  onChange={(e) => handleChange(e,value)}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="text" color="red" onClick={handleCancel} className="mr-1">
+          <span>Cancel</span>
+        </Button>
+        <Button variant="gradient" color="green" onClick={handleSubmit}>
+          <span>Confirm</span>
+        </Button>
+      </DialogFooter>
+    </Dialog>
+  );
+}
+
+
+
 function TAtable({onSubmit}) {
+  const { setTA } = useContext(InvigilationContext);
   const [tableData, setTableData] = useState([
     {
       id: 1,
@@ -61,28 +182,18 @@ function TAtable({onSubmit}) {
   ]);
 
   const [editingRowId, setEditingRowId] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+
+  const handleAddRow = () => {
+    setDialogOpen(true); // Open the dialog when Add Row button is clicked
+  };
+
 
   const handleSubmit = async () => {
     console.log(tableData);
-    setSubmitted(true);
+   
+    setTA(tableData)
     onSubmit()
-  };
-
-  const handleAddRow = () => {
-    const newRowId = tableData.length + 1;
-    setTableData((prevData) => [
-      ...prevData,
-      {
-        id: newRowId,
-        admissionNo: "",
-        name: "",
-        email: "",
-        courseCode: "",
-        remark: "",
-      },
-    ]);
-    setEditingRowId(newRowId);
   };
 
   const handleEdit = (rowId, column, value) => {
@@ -92,6 +203,11 @@ function TAtable({onSubmit}) {
       )
     );
   };
+
+  useEffect(() => {
+
+  }, [tableData])
+  
 
   const handleSave = (rowId) => {
     const newRow = tableData.find((row) => row.id === rowId);
@@ -127,18 +243,20 @@ function TAtable({onSubmit}) {
               <Button
                 onClick={handleAddRow}
                 size="sm"
-                color="lightBlue"
-                ripple="light"
+                color="gray"
+                ripple={true}
                 className="flex items-center gap-2 h-9"
               >
                 <UserPlusIcon className="h-5 w-5" />
                 Add Row
               </Button>
+              <AddMemberDialog isOpen={isDialogOpen} setOpen={setDialogOpen} setTableData={setTableData} />
+            
               <Button
                 onClick={handleSubmit}
                 size="sm"
                 color="green"
-                ripple="light"
+                ripple={true}
                 className="flex items-center gap-2 h-9"
               >
                 Submit
@@ -178,7 +296,7 @@ function TAtable({onSubmit}) {
                           value={value}
                           onChange={(e) => handleEdit(id, key, e.target.value)}
                           size="sm"
-                          color="lightBlue"
+                          color="gray"
                           outline={false}
                         />
                       ) : (
@@ -194,9 +312,9 @@ function TAtable({onSubmit}) {
                         <Tooltip content="Save">
                           <IconButton
                             onClick={() => handleSave(id)}
-                            color="lightBlue"
+                            color="gray"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <BookmarkIcon className="h-5 w-5" />
                           </IconButton>
@@ -204,9 +322,9 @@ function TAtable({onSubmit}) {
                         <Tooltip content="Delete">
                           <IconButton
                             onClick={() => handleDelete(id)}
-                            color="lightBlue"
+                            color="gray"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <TrashIcon className="h-5 w-5" />
                           </IconButton>
@@ -217,9 +335,9 @@ function TAtable({onSubmit}) {
                         <Tooltip content="Edit">
                           <IconButton
                             onClick={() => setEditingRowId(id)}
-                            color="lightBlue"
+                            color="gray"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <PencilIcon className="h-5 w-5" />
                           </IconButton>
@@ -227,9 +345,9 @@ function TAtable({onSubmit}) {
                         <Tooltip content="Delete">
                           <IconButton
                             onClick={() => handleDelete(id)}
-                            color="lightBlue"
+                            color="gray"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <TrashIcon className="h-5 w-5" />
                           </IconButton>

@@ -17,6 +17,7 @@ import Faculty from "./pages/Faculty";
 import StudentProfile from "./pages/StudentProfile";
 import StudentProvider from "./context/provider/StudentProvider";
 import FacultyProvider from "./context/provider/FacultyProvider";
+import InvigilationProvider from "./context/provider/InvigilationProvider";
 import { ThemeProvider } from "@material-tailwind/react";
 
 const router = createBrowserRouter([
@@ -80,11 +81,13 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ThemeProvider>
-      <StudentProvider>
-        <FacultyProvider>
-          <RouterProvider router={router} />
-        </FacultyProvider>
-      </StudentProvider>
+      <InvigilationProvider>
+        <StudentProvider>
+          <FacultyProvider>
+            <RouterProvider router={router} />
+          </FacultyProvider>
+        </StudentProvider>
+      </InvigilationProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

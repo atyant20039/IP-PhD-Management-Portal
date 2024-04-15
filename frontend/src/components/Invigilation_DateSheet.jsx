@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect,useContext } from "react";
 import {
   Button,
   Input,
@@ -8,6 +8,10 @@ import {
   IconButton,
   CardHeader,
   CardBody,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
 } from "@material-tailwind/react";
 
 import { format } from "date-fns";
@@ -18,6 +22,8 @@ import {
   UserPlusIcon,
   BookmarkIcon
 } from "@heroicons/react/24/solid";
+
+import InvigilationContext from "../context/InvigilationContext";
 
 const TABLE_HEAD = [
   {
@@ -58,7 +64,181 @@ const TABLE_HEAD = [
   },
 ];
 
+function AddMemberDialog({ isOpen, setOpen, setTableData }) {
+  const { buildingRoomMap } = useContext(InvigilationContext);
+  const [datesheetData, setDatesheetData] = useState({});
+  const [availableRooms, setAvailableRooms] = useState([]);
+  const [availableVenues, setAvailableVenues] = useState([]);
+
+  useEffect(() => {
+    if (buildingRoomMap) {
+      const venues = Object.keys(buildingRoomMap);
+      setAvailableVenues(venues);
+    }
+  }, [buildingRoomMap]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (type === "checkbox") {
+      if (checked) {
+        // Add room to the selected rooms
+        setDatesheetData((prevData) => ({
+          ...prevData,
+          [name]: prevData[name] ? `${prevData[name]},${value}` : value,
+        }));
+      } else {
+        // Remove room from the selected rooms
+        setDatesheetData((prevData) => ({
+          ...prevData,
+          [name]: prevData[name]
+            .split(",")
+            .filter((room) => room !== value)
+            .join(","),
+        }));
+      }
+    } else {
+      if (name === "date") {
+        const date = new Date(value);
+        const formattedDay = format(date, "EEEE");
+        setDatesheetData((prevData) => ({
+          ...prevData,
+          [name]: value,
+          day: formattedDay,
+        }));
+      } else {
+        if (name === "venue") {
+          const selectedVenueRooms = buildingRoomMap[value] || [];
+          setAvailableRooms(selectedVenueRooms);
+          setDatesheetData((prevData) => ({
+            ...prevData,
+            [name]: value,
+            roomNo: selectedVenueRooms[0]?.roomNo || "", // Automatically select the first available room
+            strength: selectedVenueRooms[0]?.capacity || "", // Automatically select the capacity of the first available room
+          }));
+        } else {
+          setDatesheetData((prevData) => ({
+            ...prevData,
+            [name]: value,
+          }));
+        }
+      }
+    }
+  };
+
+  const handleSubmit = () => {
+    setTableData((prevData) => [
+      ...prevData,
+      {
+        ...datesheetData,
+        roomNo: datesheetData.roomNo.split(","), // Convert comma-separated room numbers to an array
+      },
+    ]);
+    setDatesheetData({});
+    setOpen(false);
+  };
+
+  const handleCancel = () => {
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={isOpen} onClose={handleCancel}>
+      <DialogHeader>Add Classroom</DialogHeader>
+      <DialogBody>
+        <div className="space-y-4">
+          {[
+            { head: "Date", value: "date", type: "date" },
+            { head: "Day", value: "day", type: "text", readOnly: true },
+            { head: "Start Time", value: "startTime", type: "time" },
+            { head: "End Time", value: "endTime", type: "time" },
+            { head: "Acronym", value: "acronym", type: "text" },
+            { head: "Course Code", value: "courseCode", type: "text" },
+            {
+              head: "Venue",
+              value: "venue",
+              type: "select",
+              options: availableVenues,
+            },
+            {
+              head: "Room No",
+              value: "roomNo",
+              type: "checkbox",
+              options: availableRooms.map((room) => ({
+                label: room.roomNo,
+                value: room.roomNo,
+                capacity: room.capacity,
+              })),
+            },
+            { head: "Strength", value: "strength", type: "number", readOnly: true },
+          ].map((item) => (
+            <div key={item.value}>
+              <label htmlFor={item.value} className="text-sm text-blue-gray-500">
+                {item.head}
+              </label>
+              {item.type === "select" ? (
+                <select
+                  id={item.value}
+                  name={item.value}
+                  value={datesheetData[item.value] || ""}
+                  onChange={handleChange}
+                >
+                  <option value="">Select {item.head}</option>
+                  {item.options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                item.type === "checkbox" ? (
+                  <div>
+                    <div className="space-y-2">
+                      {item.options.map((option) => (
+                        <label key={option.value} className="inline-flex items-center">
+                          <input
+                            type="checkbox"
+                            name={item.value}
+                            value={option.value}
+                            checked={datesheetData.roomNo && datesheetData.roomNo.includes(option.value)}
+                            onChange={handleChange}
+                            className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                          />
+                          <span className="ml-2">{option.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <Input
+                    type={item.type === "date" ? "date" : item.type === "time" ? "time" : "text"}
+                    id={item.value}
+                    placeholder={`Enter ${item.head}`}
+                    name={item.value}
+                    value={datesheetData[item.value] || ""}
+                    onChange={handleChange}
+                    readOnly={item.readOnly}
+                    disabled={item.readOnly}
+                  />
+                )
+              )}
+            </div>
+          ))}
+        </div>
+      </DialogBody>
+      <DialogFooter>
+        <Button variant="text" color="red" onClick={handleCancel} className="mr-1">
+          <span>Cancel</span>
+        </Button>
+        <Button variant="gradient" color="green" onClick={handleSubmit}>
+          <span>Confirm</span>
+        </Button>
+      </DialogFooter>
+    </Dialog>
+  );
+}
+
 function Datesheet({onSubmit}) {
+  const {setCourseCode , setDatesheet} =useContext(InvigilationContext)
   const [tableData, setTableData] = useState([
     {
       id: 1,
@@ -114,29 +294,20 @@ function Datesheet({onSubmit}) {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async () => {
-    console.log(tableData);
-    setSubmitted(true);
-    onSubmit()
+    // Extract course codes from tableData
+    const courseCodes = tableData.map(row => row.courseCode);
+    
+    setCourseCode(courseCodes);
+   
+    setDatesheet(tableData)
+    onSubmit();
   };
+  
+
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const handleAddRow = () => {
-    const newRowId = tableData.length + 1;
-    setTableData((prevData) => [
-      ...prevData,
-      {
-        id: newRowId,
-        date: "",
-        day: "",
-        startTime: "",
-        endTime: "",
-        acronym: "",
-        courseCode: "",
-        strength: "",
-        venue: "",
-        roomNo: "",
-      },
-    ]);
-    setEditingRowId(newRowId); // Start editing the newly added row
+    setDialogOpen(true); // Open the dialog when Add Row button is clicked
   };
 
   const handleEdit = (rowId, column, value) => {
@@ -195,18 +366,19 @@ function Datesheet({onSubmit}) {
               <Button
                 onClick={handleAddRow}
                 size="sm"
-                color="lightBlue"
-                ripple="light"
+                color="light-blue"
+                ripple={true}
                 className="flex items-center gap-2 h-9"
-              >
-                <UserPlusIcon className="h-5 w-5" />
+              ><UserPlusIcon className="h-5 w-5" />
                 Add Row
               </Button>
+              <AddMemberDialog isOpen={isDialogOpen} setOpen={setDialogOpen} setTableData={setTableData} />
+             
               <Button
                 onClick={handleSubmit}
                 size="sm"
                 color="green"
-                ripple="light"
+                ripple={true}
                 className="flex items-center gap-2 h-9"
               >
                 Submit
@@ -253,7 +425,7 @@ function Datesheet({onSubmit}) {
                           value={value}
                           onChange={(e) => handleEdit(id, key, e.target.value)}
                           size="sm"
-                          color="lightBlue"
+                          color="light-blue"
                           disabled={key === "day"}
                           outline={false}
                         />
@@ -270,9 +442,9 @@ function Datesheet({onSubmit}) {
                         <Tooltip content="Save">
                           <IconButton
                             onClick={() => handleSave(id)}
-                            color="lightBlue"
+                            color="light-blue"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <BookmarkIcon className="h-5 w-5" />
                           </IconButton>
@@ -280,9 +452,9 @@ function Datesheet({onSubmit}) {
                         <Tooltip content="Delete">
                           <IconButton
                             onClick={() => handleDelete(id)}
-                            color="lightBlue"
+                            color="light-blue"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <TrashIcon className="h-5 w-5" />
                           </IconButton>
@@ -293,9 +465,9 @@ function Datesheet({onSubmit}) {
                         <Tooltip content="Edit">
                           <IconButton
                             onClick={() => setEditingRowId(id)}
-                            color="lightBlue"
+                            color="light-blue"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <PencilIcon className="h-5 w-5" />
                           </IconButton>
@@ -303,9 +475,9 @@ function Datesheet({onSubmit}) {
                         <Tooltip content="Delete">
                           <IconButton
                             onClick={() => handleDelete(id)}
-                            color="lightBlue"
+                            color="light-blue"
                             size="sm"
-                            ripple="light"
+                            ripple={true}
                           >
                             <TrashIcon className="h-5 w-5" />
                           </IconButton>
