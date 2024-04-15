@@ -25,16 +25,16 @@ function AddStudentForm({ isOpen, onClose }) {
     department: "",
     joiningDate: "",
     batch: "",
-    educationalQualification: "",
-    region: "",
+    educationalQualification: null,
+    region: null,
     admissionThrough: "",
     fundingType: "",
-    sourceOfFunding: "",
-    contingencyPoints: "",
+    sourceOfFunding: null,
+    contingencyPoints: 20000,
     studentStatus: "",
-    thesisSubmissionDate: "",
-    thesisDefenceDate: "",
-    yearOfLeaving: "",
+    thesisSubmissionDate: null,
+    thesisDefenceDate:null,
+    yearOfLeaving: null,
     comment: "",
     advisor1_emailId: "null@iiitd.ac.in", // Default email
     advisor2_emailId: "null@iiitd.ac.in", // Default email
@@ -101,6 +101,7 @@ function AddStudentForm({ isOpen, onClose }) {
   const handleManualAddStudent = () => {
     console.log("Adding student:", studentData);
     addStudent(studentData);
+
     setStudentData({
       rollNumber: "",
       name: "",
@@ -109,20 +110,20 @@ function AddStudentForm({ isOpen, onClose }) {
       department: "",
       joiningDate: "",
       batch: "",
-      educationalQualification: "",
-      region: "",
+      educationalQualification: null,
+      region: null,
       admissionThrough: "",
       fundingType: "",
-      sourceOfFunding: "",
-      contingencyPoints: "",
+      sourceOfFunding: null,
+      contingencyPoints: 20000,
       studentStatus: "",
-      thesisSubmissionDate: "",
-      thesisDefenceDate: "",
-      yearOfLeaving: "",
+      thesisSubmissionDate: null,
+      thesisDefenceDate:null,
+      yearOfLeaving: null,
       comment: "",
-      advisor1_emailId: "",
-      advisor2_emailId: "",
-      coadvisor_emailId: "",
+      advisor1_emailId: "null@iiitd.ac.in", // Default email
+      advisor2_emailId: "null@iiitd.ac.in", // Default email
+      coadvisor_emailId: "null@iiitd.ac.in", // Default email
     });
   };
 
@@ -138,20 +139,20 @@ function AddStudentForm({ isOpen, onClose }) {
       department: "",
       joiningDate: "",
       batch: "",
-      educationalQualification: "",
-      region: "",
+      educationalQualification: null,
+      region: null,
       admissionThrough: "",
       fundingType: "",
-      sourceOfFunding: "",
-      contingencyPoints: "",
+      sourceOfFunding: null,
+      contingencyPoints: 20000,
       studentStatus: "",
-      thesisSubmissionDate: "",
-      thesisDefenceDate: "",
-      yearOfLeaving: "",
+      thesisSubmissionDate: null,
+      thesisDefenceDate:null,
+      yearOfLeaving: null,
       comment: "",
-      advisor1_emailId: "",
-      advisor2_emailId: "",
-      coadvisor_emailId: "",
+      advisor1_emailId: "null@iiitd.ac.in", // Default email
+      advisor2_emailId: "null@iiitd.ac.in", // Default email
+      coadvisor_emailId: "null@iiitd.ac.in", // Default email
     });
     onClose();
   }
@@ -288,7 +289,7 @@ function AddStudentForm({ isOpen, onClose }) {
           <div>
       <div className="mb-4">
         <label htmlFor="advisor1_emailId" className="text-base">
-          Advisor 1 Email ID:
+          Advisor 1 
         </label>
         <Select
           id="advisor1_emailId"
@@ -303,7 +304,7 @@ function AddStudentForm({ isOpen, onClose }) {
       </div>
       <div className="mb-4">
         <label htmlFor="advisor2_emailId" className="text-base">
-          Advisor 2 Email ID:
+          Advisor 2 
         </label>
         <Select
           id="advisor2_emailId"
@@ -318,7 +319,7 @@ function AddStudentForm({ isOpen, onClose }) {
       </div>
       <div className="mb-4">
         <label htmlFor="coadvisor_emailId" className="text-base">
-          Co-advisor Email ID:
+          Co-advisor 
         </label>
         <Select
           id="coadvisor_emailId"
