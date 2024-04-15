@@ -6,16 +6,60 @@ import {
   DialogBody,
   DialogFooter,
   Input,
+  Alert,
+  Typography,
 } from "@material-tailwind/react";
 import StudentContext from "../context/StudentContext";
 import FacultyContext from "../context/FacultyContext";
 import Select from "react-select";
+import axios from "axios";
+
 function AddStudentForm({ isOpen, onClose }) {
-  const { addStudent } = useContext(StudentContext);
+  const { addStudent, error } = useContext(StudentContext);
 
   const { fetchData, faculty } = useContext(FacultyContext);
   const [facultyOptions, setFacultyOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const [alertOpen, setAlertOpen] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      setAlertOpen(true);
+    }
+
+    if(!error){
+      onClose()
+      setStudentData({
+        rollNumber: "",
+        name: "",
+        emailId: "",
+        gender: "",
+        department: "",
+        joiningDate: "",
+        batch: "",
+        educationalQualification: null,
+        region: null,
+        admissionThrough: "",
+        fundingType: "",
+        sourceOfFunding: null,
+        contingencyPoints: 20000,
+        studentStatus: "",
+        thesisSubmissionDate: null,
+        thesisDefenceDate: null,
+        yearOfLeaving: null,
+        comment: "",
+        advisor1_emailId: "null@iiitd.ac.in", // Default email
+        advisor2_emailId: "null@iiitd.ac.in", // Default email
+        coadvisor_emailId: "null@iiitd.ac.in", // Default email
+      });
+    }
+   
+  }, [error]);
+
+  const handleCloseAlert = () => {
+    setAlertOpen(false);
+  };
 
   const [studentData, setStudentData] = useState({
     rollNumber: "",
@@ -33,57 +77,50 @@ function AddStudentForm({ isOpen, onClose }) {
     contingencyPoints: 20000,
     studentStatus: "",
     thesisSubmissionDate: null,
-    thesisDefenceDate:null,
+    thesisDefenceDate: null,
     yearOfLeaving: null,
     comment: "",
     advisor1_emailId: "null@iiitd.ac.in", // Default email
     advisor2_emailId: "null@iiitd.ac.in", // Default email
     coadvisor_emailId: "null@iiitd.ac.in", // Default email
   });
-  
+
   const handleAdvisorChange = (selectedOption, field) => {
-    console.log(field)
-    console.log(selectedOption.value)
     // If selectedOption is an object, it means it's coming from a dropdown
     if (selectedOption && selectedOption.value !== undefined) {
-      setStudentData(prevData => ({
+      setStudentData((prevData) => ({
         ...prevData,
-        [field]: selectedOption.value // Set the whole selectedOption object
+        [field]: selectedOption.value, // Set the whole selectedOption object
       }));
-    } else { // If selectedOption is not an object, it's coming from a regular input field
+    } else {
+      // If selectedOption is not an object, it's coming from a regular input field
       const { name, value } = selectedOption.target;
-      setStudentData(prevData => ({
+      setStudentData((prevData) => ({
         ...prevData,
-        [name]: value
+        [name]: value,
       }));
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(value)
-  
-    setStudentData(prevData => ({
+
+    setStudentData((prevData) => ({
       ...prevData,
-      [name]: value
+      [name]: value,
     }));
   };
-  
-  
-  
-  
+
   useEffect(() => {
     const fetchFacultyData = async () => {
       setLoading(true);
       try {
-        // Fetch faculty data here
-        // Assuming fetchData function accepts a search term and returns faculty data
-        fetchData(1, ""); // Empty search term to get all faculty
-        console.log(faculty)
+          fetchData(1, ""); 
+        console.log(faculty);
         // Format faculty data into options array
-        const options = faculty.results.map(advisor => ({
+        const options = faculty.results.map((advisor) => ({
           value: advisor.emailId,
-          label: advisor.name
+          label: advisor.name,
         }));
         // Set options in state
         setFacultyOptions(options);
@@ -102,66 +139,32 @@ function AddStudentForm({ isOpen, onClose }) {
     console.log("Adding student:", studentData);
     addStudent(studentData);
 
-    setStudentData({
-      rollNumber: "",
-      name: "",
-      emailId: "",
-      gender: "",
-      department: "",
-      joiningDate: "",
-      batch: "",
-      educationalQualification: null,
-      region: null,
-      admissionThrough: "",
-      fundingType: "",
-      sourceOfFunding: null,
-      contingencyPoints: 20000,
-      studentStatus: "",
-      thesisSubmissionDate: null,
-      thesisDefenceDate:null,
-      yearOfLeaving: null,
-      comment: "",
-      advisor1_emailId: "null@iiitd.ac.in", // Default email
-      advisor2_emailId: "null@iiitd.ac.in", // Default email
-      coadvisor_emailId: "null@iiitd.ac.in", // Default email
-    });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    addStudent(studentData);
-    console.log("Form data:", studentData);
-    setStudentData({
-      rollNumber: "",
-      name: "",
-      emailId: "",
-      gender: "",
-      department: "",
-      joiningDate: "",
-      batch: "",
-      educationalQualification: null,
-      region: null,
-      admissionThrough: "",
-      fundingType: "",
-      sourceOfFunding: null,
-      contingencyPoints: 20000,
-      studentStatus: "",
-      thesisSubmissionDate: null,
-      thesisDefenceDate:null,
-      yearOfLeaving: null,
-      comment: "",
-      advisor1_emailId: "null@iiitd.ac.in", // Default email
-      advisor2_emailId: "null@iiitd.ac.in", // Default email
-      coadvisor_emailId: "null@iiitd.ac.in", // Default email
-    });
-    onClose();
-  }
+  const requiredFields = [
+    "rollNumber",
+    "name",
+    "emailId",
+    "gender",
+    "department",
+    "joiningDate",
+    "batch",
+    "admissionThrough",
+    "fundingType",
+    "contingencyPoints",
+    "studentStatus",
+  ];
+
+  const isAllFieldsFilled = requiredFields.every(
+    (field) => !!studentData[field]
+  );
 
   return (
     <Dialog open={isOpen} onClose={onClose}>
       <DialogHeader>Add Student</DialogHeader>
       <DialogBody className="max-h-96 overflow-y-auto">
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+    
+        <form className="grid grid-cols-2 gap-4">
           <div className="mb-4">
             <label htmlFor="rollNumber" className="text-base">
               Roll Number: <span className="text-red-500">*</span>
@@ -265,6 +268,7 @@ function AddStudentForm({ isOpen, onClose }) {
               type="text"
               id="batch"
               name="batch"
+              placeholder="Month YYYY"
               value={studentData.batch}
               onChange={handleInputChange}
               className="border border-gray-300 rounded-md w-full p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
@@ -287,54 +291,58 @@ function AddStudentForm({ isOpen, onClose }) {
           {/* Advisor 1 Email ID Dropdown */}
 
           <div>
-      <div className="mb-4">
-        <label htmlFor="advisor1_emailId" className="text-base">
-          Advisor 1 
-        </label>
-        <Select
-          id="advisor1_emailId"
-          name="advisor1_emailId"
-          value={studentData.advisor1_emailId.value}
-          onChange={(selectedOption) => handleAdvisorChange(selectedOption, "advisor1_emailId")}
-          options={facultyOptions}
-          isLoading={loading}
-          className="border border-gray-300 rounded-md w-full p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
-          placeholder="Select Advisor"
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="advisor2_emailId" className="text-base">
-          Advisor 2 
-        </label>
-        <Select
-          id="advisor2_emailId"
-          name="advisor2_emailId"
-          value={studentData.advisor2_emailId.value}
-          onChange={(selectedOption) => handleAdvisorChange(selectedOption, "advisor2_emailId")}
-          options={facultyOptions}
-          isLoading={loading}
-          className="border border-gray-300 rounded-md w-full p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
-          placeholder="Select Advisor"
-        />
-      </div>
-      <div className="mb-4">
-        <label htmlFor="coadvisor_emailId" className="text-base">
-          Co-advisor 
-        </label>
-        <Select
-          id="coadvisor_emailId"
-          name="coadvisor_emailId"
-          value={studentData.coadvisor_emailId.value}
-          onChange={(selectedOption) => handleAdvisorChange(selectedOption, "coadvisor_emailId")}
-          options={facultyOptions}
-          isLoading={loading}
-          className="border border-gray-300 rounded-md w-full p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
-          placeholder="Select Advisor"
-        />
-      </div>
-    </div>
-
-
+            <div className="mb-4">
+              <label htmlFor="advisor1_emailId" className="text-base">
+                Advisor 1
+              </label>
+              <Select
+                id="advisor1_emailId"
+                name="advisor1_emailId"
+                value={studentData.advisor1_emailId.value}
+                onChange={(selectedOption) =>
+                  handleAdvisorChange(selectedOption, "advisor1_emailId")
+                }
+                options={facultyOptions}
+                isLoading={loading}
+                className="border border-gray-300 rounded-md w-full p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
+                placeholder="Select Advisor"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="advisor2_emailId" className="text-base">
+                Advisor 2
+              </label>
+              <Select
+                id="advisor2_emailId"
+                name="advisor2_emailId"
+                value={studentData.advisor2_emailId.value}
+                onChange={(selectedOption) =>
+                  handleAdvisorChange(selectedOption, "advisor2_emailId")
+                }
+                options={facultyOptions}
+                isLoading={loading}
+                className="border border-gray-300 rounded-md w-full p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
+                placeholder="Select Advisor"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="coadvisor_emailId" className="text-base">
+                Co-advisor
+              </label>
+              <Select
+                id="coadvisor_emailId"
+                name="coadvisor_emailId"
+                value={studentData.coadvisor_emailId.value}
+                onChange={(selectedOption) =>
+                  handleAdvisorChange(selectedOption, "coadvisor_emailId")
+                }
+                options={facultyOptions}
+                isLoading={loading}
+                className="border border-gray-300 rounded-md w-full p-2 mt-1 focus:outline-none focus:ring focus:ring-blue-200"
+                placeholder="Select Advisor"
+              />
+            </div>
+          </div>
 
           <div className="mb-4">
             <label htmlFor="region" className="text-base">
@@ -354,7 +362,7 @@ function AddStudentForm({ isOpen, onClose }) {
           </div>
           <div className="mb-4">
             <label htmlFor="admissionThrough" className="text-base">
-              Admission Through:
+              Admission Through: <span className="text-red-500">*</span>
             </label>
             <select
               id="admissionThrough"
@@ -373,7 +381,7 @@ function AddStudentForm({ isOpen, onClose }) {
           </div>
           <div className="mb-4">
             <label htmlFor="fundingType" className="text-base">
-              Funding Type:
+              Funding Type: <span className="text-red-500">*</span>
             </label>
             <select
               id="fundingType"
@@ -403,7 +411,7 @@ function AddStudentForm({ isOpen, onClose }) {
           </div>
           <div className="mb-4">
             <label htmlFor="contingencyPoints" className="text-base">
-              Contingency Points:
+              Contingency Points: <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
@@ -416,7 +424,7 @@ function AddStudentForm({ isOpen, onClose }) {
           </div>
           <div className="mb-4">
             <label htmlFor="studentStatus" className="text-base">
-              Student Status:
+              Student Status: <span className="text-red-500">*</span>
             </label>
             <select
               id="studentStatus"
@@ -486,12 +494,39 @@ function AddStudentForm({ isOpen, onClose }) {
           </div>
         </form>
       </DialogBody>
+      <Alert
+        open={alertOpen}
+        className="max-w-screen-md"
+        onClose={handleCloseAlert}
+        color="red"
+      >
+        <Typography variant="h5" color="white">
+          Error
+        </Typography>
+        {error && (
+          <div>
+            {Object.entries(error).map(([key, messages]) => (
+              <div key={key}>
+                <Typography color="white">{key}:</Typography>
+                <ul>
+                  {messages.map((message, index) => (
+                    <li key={index}>
+                      <Typography color="white">{message}</Typography>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </Alert>
       <DialogFooter>
         <Button
           color="gray"
           buttonType="filled"
           onClick={handleManualAddStudent}
           ripple="true"
+          disabled={!isAllFieldsFilled} // Disable the button if required fields are not filled
         >
           Add Student
         </Button>
@@ -503,8 +538,49 @@ function AddStudentForm({ isOpen, onClose }) {
   );
 }
 
-function AddStudent() {
+function AddStudent({ setStudentData }) {
+  const { addStudentbyFile } = useContext(StudentContext);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const API = import.meta.env.VITE_BACKEND_URL;
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    setStudentData(file);
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      const response = await axios.get(`${API}/api/studentTable/`, {
+        responseType: "blob", // Treat the response as binary data
+      });
+
+      // Create a Blob from the response data
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      // Create a URL for the Blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary <a> element to trigger the download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "student_data.xlsx"; // Set the filename
+      document.body.appendChild(link);
+
+      // Programmatically click the link to initiate the download
+      link.click();
+
+      // Clean up: Remove the temporary <a> element and revoke the Blob URL
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      // Handle errors
+      console.error("Error:", error);
+    }
+  };
 
   return (
     <>
@@ -527,7 +603,8 @@ function AddStudent() {
               id="fileInput"
               className="opacity-0 absolute inset-0 z-50"
               type="file"
-              accept=".xlsx"
+              accept=".xlsx, .xlsm"
+              onChange={handleFileUpload}
             />
             <label
               htmlFor="fileInput"
@@ -536,6 +613,19 @@ function AddStudent() {
               Add Student by File
             </label>
           </div>
+          <div
+            className="m-2 cursor-pointer text-blue-500 underline"
+            onClick={downloadTemplate}
+          >
+            Download Template
+          </div>
+          {selectedFile && (
+            <div className="mb-4">
+              <p className="text-base font-semibold">
+                Selected File: {selectedFile.name}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -547,15 +637,32 @@ function AddProfessor() {
 }
 
 function AddMemberDialog({ isOpen, setOpen, member }) {
+  const { addStudentbyFile } = useContext(StudentContext);
+
+  const [studentData, setstudentData] = useState([]);
+
+  useEffect(() => {
+    console.log(studentData);
+  }, [studentData]);
+
+  const handleConfirm = () => {
+    if (member === "Student" && studentData) {
+      // If member is a student and studentData is available
+      addStudentbyFile(studentData); // Add student data to the context
+    }
+    handleOpen(); // Close the dialog
+  };
+
   const handleOpen = () => {
     setOpen(!isOpen);
   };
+
   return (
     <Dialog open={isOpen} size="xs" handler={handleOpen}>
       <DialogHeader className=" justify-center ">Add {member}</DialogHeader>
       <DialogBody>
         {member === "Student" ? (
-          <AddStudent />
+          <AddStudent setStudentData={setstudentData} />
         ) : member === "Professor" ? (
           <AddProfessor />
         ) : null}
@@ -569,7 +676,7 @@ function AddMemberDialog({ isOpen, setOpen, member }) {
         >
           <span>Cancel</span>
         </Button>
-        <Button variant="gradient" color="green" onClick={handleOpen}>
+        <Button variant="gradient" color="green" onClick={handleConfirm}>
           <span>Confirm</span>
         </Button>
       </DialogFooter>

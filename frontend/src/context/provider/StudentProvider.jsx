@@ -5,6 +5,7 @@ import convertFiltersToString from "../../utils/queryStringConvertor";
 
 const StudentProvider = ({ children }) => {
   const [students, setStudents] = useState(null);
+  const [error, setError] = useState(null);
 
   const API = import.meta.env.VITE_BACKEND_URL;
 
@@ -25,6 +26,7 @@ const StudentProvider = ({ children }) => {
       setStudents(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+   
     }
   };
 
@@ -33,11 +35,25 @@ const StudentProvider = ({ children }) => {
     try {
       const response = await axios.post(`${API}/api/studentTable/`, studentData);
       console.log('Student added:', response.data);
-      // Optionally, you can fetch the updated list of students after adding
-      // them using fetchStudents() function
+      setError(null); // Reset error state
+      fetchStudents();
+    } catch (error) {
+      console.error('Error adding student:', error.response.data);
+
+      setError(error.response.data); // Set error message
+    }
+  };
+
+  const addStudentbyFile = async (studentData) => {
+    console.log(studentData)
+    try {
+      const response = await axios.post(`${API}/api/studentFile/`, studentData);
+      console.log('Student added:', response.data);
+      setError(null); // Reset error state
       fetchStudents();
     } catch (error) {
       console.error('Error adding student:', error);
+    // Set error message
     }
   };
 
@@ -45,9 +61,13 @@ const StudentProvider = ({ children }) => {
     fetchStudents();
   }, []);
 
+  useEffect(() => {
+    console.log(error)
+  }, [error]);
+
   return (
     <StudentContext.Provider
-      value={{ students, setStudents, fetchData: fetchStudents, addStudent }}
+      value={{ students, setStudents, fetchData: fetchStudents, addStudent, addStudentbyFile, error }}
     >
       {children}
     </StudentContext.Provider>
