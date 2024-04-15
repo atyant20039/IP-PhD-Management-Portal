@@ -15,14 +15,12 @@ const FacultyProvider = ({ children }) => {
     filters = {}
   ) => {
     try {
-      console.log(page)
       const filterString = convertFiltersToString(filters); 
 
       const response = await axios.get(
         `${API}/api/instructor/?page=${page}&search=${search}&sort=${sort}&${filterString}`
       );
       setFaculty(response.data);
-      console.log(faculty)
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {

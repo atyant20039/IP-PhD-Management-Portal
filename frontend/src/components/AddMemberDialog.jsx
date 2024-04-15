@@ -521,7 +521,7 @@ function AddStudentForm({ isOpen, onClose }) {
         )}
       </Alert>
       <DialogFooter>
-        <Button
+        <Button className="mx-2"
           color="gray"
           buttonType="filled"
           onClick={handleManualAddStudent}
@@ -530,7 +530,7 @@ function AddStudentForm({ isOpen, onClose }) {
         >
           Add Student
         </Button>
-        <Button color="red" buttonType="link" onClick={onClose} ripple="light">
+        <Button color="red" buttonType="link" onClick={onClose} ripple={true}>
           Cancel
         </Button>
       </DialogFooter>

@@ -1,5 +1,8 @@
-import { Card, CardBody, Typography,CardHeader } from "@material-tailwind/react";
+import React from 'react';
+import { Card, CardBody, Typography, CardHeader } from "@material-tailwind/react";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
 import './styles.css';
+
 function StudentProfileData({ data }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -28,20 +31,15 @@ function StudentProfileData({ data }) {
               <Typography variant="subtitle">Year of Leaving</Typography>
               <Typography>{data.yearOfLeaving || "null"}</Typography>
             </div>
+            <div className="col-span-2 flex justify-end items-center">
+             
+            </div>
           </div>
         </CardBody>
       </Card>
 
       {/* Financial Information */}
       <Card className="flex-grow financial-card" >
-      <CardHeader
-        floated={false}
-        shadow={false}
-        color="transparent"
-        className="absolute inset-0 m-0 h-full w-full rounded-none"
-    
-      >
-         </CardHeader>
         <CardBody>
           <Typography color="blue-gray" className="font-semibold">Financial Information</Typography>
           <div className="grid grid-cols-2 gap-4 mt-4">
@@ -56,6 +54,9 @@ function StudentProfileData({ data }) {
             <div>
               <Typography variant="subtitle">Source of Funding</Typography>
               <Typography>{data.sourceOfFunding || "null"}</Typography>
+            </div>
+            <div className="col-span-2 flex justify-end items-center">
+            
             </div>
           </div>
         </CardBody>
@@ -74,6 +75,9 @@ function StudentProfileData({ data }) {
               <Typography variant="subtitle">Thesis Defence Date</Typography>
               <Typography>{data.thesisDefenceDate || "null"}</Typography>
             </div>
+            <div className="flex justify-end items-center">
+             
+            </div>
           </div>
         </CardBody>
       </Card>
@@ -84,6 +88,9 @@ function StudentProfileData({ data }) {
           <Typography color="blue-gray" className="font-semibold">Comment</Typography>
           <div className="mt-4">
             <Typography>{data.comment || "null"}</Typography>
+            <div className="flex justify-end items-center">
+
+            </div>
           </div>
         </CardBody>
       </Card>

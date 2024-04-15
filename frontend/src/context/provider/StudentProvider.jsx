@@ -16,8 +16,7 @@ const StudentProvider = ({ children }) => {
     setLoading = null,
     filters = {} 
   } = {}) => {
-    try {    
-      console.log(page)
+    try {
       const filterString = convertFiltersToString(filters); 
       const response = await axios.get(
         `${API}/api/studentTable/?page=${page}&search=${search}&sort=${sort}&${filterString}` 
@@ -26,34 +25,51 @@ const StudentProvider = ({ children }) => {
       setStudents(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
-   
+      setError(error);
     }
   };
 
   const addStudent = async (studentData) => {
-    console.log(studentData)
     try {
       const response = await axios.post(`${API}/api/studentTable/`, studentData);
-      console.log('Student added:', response.data);
       setError(null); // Reset error state
       fetchStudents();
     } catch (error) {
       console.error('Error adding student:', error.response.data);
-
       setError(error.response.data); // Set error message
     }
   };
 
+  const editStudent = async (studentId, updatedStudentData) => {
+    console.log(studentId,updatedStudentData)
+    try {
+      const response = await axios.put(`${API}/api/student/${studentId}/`, updatedStudentData);
+      setError(null); // Reset error state
+      fetchStudents();
+    } catch (error) {
+      console.error('Error editing student:', error.response.data);
+      setError(error.response.data); // Set error message
+    }
+  };
+  const deleteStudent = async (studentId) => {
+    try {
+      const response = await axios.delete(`${API}/api/studentTable/${studentId}`);
+      setError(null); // Reset error state
+      fetchStudents();
+    } catch (error) {
+      console.error(`Error deleting student with ID ${studentId}:`, error);
+      setError(error.response.data);
+    }
+  };
+
   const addStudentbyFile = async (studentData) => {
-    console.log(studentData)
     try {
       const response = await axios.post(`${API}/api/studentFile/`, studentData);
-      console.log('Student added:', response.data);
       setError(null); // Reset error state
       fetchStudents();
     } catch (error) {
       console.error('Error adding student:', error);
-    // Set error message
+      setError(error.response.data);
     }
   };
 
@@ -62,12 +78,12 @@ const StudentProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    console.log(error)
+    console.log(error);
   }, [error]);
 
   return (
     <StudentContext.Provider
-      value={{ students, setStudents, fetchData: fetchStudents, addStudent, addStudentbyFile, error }}
+      value={{ students, setStudents, fetchData: fetchStudents, addStudent, editStudent, addStudentbyFile, error ,deleteStudent}}
     >
       {children}
     </StudentContext.Provider>
