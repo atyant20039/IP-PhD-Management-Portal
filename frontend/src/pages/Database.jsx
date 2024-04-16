@@ -143,7 +143,7 @@ export default function Database() {
   useEffect(() => {
     students && students.total_pages && setTotalPages(students.total_pages);
     students && students.page && setPage(students.page);
-
+    console.log(students)
   }, [students]);
 
   useEffect(() => {
@@ -273,7 +273,7 @@ export default function Database() {
 
                       return (
                         <tr
-                          key={student.name}
+                          key={student.id}
                           className="hover:bg-blue-gray-50"
                           onDoubleClick={() =>
                             handleDoubleClick(student.rollNumber)

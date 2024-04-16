@@ -25,10 +25,12 @@ function AddStudentForm({ isOpen, onClose }) {
 
   useEffect(() => {
     if (error) {
+      console.log("error")
       setAlertOpen(true);
     }
 
-    if(!error){
+    if (error === null || error === false) {
+      console.log("no error")
       onClose()
       setStudentData({
         rollNumber: "",
@@ -49,9 +51,9 @@ function AddStudentForm({ isOpen, onClose }) {
         thesisDefenceDate: null,
         yearOfLeaving: null,
         comment: "",
-        advisor1_emailId: "null@iiitd.ac.in", // Default email
-        advisor2_emailId: "null@iiitd.ac.in", // Default email
-        coadvisor_emailId: "null@iiitd.ac.in", // Default email
+        advisor: "null@iiitd.ac.in", // Default email
+        advisor2: "null@iiitd.ac.in", // Default email
+        coadvisor: "null@iiitd.ac.in", // Default email
       });
     }
    
@@ -80,26 +82,23 @@ function AddStudentForm({ isOpen, onClose }) {
     thesisDefenceDate: null,
     yearOfLeaving: null,
     comment: "",
-    advisor1_emailId: "null@iiitd.ac.in", // Default email
-    advisor2_emailId: "null@iiitd.ac.in", // Default email
-    coadvisor_emailId: "null@iiitd.ac.in", // Default email
+    advisor1: "null@iiitd.ac.in", // Default email
+    advisor2: "null@iiitd.ac.in", // Default email
+    coadvisor: "null@iiitd.ac.in", // Default email
   });
 
+  
   const handleAdvisorChange = (selectedOption, field) => {
-    // If selectedOption is an object, it means it's coming from a dropdown
-    if (selectedOption && selectedOption.value !== undefined) {
-      setStudentData((prevData) => ({
-        ...prevData,
-        [field]: selectedOption.value, // Set the whole selectedOption object
-      }));
-    } else {
-      // If selectedOption is not an object, it's coming from a regular input field
-      const { name, value } = selectedOption.target;
-      setStudentData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
+    // Remove quotes from field
+    field = field.substring(0, field.length );
+    console.log(field)
+    
+    setStudentData((prevData) => ({
+      ...prevData,
+      [field]: selectedOption.value, // Set the whole selectedOption object
+    }));
+  
+    console.log(studentData);
   };
 
   const handleInputChange = (e) => {
@@ -292,15 +291,15 @@ function AddStudentForm({ isOpen, onClose }) {
 
           <div>
             <div className="mb-4">
-              <label htmlFor="advisor1_emailId" className="text-base">
+              <label htmlFor="advisor1" className="text-base">
                 Advisor 1
               </label>
               <Select
-                id="advisor1_emailId"
-                name="advisor1_emailId"
-                value={studentData.advisor1_emailId.value}
+                id="advisor1"
+                name="advisor1"
+                value={studentData.advisor1.value}
                 onChange={(selectedOption) =>
-                  handleAdvisorChange(selectedOption, "advisor1_emailId")
+                  handleAdvisorChange(selectedOption, "advisor1")
                 }
                 options={facultyOptions}
                 isLoading={loading}
@@ -309,15 +308,15 @@ function AddStudentForm({ isOpen, onClose }) {
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="advisor2_emailId" className="text-base">
+              <label htmlFor="advisor2" className="text-base">
                 Advisor 2
               </label>
               <Select
-                id="advisor2_emailId"
-                name="advisor2_emailId"
-                value={studentData.advisor2_emailId.value}
+                id="advisor2"
+                name="advisor2"
+                value={studentData.advisor2.value}
                 onChange={(selectedOption) =>
-                  handleAdvisorChange(selectedOption, "advisor2_emailId")
+                  handleAdvisorChange(selectedOption, "advisor2")
                 }
                 options={facultyOptions}
                 isLoading={loading}
@@ -326,15 +325,15 @@ function AddStudentForm({ isOpen, onClose }) {
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="coadvisor_emailId" className="text-base">
+              <label htmlFor="coadvisor" className="text-base">
                 Co-advisor
               </label>
               <Select
-                id="coadvisor_emailId"
-                name="coadvisor_emailId"
-                value={studentData.coadvisor_emailId.value}
+                id="coadvisor"
+                name="coadvisor"
+                value={studentData.coadvisor.value}
                 onChange={(selectedOption) =>
-                  handleAdvisorChange(selectedOption, "coadvisor_emailId")
+                  handleAdvisorChange(selectedOption, "coadvisor")
                 }
                 options={facultyOptions}
                 isLoading={loading}

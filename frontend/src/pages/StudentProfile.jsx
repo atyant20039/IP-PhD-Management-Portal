@@ -50,17 +50,14 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
 
   const { fetchData, faculty } = useContext(FacultyContext);
   const [facultyOptions, setFacultyOptions] = useState([]);
-  const [loading, setLoading] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   const [alertOpen, setAlertOpen] = useState(false);
 
   useEffect(() => {
-    console.log(prevData)
     if (prevData) {
+      // Set studentData if prevData is available
       setStudentData({
-        rollNumber: prevData.rollNumber,
-        name: prevData.name ,
-        emailId: prevData.emailId,
+        ...prevData,
         gender: prevData.gender || "",
         department: prevData.department || "",
         joiningDate: prevData.joiningDate || "",
@@ -76,12 +73,11 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
         thesisDefenceDate: prevData.thesisDefenceDate || null,
         yearOfLeaving: prevData.yearOfLeaving || null,
         comment: prevData.comment || "",
-        advisor1_emailId: prevData.advisor1_emailId || "null@iiitd.ac.in",
-        advisor2_emailId: prevData.advisor2_emailId || "null@iiitd.ac.in",
-        coadvisor_emailId: prevData.coadvisor_emailId || "null@iiitd.ac.in",
+        advisor1: prevData.advisor1 || "null@iiitd.ac.in",
+        advisor2: prevData.advisor2 || "null@iiitd.ac.in",
+        coadvisor: prevData.coadvisor || "null@iiitd.ac.in",
       });
-
-      console.log(studentData)
+      setLoading(false); // Set loading to false once studentData is set
     }
   }, [prevData]);
   
@@ -92,29 +88,6 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
     }
     if (!error) {
       onClose();
-      setStudentData({
-        rollNumber: "",
-        name: "",
-        emailId: "",
-        gender: "",
-        department: "",
-        joiningDate: "",
-        batch: "",
-        educationalQualification: null,
-        region: null,
-        admissionThrough: "",
-        fundingType: "",
-        sourceOfFunding: null,
-        contingencyPoints: 20000,
-        studentStatus: "",
-        thesisSubmissionDate: null,
-        thesisDefenceDate: null,
-        yearOfLeaving: null,
-        comment: "",
-        advisor1_emailId: "null@iiitd.ac.in", // Default email
-        advisor2_emailId: "null@iiitd.ac.in", // Default email
-        coadvisor_emailId: "null@iiitd.ac.in", // Default email
-      });
     }
     console.log(prevData)
   }, []);
@@ -122,51 +95,48 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
   const handleCloseAlert = () => {
     setAlertOpen(false);
   };
+const [studentData, setStudentData] = useState({
+  rollNumber: "",
+  name: "",
+  emailId: "",
+  gender: "",
+  department: "",
+  joiningDate: "",
+  batch: "",
+  educationalQualification: null,
+  region: null,
+  admissionThrough: "",
+  fundingType: "",
+  sourceOfFunding: null,
+  contingencyPoints: 20000,
+  studentStatus: "",
+  thesisSubmissionDate: null,
+  thesisDefenceDate: null,
+  yearOfLeaving: null,
+  comment: "",
+  advisor1: "null@iiitd.ac.in",
+  advisor2: "null@iiitd.ac.in",
+  coadvisor: "null@iiitd.ac.in",
+});
 
-  const [studentData, setStudentData] = useState({
-    rollNumber: "",
-    name: "",
-    emailId: "",
-    gender: "",
-    department: "",
-    joiningDate: "",
-    batch: "",
-    educationalQualification: null,
-    region: null,
-    admissionThrough: "",
-    fundingType: "",
-    sourceOfFunding: null,
-    contingencyPoints: 20000,
-    studentStatus: "",
-    thesisSubmissionDate: null,
-    thesisDefenceDate: null,
-    yearOfLeaving: null,
-    comment: "",
-    advisor1_emailId: "null@iiitd.ac.in", // Default email
-    advisor2_emailId: "null@iiitd.ac.in", // Default email
-    coadvisor_emailId: "null@iiitd.ac.in", // Default email
-  });
   
 
-  const handleAdvisorChange = (selectedOption, field) => {
-    // If selectedOption is an object, it means it's coming from a dropdown
-    if (selectedOption && selectedOption.value !== undefined) {
-      setStudentData((prevData) => ({
-        ...prevData,
-        [field]: selectedOption.value, // Set the whole selectedOption object
-      }));
-    } else {
-      // If selectedOption is not an object, it's coming from a regular input field
-      const { name, value } = selectedOption.target;
-      setStudentData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
-  };
+const handleAdvisorChange = (selectedOption, field) => {
+  // Remove quotes from field
+  field = field.substring(0, field.length );
+  console.log(field)
+  
+  setStudentData((prevData) => ({
+    ...prevData,
+    [field]: selectedOption.value, // Set the whole selectedOption object
+  }));
+
+  console.log(studentData);
+};
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(name , value)
 
     setStudentData((prevData) => ({
       ...prevData,
@@ -199,7 +169,9 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
   }, []);
 
   const handleEditStudent = () => {
+    console.log(studentData)
     editStudent(prevData.rollNumber,studentData);
+    onClose()
   };
 
   const requiredFields = [
@@ -219,6 +191,11 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
   const isAllFieldsFilled = requiredFields.every(
     (field) => !!studentData[field]
   );
+
+  if (loading) {
+    // Render loading state until studentData is set
+    return <p>Loading...</p>;
+  }
 
   return (
     <Dialog open={isOpen} onClose={onClose}>
@@ -352,15 +329,15 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
 
           <div>
             <div className="mb-4">
-              <label htmlFor="advisor1_emailId" className="text-base">
+              <label htmlFor="advisor1" className="text-base">
                 Advisor 1
               </label>
               <Select
-                id="advisor1_emailId"
-                name="advisor1_emailId"
-                value={studentData.advisor1_emailId.value}
+                id="advisor1"
+                name="advisor1"
+                value={studentData.advisor1.value}
                 onChange={(selectedOption) =>
-                  handleAdvisorChange(selectedOption, "advisor1_emailId")
+                  handleAdvisorChange(selectedOption, "advisor1")
                 }
                 options={facultyOptions}
                 isLoading={loading}
@@ -369,15 +346,15 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="advisor2_emailId" className="text-base">
+              <label htmlFor="advisor2" className="text-base">
                 Advisor 2
               </label>
               <Select
-                id="advisor2_emailId"
-                name="advisor2_emailId"
-                value={studentData.advisor2_emailId.value}
+                id="advisor2"
+                name="advisor2"
+                value={studentData.advisor2.value}
                 onChange={(selectedOption) =>
-                  handleAdvisorChange(selectedOption, "advisor2_emailId")
+                  handleAdvisorChange(selectedOption, "advisor2")
                 }
                 options={facultyOptions}
                 isLoading={loading}
@@ -386,15 +363,15 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="coadvisor_emailId" className="text-base">
+              <label htmlFor="coadvisor" className="text-base">
                 Co-advisor
               </label>
               <Select
-                id="coadvisor_emailId"
-                name="coadvisor_emailId"
-                value={studentData.coadvisor_emailId.value}
+                id="coadvisor"
+                name="coadvisor"
+                value={studentData.coadvisor.value}
                 onChange={(selectedOption) =>
-                  handleAdvisorChange(selectedOption, "coadvisor_emailId")
+                  handleAdvisorChange(selectedOption, "coadvisor")
                 }
                 options={facultyOptions}
                 isLoading={loading}
@@ -595,7 +572,7 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
           ripple="true"
           disabled={!isAllFieldsFilled} // Disable the button if required fields are not filled
         >
-          Add Student
+          Edit Student
         </Button>
         <Button color="red" buttonType="link" onClick={onClose} ripple="light">
           Cancel
@@ -612,17 +589,11 @@ function DeleteStudentForm({ isOpen, onClose, prevData,deleteStudent }) {
   };
 
   const handleConfirm = () => {
-    // Implement your delete logic here
     console.log('Deleting student...');
     deleteStudent(prevData.rollNumber);
     navigate('/db')
-  
-    // Get the history object;
-  
-    // Close the dialog
+
     onClose();
-  
-    // Navigate to the desired page
   };
   return (
     <Dialog open={isOpen} onClose={onClose}>
@@ -676,6 +647,7 @@ function StudentProfile() {
     if (students == null) {
       fetchData(undefined, undefined, undefined, setLoading);
     }
+    console.log(data)
   }, []);
 
   const tabs = [

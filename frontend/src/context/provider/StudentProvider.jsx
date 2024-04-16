@@ -32,7 +32,8 @@ const StudentProvider = ({ children }) => {
   const addStudent = async (studentData) => {
     try {
       const response = await axios.post(`${API}/api/studentTable/`, studentData);
-      setError(null); // Reset error state
+      setError(prevError => prevError === null ? false : null);
+      // Reset error state
       fetchStudents();
     } catch (error) {
       console.error('Error adding student:', error.response.data);
@@ -45,6 +46,7 @@ const StudentProvider = ({ children }) => {
     try {
       const response = await axios.put(`${API}/api/student/${studentId}/`, updatedStudentData);
       setError(null); // Reset error state
+      console.log(response)
       fetchStudents();
     } catch (error) {
       console.error('Error editing student:', error.response.data);
