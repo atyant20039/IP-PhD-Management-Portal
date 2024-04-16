@@ -16,7 +16,9 @@ import {
   Dialog,
   DialogHeader,
   DialogBody,
-  DialogFooter,Alert,Button
+  DialogFooter,
+  Alert,
+  Button,
 } from "@material-tailwind/react";
 
 import {
@@ -27,12 +29,10 @@ import {
   CalendarDaysIcon,
   PencilIcon,
   TrashIcon,
-  
 } from "@heroicons/react/24/solid";
 
 import Select from "react-select";
 import axios from "axios";
-
 
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import StudentProfileData from "../components/StudentProfileData";
@@ -40,12 +40,11 @@ import StudentProfileExam from "../components/StudentProfileExam";
 import StudentProfileLog from "../components/StudentProfileLog";
 import StudentProfileReview from "../components/StudentProfileReview";
 import StudentContext from "../context/StudentContext";
-import FacultyContext from "../context/FacultyContext"
+import FacultyContext from "../context/FacultyContext";
 
-import { useNavigate } from 'react-router-dom'; // Import useHistory hook
+import { useNavigate } from "react-router-dom"; // Import useHistory hook
 
-
-function EditStudentForm({ isOpen, onClose,prevData }) {
+function EditStudentForm({ isOpen, onClose, prevData }) {
   const { editStudent, error } = useContext(StudentContext);
 
   const { fetchData, faculty } = useContext(FacultyContext);
@@ -80,7 +79,6 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
       setLoading(false); // Set loading to false once studentData is set
     }
   }, [prevData]);
-  
 
   useEffect(() => {
     if (error) {
@@ -89,54 +87,52 @@ function EditStudentForm({ isOpen, onClose,prevData }) {
     if (!error) {
       onClose();
     }
-    console.log(prevData)
+    console.log(prevData);
   }, []);
 
   const handleCloseAlert = () => {
     setAlertOpen(false);
   };
-const [studentData, setStudentData] = useState({
-  rollNumber: "",
-  name: "",
-  emailId: "",
-  gender: "",
-  department: "",
-  joiningDate: "",
-  batch: "",
-  educationalQualification: null,
-  region: null,
-  admissionThrough: "",
-  fundingType: "",
-  sourceOfFunding: null,
-  contingencyPoints: 20000,
-  studentStatus: "",
-  thesisSubmissionDate: null,
-  thesisDefenceDate: null,
-  yearOfLeaving: null,
-  comment: "",
-  advisor1: "null@iiitd.ac.in",
-  advisor2: "null@iiitd.ac.in",
-  coadvisor: "null@iiitd.ac.in",
-});
+  const [studentData, setStudentData] = useState({
+    rollNumber: "",
+    name: "",
+    emailId: "",
+    gender: "",
+    department: "",
+    joiningDate: "",
+    batch: "",
+    educationalQualification: null,
+    region: null,
+    admissionThrough: "",
+    fundingType: "",
+    sourceOfFunding: null,
+    contingencyPoints: 20000,
+    studentStatus: "",
+    thesisSubmissionDate: null,
+    thesisDefenceDate: null,
+    yearOfLeaving: null,
+    comment: "",
+    advisor1: "null@iiitd.ac.in",
+    advisor2: "null@iiitd.ac.in",
+    coadvisor: "null@iiitd.ac.in",
+  });
 
-  
+  const handleAdvisorChange = (selectedOption, field) => {
+    // Remove quotes from field
+    field = field.substring(0, field.length);
+    console.log(field);
 
-const handleAdvisorChange = (selectedOption, field) => {
-  // Remove quotes from field
-  field = field.substring(0, field.length );
-  console.log(field)
-  
-  setStudentData((prevData) => ({
-    ...prevData,
-    [field]: selectedOption.value, // Set the whole selectedOption object
-  }));
+    setStudentData((prevData) => ({
+      ...prevData,
+      [field]: selectedOption.value, // Set the whole selectedOption object
+    }));
 
-  console.log(studentData);
-};
+    console.log(studentData);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(name , value)
+    console.log(name, value);
 
     setStudentData((prevData) => ({
       ...prevData,
@@ -169,9 +165,9 @@ const handleAdvisorChange = (selectedOption, field) => {
   }, []);
 
   const handleEditStudent = () => {
-    console.log(studentData)
-    editStudent(prevData.rollNumber,studentData);
-    onClose()
+    console.log(studentData);
+    editStudent(prevData.rollNumber, studentData);
+    onClose();
   };
 
   const requiredFields = [
@@ -532,37 +528,37 @@ const handleAdvisorChange = (selectedOption, field) => {
         </form>
       </DialogBody>
       <Alert
-  open={alertOpen}
-  className="max-w-screen-md"
-  onClose={handleCloseAlert}
-  color="red"
->
-  <Typography variant="h5" color="white">
-    Error
-  </Typography>
-  {error && (
-    <div>
-      {Object.entries(error).map(([key, messages]) => (
-        <div key={key}>
-          <Typography color="white">{key}:</Typography>
-          <ul>
-            {messages.map((message, index) => (
-              <li key={index}>
-                <Typography color="white">{message}</Typography>
-              </li>
+        open={alertOpen}
+        className="max-w-screen-md"
+        onClose={handleCloseAlert}
+        color="red"
+      >
+        <Typography variant="h5" color="white">
+          Error
+        </Typography>
+        {error && (
+          <div>
+            {Object.entries(error).map(([key, messages]) => (
+              <div key={key}>
+                <Typography color="white">{key}:</Typography>
+                <ul>
+                  {messages.map((message, index) => (
+                    <li key={index}>
+                      <Typography color="white">{message}</Typography>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )}
-  {/* Render a generic error message if error is not specifically handled */}
-  {!error && (
-    <Typography color="white">
-      An error occurred. Please try again later.
-    </Typography>
-  )}
-</Alert>
+          </div>
+        )}
+        {/* Render a generic error message if error is not specifically handled */}
+        {!error && (
+          <Typography color="white">
+            An error occurred. Please try again later.
+          </Typography>
+        )}
+      </Alert>
 
       <DialogFooter>
         <Button
@@ -582,16 +578,16 @@ const handleAdvisorChange = (selectedOption, field) => {
   );
 }
 
-function DeleteStudentForm({ isOpen, onClose, prevData,deleteStudent }) {
-  let navigate = useNavigate()
+function DeleteStudentForm({ isOpen, onClose, prevData, deleteStudent }) {
+  let navigate = useNavigate();
   const handleCancel = () => {
     onClose(); // Close the dialog when Cancel button is clicked
   };
 
   const handleConfirm = () => {
-    console.log('Deleting student...');
+    console.log("Deleting student...");
     deleteStudent(prevData.rollNumber);
-    navigate('/db')
+    navigate("/db");
 
     onClose();
   };
@@ -602,7 +598,12 @@ function DeleteStudentForm({ isOpen, onClose, prevData,deleteStudent }) {
         Are you sure you want to delete the student {prevData.name}?
       </DialogBody>
       <DialogFooter>
-        <Button variant="text" color="red" onClick={handleCancel} className="mr-1">
+        <Button
+          variant="text"
+          color="red"
+          onClick={handleCancel}
+          className="mr-1"
+        >
           <span>Cancel</span>
         </Button>
         <Button variant="gradient" color="green" onClick={handleConfirm}>
@@ -613,10 +614,9 @@ function DeleteStudentForm({ isOpen, onClose, prevData,deleteStudent }) {
   );
 }
 
-
 function StudentProfile() {
   const { id } = useParams();
-  const { students, fetchData,deleteStudent } = useContext(StudentContext);
+  const { students, fetchData, deleteStudent } = useContext(StudentContext);
   const [loading, setLoading] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -624,18 +624,17 @@ function StudentProfile() {
   const showDeleteDialog = () => {
     setIsDeleteOpen(true);
   };
-  
+
   const handleDeleteClose = () => {
     setIsDeleteOpen(false);
   };
 
-  const handleEditOpen=() =>{
-    setIsEditOpen(true)
-  }
-  const handleEditClose=() =>{
-    setIsEditOpen(false)
-  }
-  
+  const handleEditOpen = () => {
+    setIsEditOpen(true);
+  };
+  const handleEditClose = () => {
+    setIsEditOpen(false);
+  };
 
   const data = students
     ? students.results
@@ -647,7 +646,7 @@ function StudentProfile() {
     if (students == null) {
       fetchData(undefined, undefined, undefined, setLoading);
     }
-    console.log(data)
+    console.log(data);
   }, []);
 
   const tabs = [
@@ -752,15 +751,20 @@ function StudentProfile() {
                     />
                   </div>
                   <div className="flex items-center space-x-4">
-                    <button className="flex items-center" onClick={handleEditOpen}>
+                    <button
+                      className="flex items-center"
+                      onClick={handleEditOpen}
+                    >
                       <PencilIcon className="h-5 w-5 mr-1 text-blue-500" />
                       <span className="text-blue-500">Edit</span>
                     </button>
-                    <button className="flex items-center" onClick={showDeleteDialog}>
-  <TrashIcon className="h-5 w-5 mr-1 text-red-500" />
-  <span className="text-red-500">Delete</span>
-</button>
-
+                    <button
+                      className="flex items-center"
+                      onClick={showDeleteDialog}
+                    >
+                      <TrashIcon className="h-5 w-5 mr-1 text-red-500" />
+                      <span className="text-red-500">Delete</span>
+                    </button>
                   </div>
                 </div>
 
@@ -770,14 +774,12 @@ function StudentProfile() {
                   prevData={data}
                 />
 
-<DeleteStudentForm
-  isOpen={isDeleteOpen}
-  onClose={handleDeleteClose}
-  prevData={data}
-  deleteStudent={deleteStudent}
-/>
-
-
+                <DeleteStudentForm
+                  isOpen={isDeleteOpen}
+                  onClose={handleDeleteClose}
+                  prevData={data}
+                  deleteStudent={deleteStudent}
+                />
 
                 <div className="mt-2 grid grid-cols-4 grid-rows-3">
                   {headdetails.map((item, index) => (

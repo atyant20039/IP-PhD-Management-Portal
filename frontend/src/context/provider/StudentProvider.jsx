@@ -50,7 +50,7 @@ const StudentProvider = ({ children }) => {
       fetchStudents();
     } catch (error) {
       console.error('Error editing student:', error.response.data);
-      setError(error.response.data); // Set error message
+      // setError(error.response.data); // Set error message
     }
   };
   const deleteStudent = async (studentId) => {
