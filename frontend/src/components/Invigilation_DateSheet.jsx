@@ -349,12 +349,12 @@ function Datesheet({onSubmit}) {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col  h-screen">
       <Card className="h-full w-full flex flex-1 flex-col">
         <CardHeader
           floated={false}
           shadow={false}
-          className="rounded-none mt-0 pt-4"
+          className="rounded-none mt-0 pt-4 sticky top-0 z-20 bg-white"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -366,7 +366,7 @@ function Datesheet({onSubmit}) {
               <Button
                 onClick={handleAddRow}
                 size="sm"
-                color="light-blue"
+                color="black"
                 ripple={true}
                 className="flex items-center gap-2 h-9"
               ><UserPlusIcon className="h-5 w-5" />
@@ -387,108 +387,111 @@ function Datesheet({onSubmit}) {
           </div>
         </CardHeader>
         <CardBody className="p-0 mt-5 flex flex-1 overflow-y-auto">
-          <table className="w-full min-w-max table-auto text-left">
-            <thead className="sticky top-0 bg-white z-20">
-              <tr>
-                {TABLE_HEAD.map(({ head, value }) => (
-                  <th
-                    key={head}
-                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+        <div className="w-full overflow-hidden">
+  <table className="w-full text-left table-fixed">
+    <thead className="sticky top-0 bg-white">
+      <tr>
+        {TABLE_HEAD.map(({ head, value }) => (
+          <th
+            key={head}
+            className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+          >
+            <Typography
+              variant="small"
+              color="blue-gray"
+              className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+            >
+              {head}
+              <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
+            </Typography>
+          </th>
+        ))}
+        <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"></th>
+      </tr>
+    </thead>
+    <tbody className="overflow-y-auto max-h-[400px]">
+      {tableData.map(({ id, ...row }) => (
+        <tr key={id} className="hover:bg-blue-gray-50">
+          {Object.entries(row).map(([key, value]) => (
+            <td key={key} className={`p-4 ${editingRowId === id ? 'bg-blue-50' : ''}`}>
+              {editingRowId === id ? ( // Check if the row is being edited
+                <Input
+                  type={
+                    key === "date"
+                      ? "date"
+                      : key === "startTime" || key === "endTime"
+                      ? "time"
+                      : "text"
+                  }
+                  value={value}
+                  onChange={(e) => handleEdit(id, key, e.target.value)}
+                  size="sm"
+                  color="black"
+                  disabled={key === "day"}
+                  outline={false}
+                />
+              ) : (
+                <Typography variant="small" color="blue-gray" className="font-normal text-xs">
+                  {value}
+                </Typography>
+              )}
+            </td>
+          ))}
+          <td className="p-4">
+            {editingRowId === id ? (
+              <>
+                <Tooltip content="Save">
+                  <IconButton
+                    onClick={() => handleSave(id)}
+                    color="black"
+                    size="sm"
+                    ripple={true}
                   >
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
-                    >
-                      {head}
-                      <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                    </Typography>
-                  </th>
-                ))}
-                <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map(({ id, ...row }) => (
-                <tr key={id} className="hover:bg-blue-gray-50">
-                  {Object.entries(row).map(([key, value]) => (
-                    <td key={key} className="p-4">
-                      {editingRowId === id ? ( // Check if the row is being edited
-                        <Input
-                          type={
-                            key === "date"
-                              ? "date"
-                              : key === "startTime" || key === "endTime"
-                              ? "time"
-                              : "text"
-                          }
-                          value={value}
-                          onChange={(e) => handleEdit(id, key, e.target.value)}
-                          size="sm"
-                          color="light-blue"
-                          disabled={key === "day"}
-                          outline={false}
-                        />
-                      ) : (
-                        <Typography variant="small" color="blue-gray" className="font-normal text-xs">
-                          {value}
-                        </Typography>
-                      )}
-                    </td>
-                  ))}
-                  <td className="p-4">
-                    {editingRowId === id ? (
-                      <>
-                        <Tooltip content="Save">
-                          <IconButton
-                            onClick={() => handleSave(id)}
-                            color="light-blue"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <BookmarkIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip content="Delete">
-                          <IconButton
-                            onClick={() => handleDelete(id)}
-                            color="light-blue"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    ) : (
-                      <>
-                        <Tooltip content="Edit">
-                          <IconButton
-                            onClick={() => setEditingRowId(id)}
-                            color="light-blue"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <PencilIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip content="Delete">
-                          <IconButton
-                            onClick={() => handleDelete(id)}
-                            color="light-blue"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <BookmarkIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Delete">
+                  <IconButton
+                    onClick={() => handleDelete(id)}
+                    color="red"
+                    size="sm"
+                    ripple={true}
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip content="Edit">
+                  <IconButton
+                    onClick={() => setEditingRowId(id)}
+                    color="black"
+                    size="sm"
+                    ripple={true}
+                  >
+                    <PencilIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Delete">
+                  <IconButton
+                    onClick={() => handleDelete(id)}
+                    color="black"
+                    size="sm"
+                    ripple={true}
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
         </CardBody>
       </Card>
     </div>

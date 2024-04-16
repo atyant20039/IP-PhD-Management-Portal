@@ -233,10 +233,12 @@ function Classroom({ onSubmit }) {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <Card className="h-full w-full flex flex-1 flex-col">
+    <div className="flex flex-col h-screen"> 
+      <Card className=" w-full flex flex-1 flex-col">
         <CardHeader  floated={false}
-          shadow={false} className="rounded-none mt-0 pt-4">
+          shadow={false}
+          className="rounded-none mt-0 pt-4 sticky top-0 z-20 bg-white"
+           >
           <div className="flex items-center justify-between">
             <div>
               <Typography variant="h4" color="blue-gray">
@@ -247,7 +249,7 @@ function Classroom({ onSubmit }) {
               <Button
                 onClick={handleAddRow}
                 size="sm"
-                color="blue"
+                color="black"
                 ripple={true}
                 className="flex items-center gap-2 h-9"
               >
@@ -273,8 +275,9 @@ function Classroom({ onSubmit }) {
               <Typography color="blue-gray">Loading...</Typography>
             </div>
           ) : (
-            <table className="w-full min-w-max table-auto text-left">
-              <thead className="sticky top-0 bg-white z-20">
+            <div className="w-full overflow-hidden">
+                 <table className="w-full min-w-max table-auto text-left">
+              <thead className="sticky top-0 bg-white ">
                 <tr>
                   {TABLE_HEAD.map(({ head }) => (
                     <th
@@ -308,7 +311,7 @@ function Classroom({ onSubmit }) {
                             handleEdit(id, "building", e.target.value)
                           }
                           size="sm"
-                          color="light-blue"
+                          color="black"
                           outline={false}
                         />
                       ) : (
@@ -329,7 +332,7 @@ function Classroom({ onSubmit }) {
                             handleEdit(id, "roomNo", e.target.value)
                           }
                           size="sm"
-                          color="light-blue"
+                          color="black"
                           outline={false}
                         />
                       ) : (
@@ -350,7 +353,7 @@ function Classroom({ onSubmit }) {
                             handleEdit(id, "capacity", e.target.value)
                           }
                           size="sm"
-                          color="light-blue"
+                          color="black"
                           outline={false}
                         />
                       ) : (
@@ -368,7 +371,7 @@ function Classroom({ onSubmit }) {
                         <Tooltip content="Save">
                           <IconButton
                             onClick={() => handleSave(id)}
-                            color="light-blue"
+                            color="black"
                             size="sm"
                             ripple={true}
                           >
@@ -380,7 +383,7 @@ function Classroom({ onSubmit }) {
                           <Tooltip content="Edit">
                             <IconButton
                               onClick={() => setEditingRowId(id)}
-                              color="light-blue"
+                              color="black"
                               size="sm"
                               ripple={true}
                             >
@@ -390,7 +393,7 @@ function Classroom({ onSubmit }) {
                           <Tooltip content="Delete">
                             <IconButton
                               onClick={() => handleDelete(id)}
-                              color="light-blue"
+                              color="black"
                               size="sm"
                               ripple={true}
                             >
@@ -404,6 +407,9 @@ function Classroom({ onSubmit }) {
                 ))}
               </tbody>
             </table>
+           
+            </div>
+         
           )}
         </CardBody>
       </Card>

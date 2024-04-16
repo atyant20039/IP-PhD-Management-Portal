@@ -43,10 +43,6 @@ const TABLE_HEAD = [
     head: "Course Code",
     value: "courseCode",
   },
-  {
-    head: "Remark",
-    value: "remark",
-  },
 ];
 
 function AddMemberDialog({ isOpen, setOpen, setTableData }) {
@@ -57,7 +53,6 @@ function AddMemberDialog({ isOpen, setOpen, setTableData }) {
     name: "",
     email: "",
     courseCode: "",
-    remark: "",
   });
 
   useEffect(() => {
@@ -95,7 +90,6 @@ function AddMemberDialog({ isOpen, setOpen, setTableData }) {
       name: "",
       email: "",
       courseCode: "",
-      remark: "",
     });
     setOpen(false); // Close the dialog after submission
     
@@ -169,7 +163,6 @@ function TAtable({onSubmit}) {
       name: "John Doe",
       email: "john@example.com",
       courseCode: "CS101",
-      remark: "Excellent",
     },
     {
       id: 2,
@@ -177,7 +170,6 @@ function TAtable({onSubmit}) {
       name: "Jane Doe",
       email: "jane@example.com",
       courseCode: "CS102",
-      remark: "Good",
     },
   ]);
 
@@ -187,8 +179,6 @@ function TAtable({onSubmit}) {
   const handleAddRow = () => {
     setDialogOpen(true); // Open the dialog when Add Row button is clicked
   };
-
-
   const handleSubmit = async () => {
     console.log(tableData);
    
@@ -231,7 +221,7 @@ function TAtable({onSubmit}) {
         <CardHeader
           floated={false}
           shadow={false}
-          className="rounded-none mt-0 pt-4"
+          className="rounded-none mt-0 pt-4 sticky top-0 z-20 bg-white"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -265,100 +255,103 @@ function TAtable({onSubmit}) {
           </div>
         </CardHeader>
         <CardBody className="p-0 mt-5 flex flex-1 overflow-y-auto">
-          <table className="w-full min-w-max table-auto text-left">
-            <thead className="sticky top-0 bg-white z-20">
-              <tr>
-                {TABLE_HEAD.map(({ head }) => (
-                  <th
-                    key={head}
-                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+        <div className="w-full overflow-hidden">
+  <table className="w-full text-left table-fixed">
+    <thead className="sticky top-0 bg-white">
+      <tr>
+        {TABLE_HEAD.map(({ head }) => (
+          <th
+            key={head}
+            className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+          >
+            <Typography
+              variant="small"
+              color="blue-gray"
+              className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+            >
+              {head}
+            </Typography>
+          </th>
+        ))}
+        <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"></th>
+      </tr>
+    </thead>
+    <tbody className="overflow-y-auto max-h-[400px]">
+      {tableData.map(({ id, ...row }) => (
+        <tr key={id} className="hover:bg-blue-gray-50">
+          {Object.entries(row).map(([key, value]) => (
+            <td key={key} className="p-4">
+              {editingRowId === id ? ( 
+                <Input
+                  type="text"
+                  value={value}
+                  onChange={(e) => handleEdit(id, key, e.target.value)}
+                  size="sm"
+                  color="gray"
+                  outline={false}
+                />
+              ) : (
+                <Typography variant="small" color="blue-gray" className="font-normal text-xs">
+                  {value}
+                </Typography>
+              )}
+            </td>
+          ))}
+          <td className="p-4">
+            {editingRowId === id ? (
+              <>
+                <Tooltip content="Save">
+                  <IconButton
+                    onClick={() => handleSave(id)}
+                    color="gray"
+                    size="sm"
+                    ripple={true}
                   >
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
-                    >
-                      {head}
-                    </Typography>
-                  </th>
-                ))}
-                <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableData.map(({ id, ...row }) => (
-                <tr key={id} className="hover:bg-blue-gray-50">
-                  {Object.entries(row).map(([key, value]) => (
-                    <td key={key} className="p-4">
-                      {editingRowId === id ? ( 
-                        <Input
-                          type="text"
-                          value={value}
-                          onChange={(e) => handleEdit(id, key, e.target.value)}
-                          size="sm"
-                          color="gray"
-                          outline={false}
-                        />
-                      ) : (
-                        <Typography variant="small" color="blue-gray" className="font-normal text-xs">
-                          {value}
-                        </Typography>
-                      )}
-                    </td>
-                  ))}
-                  <td className="p-4">
-                    {editingRowId === id ? (
-                      <>
-                        <Tooltip content="Save">
-                          <IconButton
-                            onClick={() => handleSave(id)}
-                            color="gray"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <BookmarkIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip content="Delete">
-                          <IconButton
-                            onClick={() => handleDelete(id)}
-                            color="gray"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    ) : (
-                      <>
-                        <Tooltip content="Edit">
-                          <IconButton
-                            onClick={() => setEditingRowId(id)}
-                            color="gray"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <PencilIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip content="Delete">
-                          <IconButton
-                            onClick={() => handleDelete(id)}
-                            color="gray"
-                            size="sm"
-                            ripple={true}
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <BookmarkIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Delete">
+                  <IconButton
+                    onClick={() => handleDelete(id)}
+                    color="gray"
+                    size="sm"
+                    ripple={true}
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              </>
+            ) : (
+              <>
+                <Tooltip content="Edit">
+                  <IconButton
+                    onClick={() => setEditingRowId(id)}
+                    color="gray"
+                    size="sm"
+                    ripple={true}
+                  >
+                    <PencilIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip content="Delete">
+                  <IconButton
+                    onClick={() => handleDelete(id)}
+                    color="gray"
+                    size="sm"
+                    ripple={true}
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </IconButton>
+                </Tooltip>
+              </>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
         </CardBody>
       </Card>
     </div>
