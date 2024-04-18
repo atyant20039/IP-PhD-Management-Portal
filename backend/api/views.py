@@ -4,11 +4,11 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.datavalidation import DataValidation
 from rest_framework import status
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -32,24 +32,9 @@ class StudentTableViewSet(ModelViewSet):
     serializer_class = StudentTableSerializer
     lookup_field = 'rollNumber'
     lookup_url_kwarg = 'rollNumber'
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
     search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__advisor1__name', '$advisor_set__advisor2__name', '$advisor_set__coadvisor__name']
- 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        sort_by = self.request.query_params.get('sort')
-        if sort_by:
-            serializer_fields = self.serializer_class().get_fields()
-
-            if sort_by in ['advisor1', 'advisor2', 'coadvisor']:
-                queryset = queryset.order_by("advisor_set__"+sort_by+"__name")
-            elif sort_by not in serializer_fields:
-                raise ValidationError('Invalid field for sorting')
-            else:
-                queryset = queryset.order_by(sort_by)
-
-        return queryset
 
 class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = StudentTableSerializer
@@ -196,22 +181,62 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
         except Exception as e:
             return Response({'error': f'Error processing the Excel file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class StudentExportViewSet(ListModelMixin, GenericViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentTableSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
+    search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__advisor1__name', '$advisor_set__advisor2__name', '$advisor_set__coadvisor__name']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Students"
+
+        headers = ['Roll Number', 'Name', 'Email ID', 'Gender', 'Department', 'Advisor 1', 'Advisor 2', 'Coadvisor', 'Joining Date', 'Batch', 'Educational Qualification', 'Region', 'Admission Through', 'Funding Type', 'Source of Funding', 'Contingency Points', 'Student Status', 'Thesis Submission Date', 'Thesis Defence Date', 'Year of Leaving', 'Comment']
+        ws.append(headers)
+
+        for student in serializer.data:
+            data = [
+                student.get('rollNumber', ''),
+                student.get('name', ''),
+                student.get('emailId', ''),
+                student.get('gender', ''),
+                student.get('department', ''),
+                student.get('advisor1', ''),
+                student.get('advisor2', ''),
+                student.get('coadvisor', ''),
+                student.get('joiningDate', ''),
+                student.get('batch', ''),
+                student.get('educationalQualification', ''),
+                student.get('region', ''),
+                student.get('admissionThrough', ''),
+                student.get('fundingType', ''),
+                student.get('sourceOfFunding', ''),
+                student.get('contingencyPoints', ''),
+                student.get('studentStatus', ''),
+                student.get('thesisSubmissionDate', ''),
+                student.get('thesisDefenceDate', ''),
+                student.get('yearOfLeaving', ''),
+                student.get('comment', '')
+            ]
+            ws.append(data)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=students_data.xlsx'
+        wb.save(response)
+
+        return response
+
 class InstructorViewSet(ModelViewSet):
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['emailId','name', 'department']
     search_fields = ['$emailId', '$name']
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        sort_by = self.request.query_params.get('sort')
-        if sort_by:
-            if sort_by not in [field.name for field in Instructor._meta.get_fields()]:
-                raise ValidationError('Invalid field for sorting')
-
-            queryset = queryset.order_by(sort_by)
-        return queryset
 
 class AdvisorViewSet(ModelViewSet):
     queryset = Advisor.objects.all()
