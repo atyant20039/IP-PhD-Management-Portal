@@ -1,5 +1,6 @@
 from rest_framework import pagination
 
+
 class PageNumberPaginationWithCount(pagination.PageNumberPagination):
     page_size = 50
 
