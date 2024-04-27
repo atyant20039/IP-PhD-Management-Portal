@@ -13,6 +13,8 @@ router.register('finance', FinanceViewSet, basename='finance')
 router.register('stipend', StipendViewSet, basename='stipend')
 router.register('contingency', ContingencyViewSet, basename='contingency')
 router.register('classroom', ClassroomViewSet, basename='classroom')
+# router.register('allotment', AllotmentViewSet, basename='allotment')
+
 
 urlpatterns = []
 urlpatterns += router.urls

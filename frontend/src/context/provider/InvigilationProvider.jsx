@@ -62,7 +62,7 @@ const API = import.meta.env.VITE_BACKEND_URL;
         formData.append("TARatio", TARatio);
 
 
-        const response = await fetch(`${API}/api/upload`, {//change API
+        const response = await fetch(`${API}/api/allotment/`, {//change API
             method: "POST",
             body: formData,
         });

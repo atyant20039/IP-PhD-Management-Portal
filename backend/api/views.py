@@ -3,7 +3,7 @@ import os
 from django.http import HttpResponse
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet, ViewSet
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.filters import SearchFilter
 from rest_framework.parsers import MultiPartParser
@@ -13,6 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import F
 from .models import *
 from .serializers import *
+import subprocess
 
 class StudentViewSet(ModelViewSet):
     queryset = Student.objects.all()
@@ -185,3 +186,51 @@ class ClassroomViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['building', 'roomNo']
     search_fields = ['$building', '$roomNo']
+
+
+class StipendViewSet(ModelViewSet):
+    
+    pass
+
+# class AllotmentViewSet(ViewSet):
+#     parser_classes = [MultiPartParser]
+
+#     def create(self, request, format=None): # In the post method of the APIView, the format=None parameter indicates the format in which the response should be returned.
+#         os.chdir(os.path.join(settings.BASE_DIR, 'algorithm'))
+
+#         TARatio = request.data.get('TARatio')
+
+#         # # Saving the files to the 'algorithm' directory
+#         file_names = {
+#         #     'file1': 'StudentRegistration.xlsx',
+#         #     'file2': 'StudentList.xlsx',
+#             'file3': 'Classroom.xlsx',
+#         #     'file4': 'TAList.xlsx',
+#         #     'file5': 'ExamDateSheet.xlsx'
+#         }
+
+#         for key, file in request.FILES.items():
+#             file_name = file_names.get(key)
+#             if file_name:
+#                 with open(file_name, 'wb+') as destination:
+#                     for chunk in file.chunks():
+#                         destination.write(chunk)
+
+
+#         # Validations for Excel Files.
+
+
+#         # Run the python script
+#         subprocess.call(['python', 'AllotInvigilators.py', '--TARatio', TARatio])
+
+#         # # Read the generated file and return it as a response
+#         # with open('InvigilatorList.xlsx', 'rb') as f:
+#         #     response = HttpResponse(f.read(), content_type='application/octet-stream')
+#         #     response['Content-Disposition'] = 'attachment; filename=InvigilatorList.xlsx'
+
+#         # # Delete the files
+#         # for file_name in file_names.values():
+#         #     os.remove(file_name)
+#         # os.remove('InvigilatorList.xlsx')
+
+#         return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)

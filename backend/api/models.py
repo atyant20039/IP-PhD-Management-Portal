@@ -129,3 +129,7 @@ class Classroom(models.Model):
 
     def __str__(self):
         return f'{self.venue}: Room {self.roomNo} Capacity {self.capacity}'
+    
+
+class Stipend(models.Model):
+    pass
