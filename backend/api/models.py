@@ -102,23 +102,6 @@ class Stipend(models.Model):
     class Meta:
         ordering=['student']
 
-    # def _update_base_amount_and_hra(self):
-    #     # Check if there is an entry for the student in the Comprehensive model
-    #     if Comprehensive.objects.filter(student=self.student).exists():
-    #         self.baseAmount = 42000
-    #     else:
-    #         self.baseAmount = 37000
-
-    #     # Calculate the default hra amount based on the hosteler field
-    #     if self.hosteler == 'NO':
-    #         self.hra = self.baseAmount * 0.27
-    #     else:
-    #         self.hra = 0
-
-    # def save(self, *args, **kwargs):
-    #     # Call the method to update baseAmount and hra before saving
-    #     self.update_base_amount_and_hra()
-    #     super().save(*args, **kwargs)
 
 class ContingencyLogs(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingency')
