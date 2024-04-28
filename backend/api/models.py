@@ -88,13 +88,35 @@ class YearlyReview(models.Model):
 
 class Stipend(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='stipend')
-    # TODO: Update default value of stipend amount according to regulations
-    amount = models.DecimalField(max_digits=11, decimal_places=2, default=20000, validators=[MinValueValidator(0)])
     disbursmentDate = models.DateField(default = date.today)
+    hostler = models.CharField(max_length=10, choices=[('YES', 'YES'), ('NO', 'NO')], default="YES")
+    amount = models.DecimalField(max_digits=11, decimal_places=2, default=20000, validators=[MinValueValidator(0)])
+    comment = models.TextField(null=True, blank=True)
+
+    baseAmount = models.DecimalField(max_digits=11, decimal_places=2, default=37000, validators=[MinValueValidator(0)])
+    hra = models.DecimalField(max_digits=11, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     comment = models.TextField(null=True, blank=True)
 
     class Meta:
         ordering=['student']
+
+    def _update_base_amount_and_hra(self):
+        # Check if there is an entry for the student in the Comprehensive model
+        if Comprehensive.objects.filter(student=self.student).exists():
+            self.baseAmount = 42000
+        else:
+            self.baseAmount = 37000
+
+        # Calculate the default hra amount based on the hosteler field
+        if self.hosteler == 'NO':
+            self.hra = self.baseAmount * 0.27
+        else:
+            self.hra = 0
+
+    def save(self, *args, **kwargs):
+        # Call the method to update baseAmount and hra before saving
+        self.update_base_amount_and_hra()
+        super().save(*args, **kwargs)
 
 class ContingencyLogs(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingency')
