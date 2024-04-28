@@ -7,17 +7,115 @@ import {
   Input,
   Spinner,
 } from "@material-tailwind/react";
+import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import Select from "react-select";
-import FacultyContext from "../context/FacultyContext";
 import StudentContext from "../context/StudentContext";
 
 function StudentForm({ setOpen, initVal }) {
   const { addStudent, updateStudent } = useContext(StudentContext);
-  const { faculty, fetchData } = useContext(FacultyContext);
-  const [advisorSearch, setAdvisorSearch] = useState("");
   const [advisorLoading, setAdvisorLoading] = useState(false);
+  const API = import.meta.env.VITE_BACKEND_URL;
+  const BASE = import.meta.env.VITE_FRONTEND_URL;
+  const [faculty, setFaculty] = useState();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    control,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: {
+      advisor1_emailId: "null@iiitd.ac.in",
+      advisor2_emailId: "null@iiitd.ac.in",
+      coadvisor_emailId: "null@iiitd.ac.in",
+    },
+  });
+
+  useEffect(() => {
+    async function fetchAllInstructors() {
+      try {
+        setAdvisorLoading(true);
+        const response = await axios.get(`${API}/api/allInstructors/`);
+        setFaculty(response.data);
+      } catch (error) {
+        const myError = error.response?.data
+          ? Object.values(error.response.data)
+          : [error.message];
+        setError("root", {
+          type: "manual",
+          message: myError,
+        });
+      } finally {
+        setAdvisorLoading(false);
+      }
+    }
+    fetchAllInstructors();
+  }, []);
+
+  const formOptions = {
+    genderOptions: [
+      { value: "Male", label: "Male" },
+      { value: "Female", label: "Female" },
+      { value: "Others", label: "Others" },
+    ],
+    departmentOptions: [
+      { value: "CSE", label: "CSE" },
+      { value: "CB", label: "CB" },
+      { value: "HCD", label: "HCD" },
+      { value: "MATHS", label: "MATHS" },
+      { value: "SSH", label: "SSH" },
+      { value: "ECE", label: "ECE" },
+    ],
+    regionOptions: [
+      { value: "Delhi", label: "Delhi" },
+      { value: "Outside Delhi", label: "Outside Delhi" },
+    ],
+    monthOptions: [
+      { value: "January", label: "January" },
+      { value: "February", label: "February" },
+      { value: "March", label: "March" },
+      { value: "April", label: "April" },
+      { value: "May", label: "May" },
+      { value: "June", label: "June" },
+      { value: "July", label: "July" },
+      { value: "August", label: "August" },
+      { value: "September", label: "September" },
+      { value: "October", label: "October" },
+      { value: "November", label: "November" },
+      { value: "December", label: "December" },
+    ],
+    admissionOptions: [
+      { value: "Regular", label: "Regular" },
+      { value: "Rolling", label: "Rolling" },
+      { value: "Sponsored", label: "Sponsored" },
+      { value: "Migrated", label: "Migrated" },
+      { value: "Direct", label: "Direct" },
+    ],
+    fundingOptions: [
+      { value: "Institute", label: "Institute" },
+      { value: "Sponsored", label: "Sponsored" },
+      { value: "Others", label: "Others" },
+    ],
+    statusOptions: [
+      { value: "Active", label: "Active" },
+      { value: "Terminated", label: "Terminated" },
+      { value: "Graduated", label: "Graduated" },
+      { value: "Shifted", label: "Shifted" },
+      { value: "Semester Leave", label: "Semester Leave" },
+    ],
+    facultyOptions: [
+      { value: "null@iiitd.ac.in", label: "None" },
+      ...(faculty?.map((option) => ({
+        value: option.emailId,
+        label: option.name,
+      })) || []),
+    ],
+  };
 
   const getBatch = (batchMonth, batchYear) => {
     return `${batchMonth} ${batchYear}`;
@@ -47,75 +145,140 @@ function StudentForm({ setOpen, initVal }) {
   };
 
   useEffect(() => {
-    setAdvisorLoading(true);
-    const delay = 500;
-    const timer = setTimeout(() => {
-      fetchData(1, advisorSearch, "name", setAdvisorLoading, {});
-    }, delay);
-    return () => clearTimeout(timer);
-  }, [advisorSearch]);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setError,
-    setValue,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm({
-    defaultValues: {
-      advisor1_emailId: "null@iiitd.ac.in",
-      advisor2_emailId: "null@iiitd.ac.in",
-      coadvisor_emailId: "null@iiitd.ac.in",
-    },
-  });
-
-  useEffect(() => {
     if (initVal) {
       setValue("rollNumber", initVal.rollNumber);
       setValue("name", initVal.name);
       setValue("emailId", initVal.emailId);
-      setValue("gender", initVal.gender);
-      setValue("department", initVal.department);
-      setValue("joiningDate", initVal.joiningDate);
-      setValue("batchMonth", getBatchMonth(initVal.batch));
+      setValue(
+        "gender",
+        formOptions.genderOptions.find(
+          (option) => option.value === initVal.gender
+        )
+      );
+      setValue(
+        "department",
+        formOptions.departmentOptions.find(
+          (option) => option.value === initVal.department
+        )
+      );
+      setValue(
+        "joiningDate",
+        initVal.joiningDate.split("-").reverse().join("-")
+      );
+      setValue(
+        "batchMonth",
+        formOptions.monthOptions.find(
+          (option) => option.value === getBatchMonth(initVal.batch)
+        )
+      );
       setValue("batchYear", getBatchYear(initVal.batch));
       initVal.educationalQualification
         ? setValue("educationalQualification", initVal.educationalQualification)
         : null;
-      initVal.region ? setValue("region", initVal.region) : null;
-      setValue("admissionThrough", initVal.admissionThrough);
-      setValue("fundingType", initVal.fundingType);
+      initVal.region
+        ? setValue(
+            "region",
+            formOptions.regionOptions.find(
+              (option) => option.value === initVal.region
+            )
+          )
+        : null;
+      setValue(
+        "admissionThrough",
+        formOptions.admissionOptions.find(
+          (option) => option.value === initVal.admissionThrough
+        )
+      );
+      setValue(
+        "fundingType",
+        formOptions.fundingOptions.find(
+          (option) => option.value === initVal.fundingType
+        )
+      );
       initVal.sourceOfFunding
         ? setValue("sourceOfFunding", initVal.sourceOfFunding)
         : null;
       setValue("contingencyPoints", initVal.contingencyPoints);
-      setValue("studentStatus", initVal.studentStatus);
+      setValue(
+        "studentStatus",
+        formOptions.statusOptions.find(
+          (option) => option.value === initVal.studentStatus
+        )
+      );
       initVal.thesisSubmissionDate
-        ? setValue("thesisSubmissionDate", initVal.thesisSubmissionDate)
+        ? setValue(
+            "thesisSubmissionDate",
+            initVal.thesisSubmissionDate.split("-").reverse().join("-")
+          )
         : null;
       initVal.thesisDefenceDate
-        ? setValue("thesisDefenceDate", initVal.thesisDefenceDate)
+        ? setValue(
+            "thesisDefenceDate",
+            initVal.thesisDefenceDate.split("-").reverse().join("-")
+          )
         : null;
       initVal.yearOfLeaving
         ? setValue("yearOfLeaving", initVal.yearOfLeaving)
         : null;
       initVal.comment ? setValue("comment", initVal.comment) : null;
+
       setValue(
         "advisor1_emailId",
-        initVal.advisor1 ? initVal.advisor1 : "null@iiitd.ac.in"
+        initVal.advisor1
+          ? formOptions.facultyOptions.find(
+              (option) => option.label === initVal.advisor1
+            )
+          : { value: "null@iiitd.ac.in", label: "None" }
       );
+
       setValue(
         "advisor2_emailId",
-        initVal.advisor2 ? initVal.advisor2 : "null@iiitd.ac.in"
+        initVal.advisor2
+          ? formOptions.facultyOptions.find(
+              (option) => option.label === initVal.advisor2
+            )
+          : { value: "null@iiitd.ac.in", label: "None" }
       );
       setValue(
         "coadvisor_emailId",
-        initVal.coadvisor ? initVal.coadvisor : "null@iiitd.ac.in"
+        initVal.coadvisor
+          ? formOptions.facultyOptions.find(
+              (option) => option.label === initVal.coadvisor
+            )
+          : { value: "null@iiitd.ac.in", label: "None" }
       );
     }
   }, [initVal, setValue]);
+
+  useEffect(() => {
+    if (initVal) {
+      setValue(
+        "advisor1_emailId",
+        initVal.advisor1
+          ? formOptions.facultyOptions.find(
+              (option) => option.label === initVal.advisor1
+            )
+          : { value: "null@iiitd.ac.in", label: "None" }
+      );
+
+      setValue(
+        "advisor2_emailId",
+        initVal.advisor2
+          ? formOptions.facultyOptions.find(
+              (option) => option.label === initVal.advisor2
+            )
+          : { value: "null@iiitd.ac.in", label: "None" }
+      );
+      setValue(
+        "coadvisor_emailId",
+        initVal.coadvisor
+          ? formOptions.facultyOptions.find(
+              (option) => option.label === initVal.coadvisor
+            )
+          : { value: "null@iiitd.ac.in", label: "None" }
+      );
+    }
+  }, [faculty]);
 
   const onSubmit = async (data) => {
     var response;
@@ -174,6 +337,9 @@ function StudentForm({ setOpen, initVal }) {
       });
     } else {
       handleCancel();
+      if (initVal) {
+        window.location.href = `${BASE}/db/${data.rollNumber}/`;
+      }
     }
   };
 
@@ -254,11 +420,7 @@ function StudentForm({ setOpen, initVal }) {
               render={({ field }) => (
                 <Select
                   placeholder="Gender*"
-                  options={[
-                    { value: "Male", label: "Male" },
-                    { value: "Female", label: "Female" },
-                    { value: "Others", label: "Others" },
-                  ]}
+                  options={formOptions.genderOptions}
                   error={Boolean(errors.gender)}
                   {...field}
                 />
@@ -277,14 +439,7 @@ function StudentForm({ setOpen, initVal }) {
               render={({ field }) => (
                 <Select
                   placeholder="Department*"
-                  options={[
-                    { value: "CSE", label: "CSE" },
-                    { value: "CB", label: "CB" },
-                    { value: "HCD", label: "HCD" },
-                    { value: "MATHS", label: "MATHS" },
-                    { value: "SSH", label: "SSH" },
-                    { value: "ECE", label: "ECE" },
-                  ]}
+                  options={formOptions.departmentOptions}
                   error={Boolean(errors.department)}
                   {...field}
                 />
@@ -304,10 +459,7 @@ function StudentForm({ setOpen, initVal }) {
                   placeholder="Region"
                   isClearable
                   backspaceRemovesValue
-                  options={[
-                    { value: "Delhi", label: "Delhi" },
-                    { value: "Outside Delhi", label: "Outside Delhi" },
-                  ]}
+                  options={formOptions.regionOptions}
                   error={Boolean(errors.region)}
                   {...field}
                 />
@@ -340,20 +492,7 @@ function StudentForm({ setOpen, initVal }) {
               render={({ field }) => (
                 <Select
                   placeholder="Batch Month*"
-                  options={[
-                    { value: "January", label: "January" },
-                    { value: "February", label: "February" },
-                    { value: "March", label: "March" },
-                    { value: "April", label: "April" },
-                    { value: "May", label: "May" },
-                    { value: "June", label: "June" },
-                    { value: "July", label: "July" },
-                    { value: "August", label: "August" },
-                    { value: "September", label: "September" },
-                    { value: "October", label: "October" },
-                    { value: "November", label: "November" },
-                    { value: "December", label: "December" },
-                  ]}
+                  options={formOptions.monthOptions}
                   error={Boolean(errors.batchMonth)}
                   {...field}
                 />
@@ -412,13 +551,7 @@ function StudentForm({ setOpen, initVal }) {
               render={({ field }) => (
                 <Select
                   placeholder="Admission Through*"
-                  options={[
-                    { value: "Regular", label: "Regular" },
-                    { value: "Rolling", label: "Rolling" },
-                    { value: "Sponsored", label: "Sponsored" },
-                    { value: "Migrated", label: "Migrated" },
-                    { value: "Direct", label: "Direct" },
-                  ]}
+                  options={formOptions.admissionOptions}
                   error={Boolean(errors.admissionThrough)}
                   {...field}
                 />
@@ -439,11 +572,7 @@ function StudentForm({ setOpen, initVal }) {
               render={({ field }) => (
                 <Select
                   placeholder="Funding Type*"
-                  options={[
-                    { value: "Institute", label: "Institute" },
-                    { value: "Sponsored", label: "Sponsored" },
-                    { value: "Others", label: "Others" },
-                  ]}
+                  options={formOptions.fundingOptions}
                   error={Boolean(errors.fundingType)}
                   {...field}
                 />
@@ -512,13 +641,7 @@ function StudentForm({ setOpen, initVal }) {
               render={({ field }) => (
                 <Select
                   placeholder="Student Status*"
-                  options={[
-                    { value: "Active", label: "Active" },
-                    { value: "Terminated", label: "Terminated" },
-                    { value: "Graduated", label: "Graduated" },
-                    { value: "Shifted", label: "Shifted" },
-                    { value: "Semester Leave", label: "Semester Leave" },
-                  ]}
+                  options={formOptions.statusOptions}
                   error={Boolean(errors.studentStatus)}
                   {...field}
                 />
@@ -542,15 +665,8 @@ function StudentForm({ setOpen, initVal }) {
                 <Select
                   placeholder="Select Advisor 1"
                   defaultValue={{ value: "null@iiitd.ac.in", label: "None" }}
-                  onInputChange={(value) => setAdvisorSearch(value)}
                   isLoading={advisorLoading}
-                  options={[
-                    { value: "null@iiitd.ac.in", label: "None" },
-                    ...(faculty?.results?.map((option) => ({
-                      value: option.emailId,
-                      label: option.name,
-                    })) || []),
-                  ]}
+                  options={formOptions.facultyOptions}
                   error={Boolean(errors.advisor1_emailId)}
                   {...field}
                 />
@@ -574,15 +690,8 @@ function StudentForm({ setOpen, initVal }) {
                 <Select
                   placeholder="Select Advisor 2"
                   defaultValue={{ value: "null@iiitd.ac.in", label: "None" }}
-                  onInputChange={(value) => setAdvisorSearch(value)}
                   isLoading={advisorLoading}
-                  options={[
-                    { value: "null@iiitd.ac.in", label: "None" },
-                    ...(faculty?.results?.map((option) => ({
-                      value: option.emailId,
-                      label: option.name,
-                    })) || []),
-                  ]}
+                  options={formOptions.facultyOptions}
                   error={Boolean(errors.advisor2_emailId)}
                   {...field}
                 />
@@ -609,15 +718,8 @@ function StudentForm({ setOpen, initVal }) {
                 <Select
                   placeholder="Select Coadvisor"
                   defaultValue={{ value: "null@iiitd.ac.in", label: "None" }}
-                  onInputChange={(value) => setAdvisorSearch(value)}
                   isLoading={advisorLoading}
-                  options={[
-                    { value: "null@iiitd.ac.in", label: "None" },
-                    ...(faculty?.results?.map((option) => ({
-                      value: option.emailId,
-                      label: option.name,
-                    })) || []),
-                  ]}
+                  options={formOptions.facultyOptions}
                   error={Boolean(errors.coadvisor_emailId)}
                   {...field}
                 />

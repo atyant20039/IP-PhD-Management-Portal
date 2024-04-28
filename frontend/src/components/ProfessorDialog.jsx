@@ -20,6 +20,16 @@ import FacultyContext from "../context/FacultyContext";
 
 function ProfessorDialog({ isOpen, setOpen, initVal }) {
   const { addFaculty, updateFaculty } = useContext(FacultyContext);
+  const formOptions = {
+    departmentOptions: [
+      { value: "CSE", label: "CSE" },
+      { value: "CB", label: "CB" },
+      { value: "HCD", label: "HCD" },
+      { value: "MATHS", label: "MATHS" },
+      { value: "SSH", label: "SSH" },
+      { value: "ECE", label: "ECE" },
+    ],
+  };
 
   const {
     register,
@@ -35,12 +45,19 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
     if (initVal) {
       setValue("name", initVal.name);
       setValue("emailId", initVal.emailId);
-      setValue("department", initVal.department);
+      setValue(
+        "department",
+        formOptions.departmentOptions.find(
+          (option) => option.value === initVal.department
+        )
+      );
     }
   }, [initVal, setValue]);
 
   const onSubmit = async (data) => {
     var response;
+
+    data["department"] = data["department"].value;
 
     if (initVal) {
       response = await updateFaculty(initVal.id, data);
@@ -112,7 +129,7 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                   <span className="text-red-500">{errors.emailId.message}</span>
                 )}
               </div>
-              <div>
+              <div className="mb-4">
                 <Controller
                   name="department"
                   id="department"
@@ -121,14 +138,7 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                   render={({ field }) => (
                     <Select
                       placeholder="Department*"
-                      options={[
-                        { value: "CSE", label: "CSE" },
-                        { value: "CB", label: "CB" },
-                        { value: "HCD", label: "HCD" },
-                        { value: "MATHS", label: "MATHS" },
-                        { value: "SSH", label: "SSH" },
-                        { value: "ECE", label: "ECE" },
-                      ]}
+                      options={formOptions.departmentOptions}
                       error={Boolean(errors.department)}
                       {...field}
                     />

@@ -12,9 +12,11 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import (GenericViewSet, ModelViewSet,
+                                     ReadOnlyModelViewSet)
 
 from .models import *
+from .pagination import NoPagination
 from .serializers import *
 
 
@@ -234,6 +236,14 @@ class StudentExportViewSet(ListModelMixin, GenericViewSet):
 class InstructorViewSet(ModelViewSet):
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['emailId','name', 'department']
+    search_fields = ['$emailId', '$name']
+
+class AllInstructorViewSet(ReadOnlyModelViewSet):
+    queryset = Instructor.objects.all()
+    serializer_class = InstructorSerializer
+    pagination_class = NoPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['emailId','name', 'department']
     search_fields = ['$emailId', '$name']

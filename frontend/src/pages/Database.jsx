@@ -149,7 +149,7 @@ export default function Database() {
   };
 
   useEffect(() => {
-    fetchData(undefined, undefined, undefined, setLoading, filters);
+    fetchData(1, "", "rollNumber", setLoading, filters);
   }, []);
 
   useEffect(() => {

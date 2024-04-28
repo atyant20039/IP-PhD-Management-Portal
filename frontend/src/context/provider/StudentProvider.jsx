@@ -129,10 +129,12 @@ const StudentProvider = ({ children }) => {
 
   const updateStudent = async (id, data) => {
     try {
-      await axios.put(`${API}/api/studentTable/${id}`, data);
+      await axios.put(`${API}/api/studentTable/${id}/`, data);
       setStudents((prevStudent) => {
         const updatedResults = prevStudent.results.map((studentItem) => {
-          studentItem.id === id ? { ...studentItem, ...data } : studentItem;
+          return studentItem.id === id
+            ? { ...studentItem, ...data }
+            : studentItem;
         });
         return { ...prevStudent, results: updatedResults };
       });
@@ -146,7 +148,7 @@ const StudentProvider = ({ children }) => {
 
   const deleteStudent = async (id) => {
     try {
-      await axios.delete(`${API}/api/studentTable/${id}`);
+      await axios.delete(`${API}/api/studentTable/${id}/`);
       setStudents((prevStudents) => {
         const filteredResults = prevStudents.results.filter(
           (studentItem) => studentItem.id !== id
