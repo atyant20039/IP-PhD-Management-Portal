@@ -12,7 +12,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
 
 from .models import *
 from .serializers import *
@@ -260,21 +260,21 @@ class YearlyReviewViewSet(ModelViewSet):
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
 
-class FinanceViewSet(ModelViewSet):
-    queryset = Finance.objects.all()
-    serializer_class = FinanceSerializer
-    lookup_field = 'student__rollNumber'
-    lookup_url_kwarg = 'student__rollNumber'
-    filter_backends = [SearchFilter]
-    search_fields = ['$student__rollNumber']
+# class FinanceViewSet(ModelViewSet):
+#     queryset = Finance.objects.all()
+#     serializer_class = FinanceSerializer
+#     lookup_field = 'student__rollNumber'
+#     lookup_url_kwarg = 'student__rollNumber'
+#     filter_backends = [SearchFilter]
+#     search_fields = ['$student__rollNumber']
+
 
 class StipendViewSet(ModelViewSet):
     queryset = Stipend.objects.all()
     serializer_class = StipendSerializer
-    lookup_field = 'student__rollNumber'
-    lookup_url_kwarg = 'student__rollNumber'
-    filter_backends = [SearchFilter]
-    search_fields = ['$student__rollNumber']
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['student__name', 'student__department', 'hostler', 'student__rollNumber', 'month', 'year']
+    search_fields = ['$student__name', '$student__rollNumber']
 
 class ContingencyViewSet(ModelViewSet):
     queryset = ContingencyLogs.objects.all()
@@ -283,3 +283,10 @@ class ContingencyViewSet(ModelViewSet):
     lookup_url_kwarg = 'student__rollNumber'
     filter_backends = [SearchFilter]
     search_fields = ['$student__rollNumber']
+
+
+class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
+    serializer_class = StudentSerializer
+    
+    def get_queryset(self):
+        return Student.objects.filter(studentStatus="Active", stipendMonths__gt=0, fundingType="Institute")

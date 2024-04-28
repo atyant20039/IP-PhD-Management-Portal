@@ -110,10 +110,10 @@ class ComprehensiveSerializer(ModelSerializer):
         model = Comprehensive
         fields = '__all__'
 
-class FinanceSerializer(ModelSerializer):
-    class Meta:
-        model = Finance 
-        fields = '__all__'
+# class FinanceSerializer(ModelSerializer):
+#     class Meta:
+#         model = Finance 
+#         fields = '__all__'
 
 class YearlyReviewSerializer(ModelSerializer):
     class Meta:
@@ -128,4 +128,9 @@ class StipendSerializer(ModelSerializer):
 class ContingencySerializer(ModelSerializer):
     class Meta:
         model = ContingencyLogs 
+        fields = '__all__'
+
+class StipendSerializer(ModelSerializer):
+    class Meta:
+        model = Stipend
         fields = '__all__'
