@@ -1,26 +1,26 @@
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useContext } from "react";
 
 import {
   Card,
-  CardHeader,
   CardBody,
-  Typography,
+  CardHeader,
   Chip,
-  Tabs,
-  TabsHeader,
-  TabsBody,
+  Spinner,
   Tab,
   TabPanel,
-  Spinner,
+  Tabs,
+  TabsBody,
+  TabsHeader,
+  Typography,
 } from "@material-tailwind/react";
 
 import {
   AcademicCapIcon,
+  CalendarDaysIcon,
+  NewspaperIcon,
   Square3Stack3DIcon,
   UserCircleIcon,
-  NewspaperIcon,
-  CalendarDaysIcon,
 } from "@heroicons/react/24/solid";
 
 import { XCircleIcon } from "@heroicons/react/24/outline";
@@ -44,9 +44,7 @@ function StudentProfile() {
     : null;
 
   useEffect(() => {
-    if (students == null) {
-      fetchData(undefined, undefined, undefined, setLoading);
-    }
+    fetchData(undefined, undefined, undefined, setLoading);
   }, []);
 
   const tabs = [

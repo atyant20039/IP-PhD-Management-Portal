@@ -58,7 +58,9 @@ function FilterStudents({ control }) {
       <CardBody>
         {availableFilters.map((filterObject) => (
           <div key={filterObject.variable}>
-            <Typography variant="h5">{filterObject.header}</Typography>
+            <Typography variant="h5" className="cursor-default">
+              {filterObject.header}
+            </Typography>
             <div className="flex flex-wrap gap-2 mb-2">
               {filterObject.options.map((optionObject) => (
                 <Controller
@@ -70,7 +72,7 @@ function FilterStudents({ control }) {
                       variant="ghost"
                       size="sm"
                       value={optionObject}
-                      className={`px-1.5 ${
+                      className={`px-1.5 cursor-pointer ${
                         field.value === optionObject ? "bg-green-500" : ""
                       }`}
                       color="gray"
@@ -107,7 +109,9 @@ function FilterProfessors({ control }) {
       <CardBody>
         {availableFilters.map((filterObject) => (
           <div key={filterObject.variable}>
-            <Typography variant="h5">{filterObject.header}</Typography>
+            <Typography variant="h5" className="cursor-default">
+              {filterObject.header}
+            </Typography>
             <div className="flex flex-wrap gap-2 mb-2">
               {filterObject.options.map((optionObject) => (
                 <Controller
@@ -119,7 +123,7 @@ function FilterProfessors({ control }) {
                       variant="ghost"
                       size="sm"
                       value={optionObject}
-                      className={`px-1.5 ${
+                      className={`px-1.5 cursor-pointer ${
                         field.value === optionObject ? "bg-green-500" : ""
                       }`}
                       color="gray"
@@ -177,7 +181,7 @@ function FilterDialog({ isOpen, setOpen, member, onApplyFilters }) {
   return (
     <Dialog open={isOpen} handler={handleOpen}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogHeader>Filter {member}</DialogHeader>
+        <DialogHeader className="cursor-default">Filter {member}</DialogHeader>
         <DialogBody>
           {member == "Students" ? (
             <FilterStudents control={control} />

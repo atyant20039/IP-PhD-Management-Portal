@@ -24,10 +24,10 @@ const StudentProvider = ({ children }) => {
       );
       setStudents(response.data);
     } catch (error) {
-      console.error("Error fetching data:", error.response.data);
       Error = error.response?.data
         ? Object.values(error.response.data)
         : [error.message];
+      return Error;
     } finally {
       setLoading && setLoading(false);
     }
@@ -60,10 +60,10 @@ const StudentProvider = ({ children }) => {
       fileLink.remove();
       URL.revokeObjectURL(fileURL);
     } catch (error) {
-      console.error("Error fetching data:", error.response.data);
       Error = error.response?.data
         ? Object.values(error.response.data)
         : [error.message];
+      return Error;
     }
   };
 
@@ -86,10 +86,78 @@ const StudentProvider = ({ children }) => {
       fileLink.remove();
       URL.revokeObjectURL(fileURL);
     } catch (error) {
-      console.error("Error fetching data:", error.response.data);
       Error = error.response?.data
         ? Object.values(error.response.data)
         : [error.message];
+      return Error;
+    }
+  };
+
+  const uploadStudentFile = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      await axios.post(`${API}/api/studentFile/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    } catch (error) {
+      Error = error.response?.data?.error
+        ? error.response.data.error
+        : error.message;
+
+      const invalidData = error.response?.data?.invalid_data
+        ? error.response.data.invalid_data
+        : null;
+      return { error: Error, invalidData: invalidData };
+    }
+  };
+
+  const addStudent = async (data) => {
+    try {
+      await axios.post(`${API}/api/studentTable/`, data);
+      fetchStudents();
+    } catch (error) {
+      Error = error.response?.data
+        ? Object.values(error.response.data)
+        : [error.message];
+      return Error;
+    }
+  };
+
+  const updateStudent = async (id, data) => {
+    try {
+      await axios.put(`${API}/api/studentTable/${id}`, data);
+      setStudents((prevStudent) => {
+        const updatedResults = prevStudent.results.map((studentItem) => {
+          studentItem.id === id ? { ...studentItem, ...data } : studentItem;
+        });
+        return { ...prevStudent, results: updatedResults };
+      });
+    } catch (error) {
+      Error = error.response?.data
+        ? Object.values(error.response.data)
+        : [error.message];
+      return Error;
+    }
+  };
+
+  const deleteStudent = async (id) => {
+    try {
+      await axios.delete(`${API}/api/studentTable/${id}`);
+      setStudents((prevStudents) => {
+        const filteredResults = prevStudents.results.filter(
+          (studentItem) => studentItem.id !== id
+        );
+        return { ...prevStudents, results: filteredResults };
+      });
+    } catch (error) {
+      Error = error.response?.data
+        ? Object.values(error.response.data)
+        : [error.message];
+      return Error;
     }
   };
 
@@ -107,6 +175,10 @@ const StudentProvider = ({ children }) => {
         fetchData: fetchStudents,
         downloadStudents,
         getTemplate: getStudentFileTemplate,
+        uploadFile: uploadStudentFile,
+        addStudent,
+        updateStudent,
+        deleteStudent,
         Error,
       }}
     >

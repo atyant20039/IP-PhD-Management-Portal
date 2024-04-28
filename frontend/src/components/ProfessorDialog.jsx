@@ -10,10 +10,10 @@ import {
   DialogFooter,
   DialogHeader,
   Input,
-  Option,
-  Select,
   Spinner,
 } from "@material-tailwind/react";
+
+import Select from "react-select";
 
 import { Controller, useForm } from "react-hook-form";
 import FacultyContext from "../context/FacultyContext";
@@ -66,7 +66,9 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
   return (
     <Dialog open={isOpen} handler={handleCancel}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <DialogHeader>{initVal ? "Edit" : "Add"} Professor</DialogHeader>
+        <DialogHeader className="cursor-default">
+          {initVal ? "Edit" : "Add"} Professor
+        </DialogHeader>
         <DialogBody>
           <Card shadow={false}>
             <CardBody>
@@ -110,7 +112,7 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                   <span className="text-red-500">{errors.emailId.message}</span>
                 )}
               </div>
-              <div className="mb-4">
+              <div>
                 <Controller
                   name="department"
                   id="department"
@@ -118,17 +120,18 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                   rules={{ required: "Department is required" }}
                   render={({ field }) => (
                     <Select
-                      label="Department*"
+                      placeholder="Department*"
+                      options={[
+                        { value: "CSE", label: "CSE" },
+                        { value: "CB", label: "CB" },
+                        { value: "HCD", label: "HCD" },
+                        { value: "MATHS", label: "MATHS" },
+                        { value: "SSH", label: "SSH" },
+                        { value: "ECE", label: "ECE" },
+                      ]}
                       error={Boolean(errors.department)}
                       {...field}
-                    >
-                      <Option value="CSE">CSE</Option>
-                      <Option value="CB">CB</Option>
-                      <Option value="HCD">HCD</Option>
-                      <Option value="MATHS">MATHS</Option>
-                      <Option value="SSH">SSH</Option>
-                      <Option value="ECE">ECE</Option>
-                    </Select>
+                    />
                   )}
                 />
                 {errors.department && (

@@ -149,9 +149,7 @@ export default function Database() {
   };
 
   useEffect(() => {
-    if (students === null) {
-      fetchData(undefined, undefined, undefined, setLoading, filters);
-    }
+    fetchData(undefined, undefined, undefined, setLoading, filters);
   }, []);
 
   useEffect(() => {
@@ -176,7 +174,11 @@ export default function Database() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" color="blue-gray">
+              <Typography
+                variant="h4"
+                color="blue-gray"
+                className="cursor-default"
+              >
                 Students list
               </Typography>
             </div>
@@ -472,14 +474,22 @@ export default function Database() {
                               </td>
                               <td className={classes}>
                                 <div className="w-max">
-                                  <Chip
-                                    variant="ghost"
-                                    size="sm"
-                                    className="px-1.5"
-                                    value={
-                                      student.region ? student.region : "-"
-                                    }
-                                  />
+                                  {student.region ? (
+                                    <Chip
+                                      variant="ghost"
+                                      size="sm"
+                                      className="px-1.5"
+                                      value={student.region}
+                                    />
+                                  ) : (
+                                    <Typography
+                                      variant="small"
+                                      color="blue-gray"
+                                      className="font-normal text-xs"
+                                    >
+                                      -
+                                    </Typography>
+                                  )}
                                 </div>
                               </td>
                               <td className={classes}>
@@ -555,7 +565,9 @@ export default function Database() {
               ) : (
                 <div>
                   <XCircleIcon className="h-48 w-48" />
-                  <Typography variant="h3">No Data Found</Typography>
+                  <Typography variant="h3" className="cursor-default">
+                    No Data Found
+                  </Typography>
                 </div>
               )}
             </div>
@@ -575,7 +587,7 @@ export default function Database() {
             >
               <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" />
             </IconButton>
-            <Typography color="gray" className="font-normal">
+            <Typography color="gray" className="font-normal cursor-default">
               Page <strong className="text-gray-900">{page}</strong> of{" "}
               <strong className="text-gray-900">{total_pages}</strong>
             </Typography>

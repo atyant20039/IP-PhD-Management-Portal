@@ -95,9 +95,7 @@ function Faculty() {
   };
 
   useEffect(() => {
-    if (faculty === null) {
-      fetchData(page, search, sort, setLoading, filters);
-    }
+    fetchData(page, search, sort, setLoading, filters);
   }, []);
 
   useEffect(() => {
@@ -122,7 +120,11 @@ function Faculty() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" color="blue-gray">
+              <Typography
+                variant="h4"
+                color="blue-gray"
+                className="cursor-default"
+              >
                 Faculty list
               </Typography>
             </div>
@@ -234,7 +236,7 @@ function Faculty() {
                         </div>
                       </td>
                       <td className={classes}>
-                        <Tooltip content="Edit User">
+                        <Tooltip content="Edit">
                           <IconButton
                             variant="text"
                             onClick={() => handleUpdate(row)}
@@ -242,7 +244,7 @@ function Faculty() {
                             <PencilIcon className="size-4" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip content="Delete User">
+                        <Tooltip content="Delete">
                           <IconButton
                             variant="text"
                             onClick={() => handleDelete(row)}
@@ -273,7 +275,9 @@ function Faculty() {
               ) : (
                 <div>
                   <XCircleIcon className="h-48 w-48" />
-                  <Typography variant="h3">No Data Found</Typography>
+                  <Typography variant="h3" className="cursor-default">
+                    No Data Found
+                  </Typography>
                 </div>
               )}
             </div>
@@ -293,7 +297,7 @@ function Faculty() {
             >
               <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" />
             </IconButton>
-            <Typography color="gray" className="font-normal">
+            <Typography color="gray" className="font-normal cursor-default">
               Page <strong className="text-gray-900">{page}</strong> of{" "}
               <strong className="text-gray-900">{total_pages}</strong>
             </Typography>

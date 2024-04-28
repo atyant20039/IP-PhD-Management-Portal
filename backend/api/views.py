@@ -165,7 +165,7 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 
                 for date_key in ['joiningDate', 'thesisSubmissionDate', 'thesisDefenceDate']:
                     if row_data[date_key] is not None:
-                        row_data[date_key] = row_data[date_key].strftime('%Y-%m-%d')
+                        row_data[date_key] = row_data[date_key].strftime('%d-%m-%Y')
 
                 serializer = StudentTableSerializer(data=row_data)
                 if serializer.is_valid():

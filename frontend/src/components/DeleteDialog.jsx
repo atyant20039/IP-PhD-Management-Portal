@@ -40,10 +40,10 @@ function DeleteDialog({ isOpen, setOpen, row }) {
 
   return (
     <Dialog open={isOpen} handler={handleOpen}>
-      <DialogHeader>Alert</DialogHeader>
+      <DialogHeader className="cursor-default">Alert</DialogHeader>
       <DialogBody className="flex flex-col place-items-center">
         <ExclamationCircleIcon className="size-36 text-red-400" />
-        <Typography variant="h5" color="blue-gray">
+        <Typography variant="h5" color="blue-gray" className="cursor-default">
           This action is not reversible. Are you sure to delete {row?.name}?
         </Typography>
         {error.length != 0 &&
