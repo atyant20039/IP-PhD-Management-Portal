@@ -101,6 +101,7 @@ class Stipend(models.Model):
 
     class Meta:
         ordering=['student']
+        unique_together = ['student', 'month', 'year']
 
 
 class ContingencyLogs(models.Model):
