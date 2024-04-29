@@ -270,14 +270,6 @@ class YearlyReviewViewSet(ModelViewSet):
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
 
-# class FinanceViewSet(ModelViewSet):
-#     queryset = Finance.objects.all()
-#     serializer_class = FinanceSerializer
-#     lookup_field = 'student__rollNumber'
-#     lookup_url_kwarg = 'student__rollNumber'
-#     filter_backends = [SearchFilter]
-#     search_fields = ['$student__rollNumber']
-
 
 class StipendViewSet(ModelViewSet):
     queryset = Stipend.objects.all()
@@ -297,6 +289,20 @@ class ContingencyViewSet(ModelViewSet):
 
 class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
     serializer_class = StudentSerializer
-    
+
     def get_queryset(self):
-        return Student.objects.filter(studentStatus="Active", stipendMonths__gt=0, fundingType="Institute")
+        # Existing filtering logic
+        queryset = Student.objects.filter(studentStatus="Active", stipendMonths__gt=0, fundingType="Institute")
+        
+        # Extract month and year from request
+        month = self.request.query_params.get('month', None)
+        year = self.request.query_params.get('year', None)
+
+        # If both month and year are provided, filter students without stipend for that month and year
+        if month is not None and year is not None:
+            month = int(month)
+            year = int(year)
+            # Exclude students who have a stipend record for the given month and year
+            queryset = queryset.exclude(stipend__month=month, stipend__year=year)
+
+        return queryset
