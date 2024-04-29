@@ -129,8 +129,3 @@ class ContingencySerializer(ModelSerializer):
     class Meta:
         model = ContingencyLogs 
         fields = '__all__'
-
-class StipendSerializer(ModelSerializer):
-    class Meta:
-        model = Stipend
-        fields = '__all__'

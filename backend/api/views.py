@@ -295,14 +295,20 @@ class StipendViewSet(ModelViewSet):
                     'studentRollNumber': stipend.get('student__rollNumber'),
                     'reason': f"Stipend Entry for {month} and {year} already exists for {stipend.get('student__rollNumber')}."
                 })
-                
+
                 continue
 
             # Perform validations for each attribute
             serializer = self.get_serializer(data=stipend)
             if serializer.is_valid():
+                # Months to be reduced.
                 serializer.save()
                 successful_entries.append(serializer.data)
+
+                # Retrieve the Student instance and update its stipendMonths attribute
+                student = Student.objects.get(pk=student_id)
+                student.stipendMonths -= 1
+                student.save()
             else:
                 failed_entries.append({
                     'studentRollNumber': stipend.get('student__rollNumber'),
