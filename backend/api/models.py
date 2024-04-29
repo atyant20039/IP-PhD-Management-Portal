@@ -1,7 +1,10 @@
 from datetime import date
+
+from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator,FileExtensionValidator
+
 from . import validator
+
 
 class Student(models.Model):
     rollNumber = models.CharField(max_length=10, unique=True, validators = [validator.rollNo]) 
@@ -90,7 +93,7 @@ class YearlyReview(models.Model):
 
 class Stipend(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='stipend')
-    disbursmentDate = models.DateField(default = date.today())
+    disbursmentDate = models.DateField(default = date.today)
     month = models.IntegerField(default=date.today().month)
     year = models.IntegerField(default=date.today().year)
     hostler = models.CharField(max_length=10, choices=[('YES', 'YES'), ('NO', 'NO')], default="YES")

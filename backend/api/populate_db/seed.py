@@ -1,6 +1,8 @@
-from ..models import *
-from faker import Faker
 import random
+
+from faker import Faker
+
+from ..models import *
 
 fake = Faker()
 

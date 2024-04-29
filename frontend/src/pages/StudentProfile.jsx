@@ -1,26 +1,34 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useContext } from "react";
+
+import axios from "axios";
 
 import {
+  Button,
   Card,
-  CardHeader,
   CardBody,
-  Typography,
+  CardHeader,
   Chip,
-  Tabs,
-  TabsHeader,
-  TabsBody,
+  Dialog,
+  DialogBody,
+  DialogHeader,
+  Spinner,
   Tab,
   TabPanel,
-  Spinner,
+  Tabs,
+  TabsBody,
+  TabsHeader,
+  Typography,
 } from "@material-tailwind/react";
 
 import {
   AcademicCapIcon,
-  Square3Stack3DIcon,
-  UserCircleIcon,
-  NewspaperIcon,
   CalendarDaysIcon,
+  NewspaperIcon,
+  PencilIcon,
+  Square3Stack3DIcon,
+  TrashIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/solid";
 
 import { XCircleIcon } from "@heroicons/react/24/outline";
@@ -30,23 +38,38 @@ import StudentProfileExam from "../components/StudentProfileExam";
 import StudentProfileLog from "../components/StudentProfileLog";
 import StudentProfileReview from "../components/StudentProfileReview";
 
-import StudentContext from "../context/StudentContext";
+import DeleteDialog from "../components/DeleteDialog";
+import StudenForm from "../components/StudentForm";
 
 function StudentProfile() {
   const { id } = useParams();
-  const { students, fetchData } = useContext(StudentContext);
   const [loading, setLoading] = useState(true);
+  const [isDeleteDialogOpen, setDeleteDialog] = useState(false);
+  const [isUpdateDialogOpen, setUpdateDialog] = useState(false);
+  const [data, setData] = useState();
+  const API = import.meta.env.VITE_BACKEND_URL;
 
-  const data = students
-    ? students.results
-      ? students.results.find((student) => student.rollNumber === id)
-      : null
-    : null;
+  const handleDelete = () => {
+    setDeleteDialog(!isDeleteDialogOpen);
+  };
+
+  const handleUpdate = () => {
+    setUpdateDialog(!isUpdateDialogOpen);
+  };
 
   useEffect(() => {
-    if (students == null) {
-      fetchData(undefined, undefined, undefined, setLoading);
+    async function fetcher() {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${API}/api/studentTable/${id}/`);
+        setData(response.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
     }
+    fetcher();
   }, []);
 
   const tabs = [
@@ -108,46 +131,85 @@ function StudentProfile() {
             <CardBody className="flex flex-row flex-1">
               <AcademicCapIcon className="size-10 md:size-16 xl:size-20 text-blue-gray-900" />
               <div className="ml-10 h-full flex flex-col flex-1">
-                <div className="flex flex-row">
-                  <Typography variant="h5" color="blue-gray">
-                    {data.name}
-                  </Typography>
-                  <Chip
-                    variant="ghost"
-                    size="sm"
-                    className="px-2 mx-4"
-                    value={data.studentStatus}
-                    icon={
-                      <span
-                        className={`mx-auto mt-1 block h-2 w-2 rounded-full content-[''] ${
-                          data.studentStatus === "Active"
-                            ? "bg-green-900"
-                            : data.studentStatus === "Terminated"
-                            ? "bg-red-900"
-                            : data.studentStatus === "Semester Leave"
-                            ? "bg-amber-900"
-                            : data.studentStatus === "Shifted"
-                            ? "bg-blue-900"
-                            : data.studentStatus === "Graduated"
-                            ? "bg-gray-900"
-                            : "bg-blue-gray-900"
-                        }`}
-                      />
-                    }
-                    color={
-                      data.studentStatus === "Active"
-                        ? "green"
-                        : data.studentStatus === "Terminated"
-                        ? "red"
-                        : data.studentStatus === "Semester Leave"
-                        ? "amber"
-                        : data.studentStatus === "Shifted"
-                        ? "blue"
-                        : data.studentStatus === "Graduated"
-                        ? "gray"
-                        : "blue-gray"
-                    }
-                  />
+                <div className="flex flex-row justify-between items-center">
+                  <div className="flex flex-row">
+                    <Typography variant="h5" color="blue-gray">
+                      {data.name}
+                    </Typography>
+                    <Chip
+                      variant="ghost"
+                      size="sm"
+                      className="px-2 mx-4"
+                      value={data.studentStatus}
+                      icon={
+                        <span
+                          className={`mx-auto mt-1 block h-2 w-2 rounded-full content-[''] ${
+                            data.studentStatus === "Active"
+                              ? "bg-green-900"
+                              : data.studentStatus === "Terminated"
+                              ? "bg-red-900"
+                              : data.studentStatus === "Semester Leave"
+                              ? "bg-amber-900"
+                              : data.studentStatus === "Shifted"
+                              ? "bg-blue-900"
+                              : data.studentStatus === "Graduated"
+                              ? "bg-gray-900"
+                              : "bg-blue-gray-900"
+                          }`}
+                        />
+                      }
+                      color={
+                        data.studentStatus === "Active"
+                          ? "green"
+                          : data.studentStatus === "Terminated"
+                          ? "red"
+                          : data.studentStatus === "Semester Leave"
+                          ? "amber"
+                          : data.studentStatus === "Shifted"
+                          ? "blue"
+                          : data.studentStatus === "Graduated"
+                          ? "gray"
+                          : "blue-gray"
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      className="flex items-center space-x-2 py-2"
+                      variant="outlined"
+                      size="sm"
+                      onClick={handleUpdate}
+                    >
+                      <PencilIcon className="size-4" />
+                      <span>Edit</span>
+                    </Button>
+                    <Button
+                      className="flex items-center space-x-2 py-2"
+                      variant="outlined"
+                      size="sm"
+                      onClick={handleDelete}
+                    >
+                      <TrashIcon className="size-4 text-red-500" />
+                      <span className="text-red-500">Delete</span>
+                    </Button>
+                    <Dialog
+                      open={isUpdateDialogOpen}
+                      handler={handleUpdate}
+                      className="max-h-[90vh]"
+                    >
+                      <DialogHeader className="cursor-default max-h-[10vh]">
+                        Edit Student
+                      </DialogHeader>
+                      <DialogBody className="overflow-auto max-h-[75vh]">
+                        <StudenForm setOpen={setUpdateDialog} initVal={data} />
+                      </DialogBody>
+                    </Dialog>
+                    <DeleteDialog
+                      isOpen={isDeleteDialogOpen}
+                      setOpen={setDeleteDialog}
+                      row={data}
+                    />
+                  </div>
                 </div>
                 <div className="mt-2 grid grid-cols-4 grid-rows-3">
                   {headdetails.map((item, index) => (

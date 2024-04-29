@@ -1,24 +1,26 @@
 import re
+
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
+
 
 def rollNo(value):
     if value.startswith('PhD'):
         if not value[3:].isdigit() or len(value) < 8:
-            raise ValidationError('Invalid Roll Number format. Please use the following format: PhDxxxxx')
+            raise ValidationError('Please use the following roll number format: PhDxxxxx')
     elif value.startswith('MT'):
         if not value[2:].isdigit() or len(value) < 7:
-            raise ValidationError('Invalid Roll Number format. Please use the following format: MTxxxxx')
+            raise ValidationError('Please use the following roll number format: MTxxxxx')
     else:
-        raise ValidationError('Invalid Roll Number format. Please use the following format: PhDxxxxx or MTxxxxx')   
+        raise ValidationError('Please use the following roll number format: PhDxxxxx or MTxxxxx')   
 
 def email(value):
     if not value.endswith('@iiitd.ac.in') or value.count('@') != 1:
-        raise ValidationError('Invalid EmailId format. Please enter a @iiitd.ac.in domain Email-Id')
+        raise ValidationError('Please enter @iiitd.ac.in Email-Id')
 
 def batch(value):
     if not value or not re.match(r'^(January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$', value):
-        raise ValidationError('Invalid batch format. Please use the following format: Month YYYY')
+        raise ValidationError('Please use the following batch format: Month YYYY')
 
 def dateSequence(jd, tsd, tdd, tdy, yol):
     validate_date_order(jd, tsd)
