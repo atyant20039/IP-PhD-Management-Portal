@@ -26,8 +26,8 @@ function Sidebar() {
     },
     {
       icon: CurrencyRupeeIcon,
-      text: "Stipend",
-      url: "/stipend",
+      text: "Finance",
+      url: "/finance",
     },
     {
       icon: DocumentDuplicateIcon,

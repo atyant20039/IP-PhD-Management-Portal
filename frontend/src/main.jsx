@@ -11,7 +11,7 @@ import ProfLayout from "./layouts/ProfView";
 import ErrorPage from "./pages/ErrorPage";
 import Dashboard from "./pages/Dashboard";
 import Database from "./pages/Database";
-import Stipend from "./pages/Stipend";
+import Finance from "./pages/Finance";
 import Invigilation from "./pages/Invigilation";
 import Faculty from "./pages/Faculty";
 import StudentProfile from "./pages/StudentProfile";
@@ -38,8 +38,8 @@ const router = createBrowserRouter([
         element: <StudentProfile />,
       },
       {
-        path: "stipend",
-        element: <Stipend />,
+        path: "finance",
+        element: <Finance />,
       },
       {
         path: "exam",

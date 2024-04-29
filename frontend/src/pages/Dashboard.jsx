@@ -21,8 +21,8 @@ function Dashboard() {
       img: DatabaseImg,
     },
     {
-      text: "Stipend",
-      url: "/stipend",
+      text: "Finance",
+      url: "/finance",
       img: StipendImg,
     },
     {
