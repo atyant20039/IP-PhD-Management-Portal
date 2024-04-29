@@ -349,3 +349,34 @@ class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
             queryset = queryset.exclude(stipend__month=month, stipend__year=year)
 
         return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        month = self.request.query_params.get('month', None)
+        year = self.request.query_params.get('year', None)
+
+
+        response_data = []
+        for student in queryset:
+            student_data = {
+                'name': student.name,
+                'rollNumber': student.rollNumber,
+                'month': month,
+                'year': year,
+                'joiningDate': student.joiningDate,
+                'department': student.department,
+                'hra': 0,
+                'hostler': 'Yes',
+            }
+
+            try:
+                comprehensive_review = student.comprehensive_review
+                student_data['comprehensiveExamDate'] = comprehensive_review.dateOfReview
+                student_data['baseAmount'] = 42000
+            except Comprehensive.DoesNotExist:
+                student_data['comprehensiveExamDate'] = None
+                student_data['baseAmount'] = 37000
+
+            response_data.append(student_data)
+
+        return Response(response_data, status=status.HTTP_200_OK)
