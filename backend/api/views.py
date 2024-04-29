@@ -278,6 +278,43 @@ class StipendViewSet(ModelViewSet):
     filterset_fields = ['student__name', 'student__department', 'hostler', 'student__rollNumber', 'month', 'year']
     search_fields = ['$student__name', '$student__rollNumber']
 
+    def create(self, request, *args, **kwargs):
+        # Assuming the request data is a list of Stipend objects
+        stipend_data = request.data
+        successful_entries = []
+        failed_entries = []
+
+        for stipend in stipend_data:
+            student_id = stipend.get('student')
+            month = stipend.get('month')
+            year = stipend.get('year')
+
+            # Check if a stipend entry already exists for the given student, month, and year
+            if Stipend.objects.filter(student_id=student_id, month=month, year=year).exists():
+                failed_entries.append({
+                    'studentRollNumber': stipend.get('student__rollNumber'),
+                    'reason': f"Stipend Entry for {month} and {year} already exists for {stipend.get('student__rollNumber')}."
+                })
+                
+                continue
+
+            # Perform validations for each attribute
+            serializer = self.get_serializer(data=stipend)
+            if serializer.is_valid():
+                serializer.save()
+                successful_entries.append(serializer.data)
+            else:
+                failed_entries.append({
+                    'studentRollNumber': stipend.get('student__rollNumber'),
+                    'reason': serializer.errors
+                })
+
+        response_data = {
+            'successful_entries': successful_entries,
+            'failed_entries': failed_entries
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
 class ContingencyViewSet(ModelViewSet):
     queryset = ContingencyLogs.objects.all()
     serializer_class = ContingencySerializer
