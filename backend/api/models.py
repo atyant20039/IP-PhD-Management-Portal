@@ -65,17 +65,6 @@ class Comprehensive(models.Model):
 
     def __str__(self):
         return f"RollNo: {self.student.rollNumber} Date: {self.dateOfReview}"
-    
-# class Finance(models.Model):
-#     student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name="finance_details")
-#     stipendMonths = models.PositiveIntegerField(default=0)
-#     contingencyYears = models.PositiveIntegerField(default=0)
-
-#     class Meta:
-#         ordering=['student']
-
-#     def __str__(self):
-#         return f"RollNo: {self.student.rollNumber} StipendMonths: {self.stipendMonths} ContingencyYears: {self.contingencyYears}"
 
 class YearlyReview(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='yearly_reviews')
@@ -93,7 +82,7 @@ class YearlyReview(models.Model):
 
 class Stipend(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='stipend')
-    disbursmentDate = models.DateField(default = date.today)
+    disbursmentDate = models.DateField(default = date.today())
     month = models.IntegerField(default=date.today().month)
     year = models.IntegerField(default=date.today().year)
     hostler = models.CharField(max_length=10, choices=[('YES', 'YES'), ('NO', 'NO')], default="YES")
@@ -104,6 +93,7 @@ class Stipend(models.Model):
 
     class Meta:
         ordering=['student']
+        unique_together = ['student', 'month', 'year']
 
 
 class ContingencyLogs(models.Model):
