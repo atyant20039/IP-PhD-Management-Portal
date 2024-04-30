@@ -266,7 +266,8 @@ class ComprehensiveViewSet(ModelViewSet):
 class YearlyReviewViewSet(ModelViewSet):
     queryset = YearlyReview.objects.all()
     serializer_class = YearlyReviewSerializer
-    filter_backends = [SearchFilter, DjangoFilterBackend]
+    pagination_class = NoPagination
+    filter_backends = [SearchFilter, DjangoFilterBackend, OrderingFilter]
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
 

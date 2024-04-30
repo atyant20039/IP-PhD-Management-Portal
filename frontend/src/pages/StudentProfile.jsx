@@ -83,13 +83,13 @@ function StudentProfile() {
       label: "Yearly Review",
       value: "yearly",
       icon: CalendarDaysIcon,
-      childComponent: <StudentProfileReview id={id} />,
+      childComponent: <StudentProfileReview rno={id} id={data?.id} />,
     },
     {
       label: "Comprehensive Exam",
       value: "exam",
       icon: NewspaperIcon,
-      childComponent: <StudentProfileExam id={id} />,
+      childComponent: <StudentProfileExam rno={id} id={data?.id} />,
     },
     {
       label: "Contingency Logbook",
@@ -119,9 +119,9 @@ function StudentProfile() {
   ];
 
   return (
-    <div className="flex flex-col w-full h-full">
+    <div className="flex flex-col h-full">
       {data ? (
-        <div>
+        <div className="flex flex-col h-full">
           <Card shadow={false}>
             <CardHeader floated={false} shadow={false}>
               <Typography variant="h4" color="blue-gray">
@@ -187,10 +187,11 @@ function StudentProfile() {
                       className="flex items-center space-x-2 py-2"
                       variant="outlined"
                       size="sm"
+                      color="red"
                       onClick={handleDelete}
                     >
-                      <TrashIcon className="size-4 text-red-500" />
-                      <span className="text-red-500">Delete</span>
+                      <TrashIcon className="size-4" />
+                      <span>Delete</span>
                     </Button>
                     <Dialog
                       open={isUpdateDialogOpen}
@@ -208,6 +209,7 @@ function StudentProfile() {
                       isOpen={isDeleteDialogOpen}
                       setOpen={setDeleteDialog}
                       row={data}
+                      model="student"
                     />
                   </div>
                 </div>
@@ -228,32 +230,34 @@ function StudentProfile() {
               </div>
             </CardBody>
           </Card>
-          <Card shadow={false} className="flex flex-1">
-            <CardBody className="px-2 py-1">
-              <Tabs value="profile">
-                <TabsHeader>
-                  {tabs.map((item) => (
-                    <Tab key={item.value} value={item.value}>
-                      <div className="flex items-center gap-2">
-                        <item.icon className="size-5" />
-                        {item.label}
-                      </div>
-                    </Tab>
-                  ))}
-                </TabsHeader>
-                <TabsBody>
-                  {tabs.map((item) => (
-                    <TabPanel key={item.value} value={item.value}>
-                      {item.childComponent}
-                    </TabPanel>
-                  ))}
-                </TabsBody>
-              </Tabs>
-            </CardBody>
-          </Card>
+          <div className="px-2 flex-1 overflow-auto">
+            <Tabs value="profile" className="h-full w-full flex flex-col">
+              <TabsHeader className="bg-gray-300/50">
+                {tabs.map((item) => (
+                  <Tab key={item.value} value={item.value}>
+                    <div className="flex items-center gap-2">
+                      <item.icon className="size-5" />
+                      {item.label}
+                    </div>
+                  </Tab>
+                ))}
+              </TabsHeader>
+              <TabsBody className="flex-1">
+                {tabs.map((item) => (
+                  <TabPanel
+                    key={item.value}
+                    value={item.value}
+                    className="px-0 py-2 h-full flex"
+                  >
+                    <div className="flex-1 w-full">{item.childComponent}</div>
+                  </TabPanel>
+                ))}
+              </TabsBody>
+            </Tabs>
+          </div>
         </div>
       ) : (
-        <div className="w-full h-full flex flex-col place-content-center place-items-center">
+        <div className="h-full w-full flex flex-col place-content-center place-items-center">
           {loading ? (
             <Spinner className="size-12" />
           ) : (

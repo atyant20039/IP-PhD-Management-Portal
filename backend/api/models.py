@@ -82,7 +82,7 @@ class YearlyReview(models.Model):
     dateOfReview = models.DateField(default = date.today)
     reviewYear = models.PositiveIntegerField(help_text="Enter the review year as a number (e.g., 1, 2, 3, etc.)")
     comment = models.TextField(blank=True, null=True)
-    yearlyReviewreviewFile = models.FileField(upload_to="yearly_review_files/", max_length=255, validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])])
+    yearlyReviewFile = models.FileField(upload_to="yearly_review_files/", max_length=255, validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])])
 
     def __str__(self):
         return f"RollNo: {self.student.rollNumber} Review Year: {self.reviewYear} Date: {self.dateOfReview}"

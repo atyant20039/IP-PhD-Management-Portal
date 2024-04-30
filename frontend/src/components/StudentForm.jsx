@@ -779,7 +779,7 @@ function StudentForm({ setOpen, initVal }) {
               </span>
             )}
           </div>
-          <div className="Student Status col-span-2">
+          <div className="col-span-2">
             <Input
               type="text"
               id="comment"

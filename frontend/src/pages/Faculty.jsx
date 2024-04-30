@@ -266,6 +266,7 @@ function Faculty() {
                 isOpen={isDeleteDialogOpen}
                 setOpen={setDeleteDialog}
                 row={selectedRow}
+                model="faculty"
               />
             </table>
           ) : (

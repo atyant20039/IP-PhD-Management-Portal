@@ -1,4 +1,4 @@
-function StudentProfileExam() {
+function StudentProfileExam({ rno, id }) {
   return <div>StudentProfileExam</div>;
 }
 

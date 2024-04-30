@@ -9,25 +9,35 @@ import {
   Spinner,
   Typography,
 } from "@material-tailwind/react";
+import axios from "axios";
 import React, { useContext, useState } from "react";
 
 import FacultyContext from "../context/FacultyContext";
 import StudentContext from "../context/StudentContext";
 
-function DeleteDialog({ isOpen, setOpen, row }) {
+function DeleteDialog({ isOpen, setOpen, row, model }) {
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState([]);
   const { deleteFaculty } = useContext(FacultyContext);
   const { deleteStudent } = useContext(StudentContext);
   const BASE = import.meta.env.VITE_FRONTEND_URL;
+  const API = import.meta.env.VITE_BACKEND_URL;
   const handleDelete = async () => {
     if (row) {
       setSubmitting(true);
       var response;
-      if (row.rollNumber) {
+      if (model == "student") {
         response = await deleteStudent(row.rollNumber);
-      } else {
+      } else if (model == "faculty") {
         response = await deleteFaculty(row.id);
+      } else if (model == "yearlyReview") {
+        try {
+          await axios.delete(`${API}/api/yearlyReview/${row.id}/`);
+        } catch (error) {
+          response = error.response?.data
+            ? Object.values(error.response.data)
+            : [error.message];
+        }
       }
 
       if (response) {
@@ -35,7 +45,7 @@ function DeleteDialog({ isOpen, setOpen, row }) {
         setSubmitting(false);
       } else {
         handleOpen();
-        if (row.rollNumber) {
+        if (model == "student") {
           window.location.href = `${BASE}/db`;
         }
       }
@@ -54,7 +64,7 @@ function DeleteDialog({ isOpen, setOpen, row }) {
       <DialogBody className="flex flex-col place-items-center">
         <ExclamationCircleIcon className="size-36 text-red-400" />
         <Typography variant="h5" color="blue-gray" className="cursor-default">
-          This action is not reversible. Are you sure to delete {row?.name}?
+          This action is not reversible. Are you sure to delete?
         </Typography>
         {error.length != 0 &&
           error.map((e) => (
