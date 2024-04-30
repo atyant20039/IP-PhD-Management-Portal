@@ -4,17 +4,19 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.datavalidation import DataValidation
 from rest_framework import status
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.viewsets import (GenericViewSet, ModelViewSet,
+                                     ReadOnlyModelViewSet)
 
 from .models import *
+from .pagination import NoPagination
 from .serializers import *
 
 
@@ -32,24 +34,9 @@ class StudentTableViewSet(ModelViewSet):
     serializer_class = StudentTableSerializer
     lookup_field = 'rollNumber'
     lookup_url_kwarg = 'rollNumber'
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
     search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__advisor1__name', '$advisor_set__advisor2__name', '$advisor_set__coadvisor__name']
- 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        sort_by = self.request.query_params.get('sort')
-        if sort_by:
-            serializer_fields = self.serializer_class().get_fields()
-
-            if sort_by in ['advisor1', 'advisor2', 'coadvisor']:
-                queryset = queryset.order_by("advisor_set__"+sort_by+"__name")
-            elif sort_by not in serializer_fields:
-                raise ValidationError('Invalid field for sorting')
-            else:
-                queryset = queryset.order_by(sort_by)
-
-        return queryset
 
 class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = StudentTableSerializer
@@ -180,7 +167,7 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
 
                 for date_key in ['joiningDate', 'thesisSubmissionDate', 'thesisDefenceDate']:
                     if row_data[date_key] is not None:
-                        row_data[date_key] = row_data[date_key].strftime('%Y-%m-%d')
+                        row_data[date_key] = row_data[date_key].strftime('%d-%m-%Y')
 
                 serializer = StudentTableSerializer(data=row_data)
                 if serializer.is_valid():
@@ -196,22 +183,70 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
         except Exception as e:
             return Response({'error': f'Error processing the Excel file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+class StudentExportViewSet(ListModelMixin, GenericViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentTableSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
+    search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__advisor1__name', '$advisor_set__advisor2__name', '$advisor_set__coadvisor__name']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Students"
+
+        headers = ['Roll Number', 'Name', 'Email ID', 'Gender', 'Department', 'Advisor 1', 'Advisor 2', 'Coadvisor', 'Joining Date', 'Batch', 'Educational Qualification', 'Region', 'Admission Through', 'Funding Type', 'Source of Funding', 'Contingency Points', 'Student Status', 'Thesis Submission Date', 'Thesis Defence Date', 'Year of Leaving', 'Comment']
+        ws.append(headers)
+
+        for student in serializer.data:
+            data = [
+                student.get('rollNumber', ''),
+                student.get('name', ''),
+                student.get('emailId', ''),
+                student.get('gender', ''),
+                student.get('department', ''),
+                student.get('advisor1', ''),
+                student.get('advisor2', ''),
+                student.get('coadvisor', ''),
+                student.get('joiningDate', ''),
+                student.get('batch', ''),
+                student.get('educationalQualification', ''),
+                student.get('region', ''),
+                student.get('admissionThrough', ''),
+                student.get('fundingType', ''),
+                student.get('sourceOfFunding', ''),
+                student.get('contingencyPoints', ''),
+                student.get('studentStatus', ''),
+                student.get('thesisSubmissionDate', ''),
+                student.get('thesisDefenceDate', ''),
+                student.get('yearOfLeaving', ''),
+                student.get('comment', '')
+            ]
+            ws.append(data)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=students_data.xlsx'
+        wb.save(response)
+
+        return response
+
 class InstructorViewSet(ModelViewSet):
     queryset = Instructor.objects.all()
     serializer_class = InstructorSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['emailId','name', 'department']
     search_fields = ['$emailId', '$name']
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        sort_by = self.request.query_params.get('sort')
-        if sort_by:
-            if sort_by not in [field.name for field in Instructor._meta.get_fields()]:
-                raise ValidationError('Invalid field for sorting')
-
-            queryset = queryset.order_by(sort_by)
-        return queryset
+class AllInstructorViewSet(ReadOnlyModelViewSet):
+    queryset = Instructor.objects.all()
+    serializer_class = InstructorSerializer
+    pagination_class = NoPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['emailId','name', 'department']
+    search_fields = ['$emailId', '$name']
 
 class AdvisorViewSet(ModelViewSet):
     queryset = Advisor.objects.all()
@@ -235,21 +270,56 @@ class YearlyReviewViewSet(ModelViewSet):
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
 
-class FinanceViewSet(ModelViewSet):
-    queryset = Finance.objects.all()
-    serializer_class = FinanceSerializer
-    lookup_field = 'student__rollNumber'
-    lookup_url_kwarg = 'student__rollNumber'
-    filter_backends = [SearchFilter]
-    search_fields = ['$student__rollNumber']
 
 class StipendViewSet(ModelViewSet):
     queryset = Stipend.objects.all()
     serializer_class = StipendSerializer
-    lookup_field = 'student__rollNumber'
-    lookup_url_kwarg = 'student__rollNumber'
-    filter_backends = [SearchFilter]
-    search_fields = ['$student__rollNumber']
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['student__name', 'student__department', 'hostler', 'student__rollNumber', 'month', 'year']
+    search_fields = ['$student__name', '$student__rollNumber']
+
+    def create(self, request, *args, **kwargs):
+        # Assuming the request data is a list of Stipend objects
+        stipend_data = request.data
+        successful_entries = []
+        failed_entries = []
+
+        for stipend in stipend_data:
+            student_id = stipend.get('student')
+            month = stipend.get('month')
+            year = stipend.get('year')
+
+            # Check if a stipend entry already exists for the given student, month, and year
+            if Stipend.objects.filter(student_id=student_id, month=month, year=year).exists():
+                failed_entries.append({
+                    'studentRollNumber': stipend.get('student__rollNumber'),
+                    'reason': f"Stipend Entry for {month} and {year} already exists for {stipend.get('student__rollNumber')}."
+                })
+
+                continue
+
+            # Perform validations for each attribute
+            serializer = self.get_serializer(data=stipend)
+            if serializer.is_valid():
+                # Months to be reduced.
+                serializer.save()
+                successful_entries.append(serializer.data)
+
+                # Retrieve the Student instance and update its stipendMonths attribute
+                student = Student.objects.get(pk=student_id)
+                student.stipendMonths -= 1
+                student.save()
+            else:
+                failed_entries.append({
+                    'studentRollNumber': stipend.get('student__rollNumber'),
+                    'reason': serializer.errors
+                })
+
+        response_data = {
+            'successful_entries': successful_entries,
+            'failed_entries': failed_entries
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 class ContingencyViewSet(ModelViewSet):
     queryset = ContingencyLogs.objects.all()
@@ -258,3 +328,55 @@ class ContingencyViewSet(ModelViewSet):
     lookup_url_kwarg = 'student__rollNumber'
     filter_backends = [SearchFilter]
     search_fields = ['$student__rollNumber']
+
+
+class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
+    serializer_class = StudentSerializer
+
+    def get_queryset(self):
+        # Existing filtering logic
+        queryset = Student.objects.filter(studentStatus="Active", stipendMonths__gt=0, fundingType="Institute")
+        
+        # Extract month and year from request
+        month = self.request.query_params.get('month', None)
+        year = self.request.query_params.get('year', None)
+
+        # If both month and year are provided, filter students without stipend for that month and year
+        if month is not None and year is not None:
+            month = int(month)
+            year = int(year)
+            # Exclude students who have a stipend record for the given month and year
+            queryset = queryset.exclude(stipend__month=month, stipend__year=year)
+
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        month = self.request.query_params.get('month', None)
+        year = self.request.query_params.get('year', None)
+
+
+        response_data = []
+        for student in queryset:
+            student_data = {
+                'name': student.name,
+                'rollNumber': student.rollNumber,
+                'month': month,
+                'year': year,
+                'joiningDate': student.joiningDate,
+                'department': student.department,
+                'hra': 0,
+                'hostler': 'Yes',
+            }
+
+            try:
+                comprehensive_review = student.comprehensive_review
+                student_data['comprehensiveExamDate'] = comprehensive_review.dateOfReview
+                student_data['baseAmount'] = 42000
+            except Comprehensive.DoesNotExist:
+                student_data['comprehensiveExamDate'] = None
+                student_data['baseAmount'] = 37000
+
+            response_data.append(student_data)
+
+        return Response(response_data, status=status.HTTP_200_OK)

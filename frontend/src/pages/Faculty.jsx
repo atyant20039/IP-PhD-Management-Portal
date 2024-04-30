@@ -1,38 +1,34 @@
 import {
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XCircleIcon,
-  ChevronUpDownIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  ChevronUpDownIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import React from "react";
+
 import {
-  UserPlusIcon,
-  PencilIcon,
-  TrashIcon,
-  CheckCircleIcon,
-} from "@heroicons/react/24/solid";
-import {
-  Card,
-  CardHeader,
-  Input,
-  Typography,
   Button,
+  Card,
   CardBody,
   CardFooter,
+  CardHeader,
   Chip,
-  Spinner,
   IconButton,
+  Input,
+  Spinner,
   Tooltip,
-  Select, // Import Select component
+  Typography,
 } from "@material-tailwind/react";
 
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import DeleteDialog from "../components/DeleteDialog";
+import FilterDialog from "../components/FilterDialog";
+import ProfessorDialog from "../components/ProfessorDialog";
 import FacultyContext from "../context/FacultyContext";
-import FilterDialog from "../components/ProfessorFIlterDialog";
-import AddMemberDialog from "../components/AddMemberDialog";
-import axios from "axios";
 
 // Define the table head
 const TABLE_HEAD = [
@@ -63,23 +59,47 @@ function Faculty() {
   const [sort, setSort] = useState("name");
   const [isFilterDialogOpen, setFilterDialog] = useState(false);
   const [isAddDialogOpen, setAddDialog] = useState(false);
+  const [isDeleteDialogOpen, setDeleteDialog] = useState(false);
+  const [isUpdateDialogOpen, setUpdateDialog] = useState(false);
   const [filters, setFilters] = useState({});
-  const [editableRow, setEditableRow] = useState(null);
-  const [editedData, setEditedData] = useState({});
-  const [deleteConfirmation, setDeleteConfirmation] = useState(null); 
-  const navigate = useNavigate();
+  const [selectedRow, setSelectedRow] = useState(null);
 
-  const API = import.meta.env.VITE_BACKEND_URL;
+  const page = faculty ? (faculty.page ? faculty.page : 1) : 1;
+  const total_pages = faculty
+    ? faculty.total_pages
+      ? faculty.total_pages
+      : 1
+    : 1;
+
+  const handleFilterSelect = (selectedOptions) => {
+    setFilters(selectedOptions);
+  };
+
+  const handleSort = (selectedSort) => {
+    setSort((currentSort) => {
+      if (currentSort === selectedSort) {
+        return `-${selectedSort}`;
+      } else if (currentSort === `-${selectedSort}`) {
+        return selectedSort;
+      } else {
+        return selectedSort;
+      }
+    });
+  };
+
+  const handleDelete = (row) => {
+    setDeleteDialog(!isDeleteDialogOpen);
+    setSelectedRow(row);
+  };
+
+  const handleUpdate = (row) => {
+    setUpdateDialog(!isUpdateDialogOpen);
+    setSelectedRow(row);
+  };
 
   useEffect(() => {
     fetchData(page, search, sort, setLoading, filters);
-    console.log(faculty);
   }, []);
-
-  useEffect(() => {
-    faculty && faculty.total_pages && setTotalPages(faculty.total_pages);
-    faculty && faculty.page && setPage(faculty.page);
-  }, [faculty]);
 
   useEffect(() => {
     fetchData(1, search, sort, setLoading, filters);
@@ -151,7 +171,11 @@ function Faculty() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" color="blue-gray">
+              <Typography
+                variant="h4"
+                color="blue-gray"
+                className="cursor-default"
+              >
                 Faculty list
               </Typography>
             </div>
@@ -176,6 +200,7 @@ function Faculty() {
               <FilterDialog
                 isOpen={isFilterDialogOpen}
                 setOpen={setFilterDialog}
+                member="Professors"
                 onApplyFilters={handleFilterSelect}
               />
               <Button
@@ -186,16 +211,16 @@ function Faculty() {
                 <UserPlusIcon strokeWidth={2} className="size-4" /> Add
                 Professor
               </Button>
-              <AddMemberDialog
+              <ProfessorDialog
                 isOpen={isAddDialogOpen}
                 setOpen={setAddDialog}
-                member="Professor"
+                initVal={null}
               />
             </div>
           </div>
         </CardHeader>
-        <CardBody className="p-0 mt-5 flex flex-1 overflow-y-auto">
-          {faculty && faculty.results && faculty.results.length !== 0 ? (
+        <CardBody className="p-0 px-2 mt-5 flex flex-1 overflow-y-auto">
+          {faculty && faculty.results && faculty.results.length != 0 ? (
             <table className="w-full min-w-max table-auto text-left">
               <thead
                 className={`sticky top-0 bg-white z-20 ${
@@ -208,7 +233,7 @@ function Faculty() {
                       key={head}
                       className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                       onClick={() =>
-                        index !== TABLE_HEAD.length - 1 && setSort(value)
+                        index != TABLE_HEAD.length - 1 && handleSort(value)
                       }
                     >
                       <Typography
@@ -230,121 +255,74 @@ function Faculty() {
               </thead>
 
               <tbody>
-                {faculty.results.map(
-                  ({ name, emailId, department, id }, index) => {
-                    const isLast = index === faculty.results.length - 1;
-                    const classes = isLast
-                      ? "p-4"
-                      : "p-4 border-b border-blue-gray-50";
+                {faculty.results.map((row, index) => {
+                  const isLast = index === faculty.results.length - 1;
+                  const classes = isLast
+                    ? "p-4"
+                    : "p-4 border-b border-blue-gray-50";
 
-                    return (
-                      <tr key={name} className="hover:bg-blue-gray-50">
-                        <td className={classes}>
-                          {editableRow === index ? (
-                            <Input
-                              value={editedData.name}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  name: e.target.value,
-                                })
-                              }
-                            />
-                          ) : (
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal text-xs"
-                            >
-                              {name}
-                            </Typography>
-                          )}
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal text-xs"
+                  return (
+                    <tr key={row.name} className="hover:bg-blue-gray-50">
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal text-xs"
+                        >
+                          {row.name}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal text-xs"
+                        >
+                          {row.emailId}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <div className="w-max">
+                          <Chip
+                            variant="ghost"
+                            size="sm"
+                            className="px-1.5"
+                            value={row.department}
+                          />
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <Tooltip content="Edit">
+                          <IconButton
+                            variant="text"
+                            onClick={() => handleUpdate(row)}
                           >
-                            {emailId}
-                          </Typography>
-                        </td>
-
-                        <td className={classes}>
-                          {editableRow === index ? (
-                            <select
-                              value={editedData.department}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  department: e.target.value,
-                                })
-                              }
-                            >
-                              {["CSE", "CB", "ECE", "HCD", "SSH", "MATHS"].map(
-                                (option) => (
-                                  <option key={option} value={option}>
-                                    {option}
-                                  </option>
-                                )
-                              )}
-                            </select>
-                          ) : (
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal text-xs"
-                            >
-                              {department}
-                            </Typography>
-                          )}
-                        </td>
-                        <td className={classes}>
-                          {editableRow === index ? (
-                            <div>
-                              <Tooltip content="Confirm Edit">
-                                <IconButton
-                                  variant="text"
-                                  onClick={() => handleConfirmEdit(id)}
-                                >
-                                  <CheckCircleIcon className="size-4" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip content="Cancel Edit">
-                                <IconButton
-                                  variant="text"
-                                  onClick={() => setEditableRow(null)}
-                                >
-                                  <XCircleIcon className="size-4" />
-                                </IconButton>
-                              </Tooltip>
-                            </div>
-                          ) : (
-                            <div>
-                              <Tooltip content="Edit User">
-                                <IconButton
-                                  variant="text"
-                                  onClick={() => handleEdit(index)}
-                                >
-                                  <PencilIcon className="size-4" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip content="Delete User">
-                                <IconButton
-                                  variant="text"
-                                  onClick={() => confirmDelete(id)}
-                                >
-                                  <TrashIcon className="size-4" />
-                                </IconButton>
-                              </Tooltip>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  }
-                )}
+                            <PencilIcon className="size-4" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip content="Delete">
+                          <IconButton
+                            variant="text"
+                            onClick={() => handleDelete(row)}
+                          >
+                            <TrashIcon className="size-4" />
+                          </IconButton>
+                        </Tooltip>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
+              <ProfessorDialog
+                isOpen={isUpdateDialogOpen}
+                setOpen={setUpdateDialog}
+                initVal={selectedRow}
+              />
+              <DeleteDialog
+                isOpen={isDeleteDialogOpen}
+                setOpen={setDeleteDialog}
+                row={selectedRow}
+              />
             </table>
           ) : (
             <div className="w-full h-full flex flex-col place-content-center place-items-center">
@@ -353,7 +331,9 @@ function Faculty() {
               ) : (
                 <div>
                   <XCircleIcon className="h-48 w-48" />
-                  <Typography variant="h3">No Data Found</Typography>
+                  <Typography variant="h3" className="cursor-default">
+                    No Data Found
+                  </Typography>
                 </div>
               )}
             </div>
@@ -366,14 +346,14 @@ function Faculty() {
               variant="outlined"
               onClick={() => {
                 if (faculty.previous) {
-                  fetchData(page - 1, search, sort, setLoading);
+                  fetchData(page - 1, search, sort, setLoading, filters);
                 }
               }}
               disabled={page === 1}
             >
               <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" />
             </IconButton>
-            <Typography color="gray" className="font-normal">
+            <Typography color="gray" className="font-normal cursor-default">
               Page <strong className="text-gray-900">{page}</strong> of{" "}
               <strong className="text-gray-900">{total_pages}</strong>
             </Typography>
@@ -382,7 +362,7 @@ function Faculty() {
               variant="outlined"
               onClick={() => {
                 if (faculty.next) {
-                  fetchData(page + 1, search, sort, setLoading);
+                  fetchData(page + 1, search, sort, setLoading, filters);
                 }
               }}
               disabled={page === total_pages}

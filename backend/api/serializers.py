@@ -110,10 +110,10 @@ class ComprehensiveSerializer(ModelSerializer):
         model = Comprehensive
         fields = '__all__'
 
-class FinanceSerializer(ModelSerializer):
-    class Meta:
-        model = Finance 
-        fields = '__all__'
+# class FinanceSerializer(ModelSerializer):
+#     class Meta:
+#         model = Finance 
+#         fields = '__all__'
 
 class YearlyReviewSerializer(ModelSerializer):
     class Meta:

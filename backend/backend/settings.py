@@ -117,6 +117,8 @@ USE_I18N = True
 
 USE_TZ = True
 
+DATE_FORMAT = 'd-m-Y'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -136,4 +138,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageNumberPaginationWithCount',
+    'DATE_INPUT_FORMATS': ['%d-%m-%Y'],
+    'DATE_FORMAT': '%d-%m-%Y',
 }

@@ -1,15 +1,18 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useState, useEffect, useContext } from "react";
+
+import axios from "axios";
 
 import {
+  Button,
   Card,
-  CardHeader,
   CardBody,
-  Typography,
+  CardHeader,
   Chip,
-  Tabs,
-  TabsHeader,
-  TabsBody,
+  Dialog,
+  DialogBody,
+  DialogHeader,
+  Spinner,
   Tab,
   TabPanel,
   Spinner,
@@ -23,7 +26,11 @@ import {
 
 import {
   AcademicCapIcon,
+  CalendarDaysIcon,
+  NewspaperIcon,
+  PencilIcon,
   Square3Stack3DIcon,
+  TrashIcon,
   UserCircleIcon,
   NewspaperIcon,
   CalendarDaysIcon,
