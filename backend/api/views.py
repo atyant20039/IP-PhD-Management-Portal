@@ -260,6 +260,7 @@ class AdvisorViewSet(ModelViewSet):
 class ComprehensiveViewSet(ModelViewSet):
     queryset = Comprehensive.objects.all()
     serializer_class = ComprehensiveSerializer
+    pagination_class = NoPagination
     filter_backends = [SearchFilter]
     search_fields = ['$student__rollNumber']
 

@@ -23,11 +23,11 @@ const validateFileType = (value) => {
   }
 };
 
-function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
+function ComprehensiveDialog({ isOpen, setOpen, initVal, studentId }) {
   const API = import.meta.env.VITE_BACKEND_URL;
-  const addReview = async (data) => {
+  const addCompre = async (data) => {
     try {
-      await axios.post(`${API}/api/yearlyReview/`, data, {
+      await axios.post(`${API}/api/comprehensive/`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -40,9 +40,9 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
     }
   };
 
-  const updateReview = async (id, data) => {
+  const updateCompre = async (id, data) => {
     try {
-      await axios.patch(`${API}/api/yearlyReview/${id}/`, data, {
+      await axios.patch(`${API}/api/comprehensive/${id}/`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -71,7 +71,6 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
         "dateOfReview",
         initVal.dateOfReview.split("-").reverse().join("-")
       );
-      setValue("reviewYear", initVal.reviewYear);
       initVal.comment ? setValue("comment", initVal.comment) : null;
     }
   }, [initVal, setValue]);
@@ -93,7 +92,7 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
 
     const formData = new FormData();
     Object.keys(data).forEach((key) => {
-      if (key === "yearlyReviewFile") {
+      if (key === "comprehensiveReviewFile") {
         if (data[key].length != 0 && data[key][0] instanceof File) {
           formData.append(key, data[key][0]);
         }
@@ -103,9 +102,9 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
     });
 
     if (initVal) {
-      response = await updateReview(initVal.id, formData);
+      response = await updateCompre(initVal.id, formData);
     } else {
-      response = await addReview(formData);
+      response = await addCompre(formData);
     }
 
     if (response) {
@@ -127,7 +126,7 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
     <Dialog open={isOpen} handler={handleCancel}>
       <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
         <DialogHeader className="cursor-default">
-          {initVal ? "Edit" : "Add"} Yearly Review
+          {initVal ? "Edit" : "Add"} Comprehensive Exam Review
         </DialogHeader>
         <DialogBody>
           <Card shadow={false}>
@@ -149,27 +148,6 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
                 )}
               </div>
               <div className="mb-4">
-                <label htmlFor="reviewYear">Review Year*</label>
-                <Input
-                  type="number"
-                  id="reviewYear"
-                  error={Boolean(errors.reviewYear)}
-                  {...register("reviewYear", {
-                    required: "Review Year is required",
-                    min: {
-                      value: 0,
-                      message: "Negative values are not allowed",
-                    },
-                    valueAsNumber: true,
-                  })}
-                />
-                {errors.reviewYear && (
-                  <span className="text-red-500">
-                    {errors.reviewYear.message}
-                  </span>
-                )}
-              </div>
-              <div className="mb-4">
                 <label htmlFor="comment">Comment</label>
                 <Input
                   type="text"
@@ -182,26 +160,29 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
                 )}
               </div>
               <div className="mb-4">
-                <label htmlFor="yearlyReviewFile">Yearly Review File*</label>
+                <label htmlFor="comprehensiveReviewFile">
+                  Comprehensive Exam Review File*
+                </label>
                 {initVal && (
                   <div>
-                    Current File: {initVal.yearlyReviewFile.split("/").pop()}
+                    Current File:{" "}
+                    {initVal.comprehensiveReviewFile.split("/").pop()}
                   </div>
                 )}
                 <input
                   type="file"
-                  id="yearlyReviewFile"
+                  id="comprehensiveReviewFile"
                   className="file:rounded-lg file:rounded-r-none rounded-lg border border-blue-gray-200 file:bg-white text-blue-gray-400 file:text-blue-gray-400 file:mr-2 file:px-3 file:py-1 file:border-transparent file:border-r file:border-r-blue-gray-200 w-full cursor-pointer file:hover:cursor-pointer"
-                  {...register("yearlyReviewFile", {
+                  {...register("comprehensiveReviewFile", {
                     required: initVal
                       ? false
-                      : "Yearly Review File is required",
+                      : "Comprehensive Exam Review File is required",
                     validate: initVal ? null : validateFileType,
                   })}
                 />
-                {errors.yearlyReviewFile && (
+                {errors.comprehensiveReviewFile && (
                   <span className="text-red-500">
-                    {errors.yearlyReviewFile.message}
+                    {errors.comprehensiveReviewFile.message}
                   </span>
                 )}
               </div>
@@ -237,4 +218,4 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
   );
 }
 
-export default YearlyReviewDialog;
+export default ComprehensiveDialog;
