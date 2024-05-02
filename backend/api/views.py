@@ -270,7 +270,6 @@ class YearlyReviewViewSet(ModelViewSet):
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
 
-
 class StipendViewSet(ModelViewSet):
     queryset = Stipend.objects.all()
     serializer_class = StipendSerializer
@@ -292,8 +291,8 @@ class StipendViewSet(ModelViewSet):
             # Check if a stipend entry already exists for the given student, month, and year
             if Stipend.objects.filter(student_id=student_id, month=month, year=year).exists():
                 failed_entries.append({
-                    'studentRollNumber': stipend.get('student__rollNumber'),
-                    'reason': f"Stipend Entry for {month} and {year} already exists for {stipend.get('student__rollNumber')}."
+                    'studentEntry': stipend,
+                    'reason': f"Stipend Entry for month {month} and year {year} already exists for {stipend.get('student__rollNumber')}."
                 })
 
                 continue
@@ -320,6 +319,7 @@ class StipendViewSet(ModelViewSet):
             'failed_entries': failed_entries
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
+
 
 class ContingencyViewSet(ModelViewSet):
     queryset = ContingencyLogs.objects.all()
@@ -367,7 +367,7 @@ class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
                 'joiningDate': student.joiningDate,
                 'department': student.department,
                 'hra': 0,
-                'hostler': 'Yes',
+                'hostler': 'YES',
             }
 
             try:
