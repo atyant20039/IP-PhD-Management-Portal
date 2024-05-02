@@ -359,6 +359,7 @@ class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
         response_data = []
         for student in queryset:
             student_data = {
+                'id': student.id,
                 'name': student.name,
                 'rollNumber': student.rollNumber,
                 'month': month,
