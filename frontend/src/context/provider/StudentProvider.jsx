@@ -1,12 +1,11 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import stringifyFilters from "../../utils/stringifyFilters";
+import { useState, useEffect } from "react";
 import StudentContext from "../StudentContext";
+import axios from "axios";
 import convertFiltersToString from "../../utils/queryStringConvertor";
 
 const StudentProvider = ({ children }) => {
   const [students, setStudents] = useState(null);
-  var Error = null;
+  const [eligibleStudentList, setEligibleStudentList] = useState(null)
   const [error, setError] = useState(null);
 
   const API = import.meta.env.VITE_BACKEND_URL;
@@ -18,155 +17,89 @@ const StudentProvider = ({ children }) => {
     setLoading = null,
     filters = {} 
   } = {}) => {
-    setLoading = null,
-    filters = {}
-  ) => {
     try {
       const filterString = convertFiltersToString(filters); 
-      setLoading && setLoading(true);
-      const filterString = stringifyFilters(filters);
       const response = await axios.get(
-        `${API}/api/studentTable/?page=${page}&search=${search}&ordering=${sort}&${filterString}&${filterString}` 
+        `${API}/api/studentTable/?page=${page}&search=${search}&sort=${sort}&${filterString}` 
       );
       setLoading && setLoading(false);
       setStudents(response.data);
+      console.log(students)
+
     } catch (error) {
-      Error = error.response?.data
-        ? Object.values(error.response.data)
-        : [error.message];
-      return Error;
-    } finally {
-      setLoading && setLoading(false);
+      console.error("Error fetching data:", error);
+      setError(error);
     }
   };
 
-  const downloadStudents = async (
-    search = "",
-    sort = "rollNumber",
-    filters = {}
-  ) => {
+
+  const fetchEligibleStudentList = async ({
+    month = "",
+    year = "",
+  } = {}) => {
     try {
-      const filterString = stringifyFilters(filters);
       const response = await axios.get(
-        `${API}/api/studentDownload/?search=${search}&ordering=${sort}&${filterString}`,
-        {
-          responseType: "blob",
-        }
+        `${API}/api/stipendEligible/?month=${month}&year=${year}`
       );
-
-      const file = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const fileURL = URL.createObjectURL(file);
-
-      const fileLink = document.createElement("a");
-      fileLink.href = fileURL;
-      fileLink.setAttribute("download", "students_data.xlsx");
-      document.body.appendChild(fileLink);
-      fileLink.click();
-      fileLink.remove();
-      URL.revokeObjectURL(fileURL);
+  
+      // Add "Eligible" key with value "Yes" to each student object
+      const studentsWithEligibility = response.data.map(student => ({
+        ...student,
+        eligible: "Yes"
+      }));
+      console.log(studentsWithEligibility)
+  
+      setEligibleStudentList(studentsWithEligibility);
     } catch (error) {
-      Error = error.response?.data
-        ? Object.values(error.response.data)
-        : [error.message];
-      return Error;
+      console.error("Error fetching data:", error);
+      setError(error);
     }
   };
+  
 
-  const getStudentFileTemplate = async () => {
+  const addStudent = async (studentData) => {
     try {
-      const response = await axios.get(`${API}/api/studentFile/`, {
-        responseType: "blob",
-      });
-
-      const file = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
-      const fileURL = URL.createObjectURL(file);
-
-      const fileLink = document.createElement("a");
-      fileLink.href = fileURL;
-      fileLink.setAttribute("download", "students_template.xlsx");
-      document.body.appendChild(fileLink);
-      fileLink.click();
-      fileLink.remove();
-      URL.revokeObjectURL(fileURL);
-    } catch (error) {
-      Error = error.response?.data
-        ? Object.values(error.response.data)
-        : [error.message];
-      return Error;
-    }
-  };
-
-  const uploadStudentFile = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      await axios.post(`${API}/api/studentFile/`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-    } catch (error) {
-      Error = error.response?.data?.error
-        ? error.response.data.error
-        : error.message;
-
-      const invalidData = error.response?.data?.invalid_data
-        ? error.response.data.invalid_data
-        : null;
-      return { error: Error, invalidData: invalidData };
-    }
-  };
-
-  const addStudent = async (data) => {
-    try {
-      await axios.post(`${API}/api/studentTable/`, data);
+      const response = await axios.post(`${API}/api/studentTable/`, studentData);
+      setError(prevError => prevError === null ? false : null);
+      // Reset error state
       fetchStudents();
     } catch (error) {
-      Error = error.response?.data
-        ? Object.values(error.response.data)
-        : [error.message];
-      return Error;
+      console.error('Error adding student:', error.response.data);
+      setError(error.response.data); // Set error message
     }
   };
 
-  const updateStudent = async (id, data) => {
+  const editStudent = async (studentId, updatedStudentData) => {
+    console.log(studentId,updatedStudentData)
     try {
-      await axios.put(`${API}/api/studentTable/${id}/`, data);
-      setStudents((prevStudent) => {
-        const updatedResults = prevStudent.results.map((studentItem) => {
-          return studentItem.id === id
-            ? { ...studentItem, ...data }
-            : studentItem;
-        });
-        return { ...prevStudent, results: updatedResults };
-      });
+      const response = await axios.put(`${API}/api/student/${studentId}/`, updatedStudentData);
+      setError(null); // Reset error state
+      console.log(response)
+      fetchStudents();
     } catch (error) {
-      Error = error.response?.data
-        ? Object.values(error.response.data)
-        : [error.message];
-      return Error;
+      console.error('Error editing student:', error.response.data);
+      // setError(error.response.data); // Set error message
+    }
+  };
+  const deleteStudent = async (studentId) => {
+    try {
+      const response = await axios.delete(`${API}/api/studentTable/${studentId}`);
+      setError(null); // Reset error state
+      fetchStudents();
+    } catch (error) {
+      console.error(`Error deleting student with ID ${studentId}:`, error);
+      setError(error.response.data);
     }
   };
 
-  const deleteStudent = async (id) => {
+  const addStudentbyFile = async (studentData) => {
     try {
-      await axios.delete(`${API}/api/studentTable/${id}/`);
-      setStudents((prevStudents) => {
-        const filteredResults = prevStudents.results.filter(
-          (studentItem) => studentItem.id !== id
-        );
-        return { ...prevStudents, results: filteredResults };
-      });
+      const response = await axios.post(`${API}/api/studentFile/`, studentData);
+      setError(null); // Reset error state
+      fetchStudents();
     } catch (error) {
-      Error = error.response?.data
-        ? Object.values(error.response.data)
-        : [error.message];
-      return Error;
+      console.error('Error adding student:', error);
+      setError(error.response.data);
     }
   };
 
@@ -180,19 +113,7 @@ const StudentProvider = ({ children }) => {
 
   return (
     <StudentContext.Provider
-      value={{ students, setStudents, fetchData: fetchStudents, addStudent, editStudent, addStudentbyFile, error ,deleteStudent}}
-      value={{
-        students,
-        setStudents,
-        fetchData: fetchStudents,
-        downloadStudents,
-        getTemplate: getStudentFileTemplate,
-        uploadFile: uploadStudentFile,
-        addStudent,
-        updateStudent,
-        deleteStudent,
-        Error,
-      }}
+      value={{ students, setStudents, fetchData: fetchStudents, addStudent, editStudent, addStudentbyFile, error ,deleteStudent,fetchEligibleStudentList,eligibleStudentList,setEligibleStudentList}}
     >
       {children}
     </StudentContext.Provider>

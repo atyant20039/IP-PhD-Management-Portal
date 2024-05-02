@@ -40,7 +40,7 @@ function Stipend() {
   
   return (
     <>
-      <Typography variant="h2" className="my-3">
+      <Typography variant="h2" className="ml-4 my-3">
         Finance
       </Typography>
       <Tabs value={activeTab} onChange={handleTabChange}>

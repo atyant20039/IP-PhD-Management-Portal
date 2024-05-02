@@ -1,9 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import stringifyFilters from "../../utils/stringifyFilters";
+import stringifyFilters from "../../utils/queryStringConvertor";
 import FacultyContext from "../FacultyContext";
-import axios from "axios";
-import convertFiltersToString from "../../utils/queryStringConvertor";
 const FacultyProvider = ({ children }) => {
   const [faculty, setFaculty] = useState(null);
   var Error = null;
@@ -18,7 +16,7 @@ const FacultyProvider = ({ children }) => {
     filters = {}
   ) => {
     try {
-      const filterString = convertFiltersToString(filters); 
+      const filterString = stringifyFilters(filters); 
 
       const response = await axios.get(
         `${API}/api/instructor/?page=${page}&search=${search}&sort=${sort}&${filterString}`

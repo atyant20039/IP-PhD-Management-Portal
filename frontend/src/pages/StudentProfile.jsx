@@ -9,19 +9,15 @@ import {
   CardBody,
   CardHeader,
   Chip,
-  Dialog,
-  DialogBody,
-  DialogHeader,
   Spinner,
   Tab,
   TabPanel,
-  Spinner,
   Dialog,
   DialogHeader,
   DialogBody,
   DialogFooter,
   Alert,
-  Button,
+ 
 } from "@material-tailwind/react";
 
 import {
@@ -32,14 +28,10 @@ import {
   Square3Stack3DIcon,
   TrashIcon,
   UserCircleIcon,
-  NewspaperIcon,
-  CalendarDaysIcon,
-  PencilIcon,
-  TrashIcon,
+ 
 } from "@heroicons/react/24/solid";
 
 import Select from "react-select";
-import axios from "axios";
 
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import StudentProfileData from "../components/StudentProfileData";
