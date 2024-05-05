@@ -1,4 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
+import * as XLSX from "xlsx";
+
+import { saveAs } from "file-saver";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   Card,
@@ -37,33 +40,41 @@ const HISTORY_TABLE_HEAD = [
   "Month",
   "Year",
   "Hostler",
-  "Base Amount",
   "HRA",
-  "Total",
+  "Base Amount",
+  "Total Stipend",
   "Comment",
 ];
 
 const API = import.meta.env.VITE_BACKEND_URL;
 
 function Stipend() {
-  const [month, setMonth] = useState(4);
-  const [year, setYear] = useState(2023);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showHistory, setShowHistory] = useState(false);
   const {
     fetchEligibleStudentList,
     eligibleStudentList,
     students,
     setEligibleStudentList,
   } = useContext(StudentContext);
+
+  const [month, setMonth] = useState(4);
+  const [year, setYear] = useState(2023);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showHistory, setShowHistory] = useState(false);
   const [eligibleStudents, setEligibleStudents] = useState(eligibleStudentList);
   const [ineligibleStudentList, setIneligibleStudentList] = useState(null);
   const [studentList, setStudentList] = useState([]);
   const [stipendHistory, setStipendHistory] = useState([]);
+  const [failedEntries, setFailedEntries] = useState([]);
+  //Filter States
+  const [filterMonth, setFilterMonth] = useState();
+  const [filterYear, setFilterYear] = useState();
+  const [department, setDepartment] = useState("");
+  // Dialog states
+  const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showFailedStudentsDialog, setShowFailedStudentsDialog] =
     useState(false);
-  const [failedEntries, setFailedEntries] = useState([]);
+  const departments = ["CSE", "CB", "ECE", "HCD", "SSH", "MATHS"];
 
   useEffect(() => {
     setEligibleStudents(eligibleStudentList);
@@ -72,7 +83,11 @@ function Stipend() {
 
   useEffect(() => {
     if (searchTerm === "") {
-      setStudentList(eligibleStudents);
+      if (showHistory) {
+        setStudentList(stipendHistory);
+      } else {
+        setStudentList(eligibleStudents);
+      }
     }
   }, [searchTerm]);
 
@@ -80,6 +95,10 @@ function Stipend() {
     NotEligibleStudents();
     fetchStipendHistory();
   }, [students, eligibleStudentList]);
+
+  useEffect(() => {
+    setStudentList(stipendHistory);
+  }, [stipendHistory]);
 
   const fetchStipendHistory = () => {
     fetch(`${API}/api/stipend/`)
@@ -91,16 +110,13 @@ function Stipend() {
       })
       .then((data) => {
         console.log(data);
-        setStipendHistory(data.results);
+        setStipendHistory(data);
       })
       .catch((error) => {
         console.error("Error fetching stipend history:", error);
       });
   };
 
-  const handleCloseFailedStudentsDialog = () => {
-    setShowFailedStudentsDialog(false);
-  };
   const handleGenerate = async () => {
     if (month && year) {
       await fetchEligibleStudentList({ month, year });
@@ -191,17 +207,27 @@ function Stipend() {
     setSearchTerm(term);
 
     if (!term) {
-      setStudentList(eligibleStudentList);
+      setStudentList(showHistory ? stipendHistory : eligibleStudents);
     } else {
-      const combinedList = [...eligibleStudents, ...ineligibleStudentList];
-      const filteredStudents = combinedList.filter(
-        (student) =>
-          student.name.toLowerCase().includes(term) ||
-          student.rollNumber.toLowerCase().includes(term)
-      );
-      setStudentList(filteredStudents);
+      if (showHistory) {
+        const filteredHistory = stipendHistory.filter(
+          (student) =>
+            student.name.toLowerCase().includes(term) ||
+            student.rollNumber.toLowerCase().includes(term)
+        );
+        setStudentList(filteredHistory);
+      } else {
+        const combinedList = [...eligibleStudents, ...ineligibleStudentList];
+        const filteredCurrent = combinedList.filter(
+          (student) =>
+            student.name.toLowerCase().includes(term) ||
+            student.rollNumber.toLowerCase().includes(term)
+        );
+        setStudentList(filteredCurrent);
+      }
     }
   };
+
   const handleUpdateEligibility = (rollNumber) => {
     const studentToUpdate = ineligibleStudentList.find(
       (student) => student.rollNumber === rollNumber
@@ -264,6 +290,60 @@ function Stipend() {
     setStudentList(updatedStudentList);
   };
 
+  const handleDownload = () => {
+    if (studentList) {
+      const worksheet = XLSX.utils.json_to_sheet(studentList);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+      saveAs(
+        new Blob([excelBuffer], { type: "application/octet-stream" }),
+        "student_list.xlsx"
+      );
+    }
+  };
+
+  const handleFilterClick = () => {
+    setShowFilterDialog(true);
+  };
+
+  const handleCloseFailedStudentsDialog = () => {
+    setShowFailedStudentsDialog(false);
+  };
+
+  const handleFilterSubmit = () => {
+    const filteredHistory = stipendHistory.filter((student) => {
+      const isDepartmentMatch =
+        !department ||
+        student.department.toLowerCase() === department.toLowerCase();
+  
+      const isMonthMatch =
+        !filterMonth ||
+        parseInt(student.month, 10) === parseInt(filterMonth, 10);
+  
+      const isYearMatch =
+        !filterYear || parseInt(student.year, 10) === parseInt(filterYear, 10);
+  
+      return isDepartmentMatch && isMonthMatch && isYearMatch;
+    });
+  
+    setStudentList(filteredHistory);
+    setShowFilterDialog(false);
+  };
+  
+
+  const handleFilterReset = () => {
+    setFilterMonth("");
+    setFilterYear("");
+    setDepartment("");
+    setStudentList(stipendHistory); // Reset to the original stipendHistory data
+  };
+
+  // Use this function to initially load the stipendHistory data or when it changes
+
   return (
     <Card className="h-full w-full">
       {!studentList && (
@@ -302,16 +382,24 @@ function Stipend() {
             className="h-24 m-0 sticky top-0 bg-white z-50"
           >
             <div className="flex flex-col items-center justify-between gap-4 md:flex-row mx-2">
-              {!showHistory && (
-                <div>
-                  <Button onClick={ResetHandler}>Reset Data</Button>
-                </div>
-              )}
+            
               <div>
                 <Button onClick={handleToggleHistory}>
-                  {showHistory ? "Show Current Month Data" : "Show History"}
+                  {showHistory ? "Show Current Data" : "Show History"}
                 </Button>
               </div>
+              <div>
+                <Button onClick={!showHistory ? ResetHandler : handleDownload}>
+                  {!showHistory ? "Reset Data" : "Download"}
+                </Button>
+              </div>
+
+              {showHistory && (
+                <div>
+                  <Button onClick={handleFilterClick}>Filter</Button>
+                </div>
+              )}
+
               <div className="w-full">
                 <Input
                   label="Search"
@@ -369,6 +457,10 @@ function Stipend() {
                       eligible,
                       hra,
                       comprehensiveExamDate,
+                      disbursmentDate,
+                      comment,
+                      month,
+                      year,
                     },
                     index
                   ) => (
@@ -400,31 +492,57 @@ function Stipend() {
                           {department}
                         </Typography>
                       </td>
+
                       <td className="border-b border-blue-gray-100 bg-white p-4">
                         <Typography
                           variant="small"
                           color="blue-gray"
                           className="font-normal"
                         >
-                          {joiningDate}
+                          {showHistory ? disbursmentDate : joiningDate}
                         </Typography>
                       </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {comprehensiveExamDate
-                            ? comprehensiveExamDate
-                            : "Null"}
-                        </Typography>
-                      </td>
+
+                      {showHistory ? (
+                        <>
+                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {month}
+                            </Typography>
+                          </td>
+                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {year}
+                            </Typography>
+                          </td>
+                        </>
+                      ) : (
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {comprehensiveExamDate
+                              ? comprehensiveExamDate
+                              : "Null"}
+                          </Typography>
+                        </td>
+                      )}
 
                       <td className="border-b border-blue-gray-100 bg-white p-4">
                         <div className="flex items-center">
                           <Checkbox
                             checked={hostler === "YES"}
+                            disabled={showHistory}
                             color="blue"
                             onChange={() =>
                               handleFieldChange(
@@ -437,25 +555,45 @@ function Stipend() {
                         </div>
                       </td>
                       <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Input
-                          value={hra}
-                          onChange={(e) =>
-                            handleFieldChange(index, "hra", e.target.value)
-                          }
-                        />
+                        {showHistory ? (
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {hra}
+                          </Typography>
+                        ) : (
+                          <Input
+                            value={hra}
+                            onChange={(e) =>
+                              handleFieldChange(index, "hra", e.target.value)
+                            }
+                          />
+                        )}
                       </td>
 
                       <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Input
-                          value={baseAmount}
-                          onChange={(e) =>
-                            handleFieldChange(
-                              index,
-                              "baseAmount",
-                              e.target.value
-                            )
-                          }
-                        />
+                        {showHistory ? (
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {baseAmount}
+                          </Typography>
+                        ) : (
+                          <Input
+                            value={baseAmount}
+                            onChange={(e) =>
+                              handleFieldChange(
+                                index,
+                                "baseAmount",
+                                e.target.value
+                              )
+                            }
+                          />
+                        )}
                       </td>
 
                       <td className="border-b border-blue-gray-100 bg-white p-4">
@@ -468,26 +606,41 @@ function Stipend() {
                         </Typography>
                       </td>
 
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Button
-                          color={eligible === "Yes" ? "green" : "red"}
-                          disabled={eligible === "Yes"}
-                          onClick={() => handleUpdateEligibility(rollNumber)}
-                        >
-                          {eligible}
-                        </Button>
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        {!searchTerm && (
-                          <Button
-                            onClick={() => handleDeleteEntry(rollNumber)}
-                            color="red"
-                            size="sm"
+                      {showHistory ? (
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
                           >
-                            Delete
+                            {comment ? comment : "NO COMMENT"}
+                          </Typography>
+                        </td>
+                      ) : (
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Button
+                            color={eligible === "Yes" ? "green" : "red"}
+                            disabled={eligible === "Yes"}
+                            onClick={() => handleUpdateEligibility(rollNumber)}
+                          >
+                            {eligible}
                           </Button>
-                        )}
-                      </td>
+                        </td>
+                      )}
+
+                      {!showHistory && (
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          {!searchTerm && (
+                            <Button
+                              onClick={() => handleDeleteEntry(rollNumber)}
+                              color="red"
+                              size="sm"
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   )
                 )}
@@ -541,6 +694,68 @@ function Stipend() {
           <Button color="red" onClick={handleCloseFailedStudentsDialog}>
             Close
           </Button>
+        </DialogFooter>
+      </Dialog>
+
+      <Dialog
+        open={showFilterDialog}
+        onClose={() => setShowFilterDialog(false)}
+      >
+        <DialogHeader>Filter</DialogHeader>
+        <DialogBody>
+        <div className="flex flex-col space-y-4">
+  <label htmlFor="month">Month:</label>
+  <Input
+    id="month"
+    type="number"
+    value={filterMonth}
+    onChange={(e) => {
+      const monthValue = parseInt(e.target.value, 10);
+      if (!isNaN(monthValue) && monthValue >= 1 && monthValue <= 12) {
+        setFilterMonth(monthValue);
+      } else if (e.target.value === '' || e.target.value === null) {
+        // Allow deletion if the input is empty or null
+        setFilterMonth('');
+      }
+    }}
+  />
+
+  <label htmlFor="year">Year:</label>
+  <Input
+    id="year"
+    type="number"
+    value={filterYear}
+    onChange={(e) => {
+      const yearValue = e.target.value.trim();
+      if (/^\d*$/.test(yearValue) && yearValue.length <= 4) {
+        setFilterYear(yearValue);
+      } else if (yearValue === '' || yearValue === null) {
+        // Allow deletion if the input is empty or null
+        setFilterYear('');
+      }
+    }}
+  />
+
+  <label htmlFor="department">Department:</label>
+  <select
+    id="department"
+    value={department}
+    onChange={(e) => setDepartment(e.target.value)}
+  >
+    <option value="">Select Department</option>
+    {departments.map((dept) => (
+      <option key={dept} value={dept}>
+        {dept}
+      </option>
+    ))}
+  </select>
+</div>
+
+        </DialogBody>
+        <DialogFooter>
+          <Button onClick={() => setShowFilterDialog(false)}>Cancel</Button>
+          <Button onClick={handleFilterReset}>Reset</Button>
+          <Button onClick={handleFilterSubmit}>Apply</Button>
         </DialogFooter>
       </Dialog>
     </Card>

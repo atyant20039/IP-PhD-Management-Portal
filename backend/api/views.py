@@ -276,6 +276,25 @@ class StipendViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['student__name', 'student__department', 'hostler', 'student__rollNumber', 'month', 'year']
     search_fields = ['$student__name', '$student__rollNumber']
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Customizing the response
+        response_data = []
+        for stipend in serializer.data:
+            student_id = stipend['student']
+            student = Student.objects.get(pk=student_id)
+            student_details = {
+                'name': student.name,
+                'rollNumber': student.rollNumber,
+                'department': student.department,
+            }
+            stipend.update(student_details)
+            response_data.append(stipend)
+
+        return Response(response_data)
 
     def create(self, request, *args, **kwargs):
         # Assuming the request data is a list of Stipend objects
