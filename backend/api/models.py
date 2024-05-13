@@ -82,7 +82,7 @@ class YearlyReview(models.Model):
 
 class Stipend(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='stipend')
-    disbursmentDate = models.DateField(default = date.today())
+    disbursmentDate = models.DateField(default = date.today)
     month = models.IntegerField(default=date.today().month)
     year = models.IntegerField(default=date.today().year)
     hostler = models.CharField(max_length=10, choices=[('YES', 'YES'), ('NO', 'NO')], default="YES")
