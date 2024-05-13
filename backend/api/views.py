@@ -341,8 +341,114 @@ class StipendViewSet(ModelViewSet):
 
 
 class ContingencyViewSet(ModelViewSet):
-    queryset = ContingencyLogs.objects.all()
+    queryset = Contingency.objects.all()
     serializer_class = ContingencySerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['student__name', 'student__department', 'student__rollNumber', 'year']
+    search_fields = ['$student__rollNumber', '$student__name']
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Customizing the response
+        response_data = []
+        for contingency in serializer.data:
+            student_id = contingency['student']
+            student = Student.objects.get(pk=student_id)
+            student_details = {
+                'name': student.name,
+                'rollNumber': student.rollNumber,
+                'department': student.department,
+            }
+            contingency.update(student_details)
+            response_data.append(contingency)
+
+        return Response(response_data)
+
+    def create(self, request, *args, **kwargs):
+        # Assuming the request data is a list of contingency objects
+        contingency_data = request.data
+        successful_entries = []
+        failed_entries = []
+
+        for contingency in contingency_data:
+            student_id = contingency.get('student')
+            year = contingency.get('year')
+
+            # Check if a contingency entry already exists for the given student, and year
+            if Contingency.objects.filter(student_id=student_id, year=year).exists():
+                failed_entries.append({
+                    'studentEntry': contingency,
+                    'reason': f"Contingency Entry for year {year} already exists for {contingency.get('student__rollNumber')}."
+                })
+
+                continue
+
+            # Perform validations for each attribute
+            serializer = self.get_serializer(data=contingency)
+            if serializer.is_valid():
+                # Years to be reduced.
+                serializer.save()
+                successful_entries.append(serializer.data)
+
+                # Retrieve the Student instance and update its contingencyPoints attribute
+                student = Student.objects.get(pk=student_id)
+                student.contingencyYears -= 1
+                student.contingencyPoints += contingency.get('amount')
+                print(student.contingencyPoints)
+                student.save()
+            else:
+                failed_entries.append({
+                    'studentRollNumber': contingency.get('student__rollNumber'),
+                    'reason': serializer.errors
+                })
+
+        response_data = {
+            'successful_entries': successful_entries,
+            'failed_entries': failed_entries
+        }
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        original_amount = instance.amount
+
+        # Don't allow editing student field
+        request.data.pop('student')
+
+        # Update other fields
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        new_amount = serializer.validated_data.get('amount', original_amount)
+        difference = new_amount - original_amount
+
+        # Update contingencyPoints in Student model
+        student = instance.student
+        student.contingencyPoints += difference
+        student.save()
+
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Subtract amount from student.contingencyPoints
+        student = instance.student
+        student.contingencyPoints -= instance.amount
+        student.contingencyYears += 1
+        student.save()
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class ContingencyLogsViewSet(ModelViewSet):
+    queryset = ContingencyLogs.objects.all()
+    serializer_class = ContingencyLogsSerializer
     lookup_field = 'student__rollNumber'
     lookup_url_kwarg = 'student__rollNumber'
     filter_backends = [SearchFilter]

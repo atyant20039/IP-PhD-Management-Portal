@@ -82,11 +82,10 @@ class YearlyReview(models.Model):
 
 class Stipend(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='stipend')
-    disbursmentDate = models.DateField(default = date.today())
+    disbursmentDate = models.DateField(default = date.today)
     month = models.IntegerField(default=date.today().month)
     year = models.IntegerField(default=date.today().year)
     hostler = models.CharField(max_length=10, choices=[('YES', 'YES'), ('NO', 'NO')], default="YES")
-    comment = models.TextField(null=True, blank=True)
     baseAmount = models.DecimalField(max_digits=11, decimal_places=2, default=37000, validators=[MinValueValidator(0)])
     hra = models.DecimalField(max_digits=11, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     comment = models.TextField(null=True, blank=True)
@@ -95,9 +94,19 @@ class Stipend(models.Model):
         ordering=['student']
         unique_together = ['student', 'month', 'year']
 
+class Contingency(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingency')
+    disbursmentDate = models.DateField(default = date.today)
+    year = models.IntegerField(default=date.today().year)
+    amount = models.DecimalField(max_digits=11, decimal_places=2, default=15000, validators=[MinValueValidator(0)])
+    comment = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering=['student']
+        unique_together = ['student', 'year']
 
 class ContingencyLogs(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingency')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingencyLogs')
     item = models.TextField()
     quantity = models.PositiveIntegerField(default = 1)
     price = models.DecimalField(max_digits=11, decimal_places=2, validators=[MinValueValidator(0)])

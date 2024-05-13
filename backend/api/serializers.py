@@ -1,7 +1,10 @@
-from rest_framework.serializers import ModelSerializer, EmailField, StringRelatedField
-from .models import *
-from . import validator
 from rest_framework.exceptions import NotFound
+from rest_framework.serializers import (EmailField, ModelSerializer,
+                                        StringRelatedField)
+
+from . import validator
+from .models import *
+
 
 class StudentSerializer(ModelSerializer):
     class Meta:
@@ -127,5 +130,9 @@ class StipendSerializer(ModelSerializer):
 
 class ContingencySerializer(ModelSerializer):
     class Meta:
-        model = ContingencyLogs 
+        model = Contingency 
+        fields = '__all__'
+class ContingencyLogsSerializer(ModelSerializer):
+    class Meta:
+        model = ContingencyLogs
         fields = '__all__'
