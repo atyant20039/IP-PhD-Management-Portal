@@ -170,7 +170,7 @@ function Faculty() {
         </CardHeader>
         <CardBody className="p-0 px-2 mt-5 flex flex-1 overflow-y-auto">
           {faculty && faculty.results && faculty.results.length != 0 ? (
-            <table className="w-full min-w-max table-auto text-left">
+            <table className="w-full min-w-max table-auto text-left h-min">
               <thead className="sticky top-0 bg-white z-20">
                 <tr>
                   {TABLE_HEAD.map(({ head, value }, index) => (

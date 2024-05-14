@@ -234,7 +234,7 @@ export default function Database() {
           {students && students.results && students.results.length != 0 ? (
             <div className="flex flex-row flex-1 w-full h-full">
               <div className="overflow-auto flex-1">
-                <table className="w-full min-w-max table-auto text-left">
+                <table className="w-full min-w-max table-auto text-left h-min">
                   <thead className="sticky top-0 bg-white z-20">
                     <tr>
                       {TABLE_HEAD.map(
