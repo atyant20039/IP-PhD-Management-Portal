@@ -90,10 +90,10 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
           <Card shadow={false}>
             <CardBody>
               <div className="mb-4">
+                <label htmlFor="name">Name*</label>
                 <Input
                   type="text"
                   id="name"
-                  label="Name*"
                   error={Boolean(errors.name)}
                   {...register("name", {
                     required: "Name is required",
@@ -108,10 +108,10 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                 )}
               </div>
               <div className="mb-4">
+                <label htmlFor="emailId">Email Id*</label>
                 <Input
                   type="email"
                   id="emailId"
-                  label="Email Id*"
                   error={Boolean(errors.emailId)}
                   {...register("emailId", {
                     required: "Email is required",
@@ -130,6 +130,7 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                 )}
               </div>
               <div className="mb-4">
+                <label htmlFor="department">Department*</label>
                 <Controller
                   name="department"
                   id="department"
@@ -137,7 +138,6 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                   rules={{ required: "Department is required" }}
                   render={({ field }) => (
                     <Select
-                      placeholder="Department*"
                       options={formOptions.departmentOptions}
                       error={Boolean(errors.department)}
                       {...field}

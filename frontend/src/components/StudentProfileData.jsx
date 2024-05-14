@@ -1,97 +1,128 @@
-import React from 'react';
-import { Card, CardBody, Typography, CardHeader } from "@material-tailwind/react";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import './styles.css';
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  Typography,
+} from "@material-tailwind/react";
+
+const advisor_details = {
+  "Advisor 1": "advisor1",
+  "Advisor 2": "advisor2",
+  Coadvisor: "coadvisor",
+};
+
+const financial_details = {
+  "Funding Type": "fundingType",
+  "Source of Funding": "sourceOfFunding",
+  "Contingency Points": "contingencyPoints",
+  "Stipend Months": "stipendMonths",
+  "Contingency Years": "contingencyYears",
+};
+
+const acedemic_details = {
+  "Admission Through": "admissionThrough",
+  "Educational Qualification": "educationalQualification",
+  "Thesis Submission Date": "thesisSubmissionDate",
+  "Thesis Defence Date": "thesisDefenceDate",
+};
+
+const basic_details = {
+  Gender: "gender",
+  "Joining Date": "joiningDate",
+  Batch: "batch",
+  Region: "region",
+  "Student Status": "studentStatus",
+  "Year of Leaving": "yearOfLeaving",
+};
 
 function StudentProfileData({ data }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {/* Academic Information */}
-      <Card className="flex-grow academic-card">
-        <CardBody>
-          <Typography color="blue-gray" className="font-semibold">Academic Information</Typography>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <Typography variant="subtitle">Batch</Typography>
-              <Typography>{data.batch || "null"}</Typography>
-            </div>
-            <div>
-              <Typography variant="subtitle">Educational Qualification</Typography>
-              <Typography>{data.educationalQualification || "null"}</Typography>
-            </div>
-            <div>
-              <Typography variant="subtitle">Joining Date</Typography>
-              <Typography>{data.joiningDate || "null"}</Typography>
-            </div>
-            <div>
-              <Typography variant="subtitle">Admission Through</Typography>
-              <Typography>{data.admissionThrough || "null"}</Typography>
-            </div>
-            <div>
-              <Typography variant="subtitle">Year of Leaving</Typography>
-              <Typography>{data.yearOfLeaving || "null"}</Typography>
-            </div>
-            <div className="col-span-2 flex justify-end items-center">
-             
-            </div>
+    <div className="flex flex-row gap-3 h-full">
+      <Card className="bg-gray-200/75 w-3/4">
+        <div className="mx-4 my-2">
+          <Typography variant="h4" color="blue-gray">
+            Details
+          </Typography>
+        </div>
+        <CardBody className="grid grid-cols-4 overflow-auto pt-0">
+          {Object.keys(basic_details).map((key) => (
+            <>
+              <Typography variant="h6" className="col-span-1">
+                {key}
+              </Typography>
+              <div className="col-span-3">
+                {data[basic_details[key]] ? data[basic_details[key]] : "-"}
+              </div>
+            </>
+          ))}
+          <div className="col-span-4">
+            <br />
           </div>
+          <div className="col-span-4">
+            <Typography variant="h5" color="blue-gray">
+              Advisor Details
+            </Typography>
+          </div>
+          {Object.keys(advisor_details).map((key) => (
+            <>
+              <Typography variant="h6" className="col-span-1">
+                {key}
+              </Typography>
+              <div className="col-span-3">
+                {data[advisor_details[key]] ? data[advisor_details[key]] : "-"}
+              </div>
+            </>
+          ))}
+          <div className="col-span-4">
+            <br />
+          </div>
+          <div className="col-span-4">
+            <Typography variant="h5" color="blue-gray">
+              Financial Details
+            </Typography>
+          </div>
+          {Object.keys(financial_details).map((key) => (
+            <>
+              <Typography variant="h6" className="col-span-1">
+                {key}
+              </Typography>
+              <div className="col-span-3">
+                {data[financial_details[key]]
+                  ? data[financial_details[key]]
+                  : "-"}
+              </div>
+            </>
+          ))}
+          <div className="col-span-4">
+            <br />
+          </div>
+          <div className="col-span-4">
+            <Typography variant="h5" color="blue-gray">
+              Academic Details
+            </Typography>
+          </div>
+          {Object.keys(acedemic_details).map((key) => (
+            <>
+              <Typography variant="h6" className="col-span-1">
+                {key}
+              </Typography>
+              <div className="col-span-3">
+                {data[acedemic_details[key]]
+                  ? data[acedemic_details[key]]
+                  : "-"}
+              </div>
+            </>
+          ))}
         </CardBody>
       </Card>
-
-      {/* Financial Information */}
-      <Card className="flex-grow financial-card" >
-        <CardBody>
-          <Typography color="blue-gray" className="font-semibold">Financial Information</Typography>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <Typography variant="subtitle">Funding Type</Typography>
-              <Typography>{data.fundingType || "null"}</Typography>
-            </div>
-            <div>
-              <Typography variant="subtitle">Contingency Points</Typography>
-              <Typography>{data.contingencyPoints || "null"}</Typography>
-            </div>
-            <div>
-              <Typography variant="subtitle">Source of Funding</Typography>
-              <Typography>{data.sourceOfFunding || "null"}</Typography>
-            </div>
-            <div className="col-span-2 flex justify-end items-center">
-            
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Thesis Information */}
-      <Card className="flex-grow thesis-card">
-        <CardBody>
-          <Typography color="blue-gray" className="font-semibold">Thesis Information</Typography>
-          <div className="mt-4">
-            <div>
-              <Typography variant="subtitle">Thesis Submission Date</Typography>
-              <Typography>{data.thesisSubmissionDate || "null"}</Typography>
-            </div>
-            <div>
-              <Typography variant="subtitle">Thesis Defence Date</Typography>
-              <Typography>{data.thesisDefenceDate || "null"}</Typography>
-            </div>
-            <div className="flex justify-end items-center">
-             
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Comment */}
-      <Card className="col-span-1 sm:col-span-2 lg:col-span-3 comment">
-        <CardBody>
-          <Typography color="blue-gray" className="font-semibold">Comment</Typography>
-          <div className="mt-4">
-            <Typography>{data.comment || "null"}</Typography>
-            <div className="flex justify-end items-center">
-
-            </div>
-          </div>
+      <Card className="bg-gray-200 w-1/4">
+        <CardHeader shadow={false} floated={false} className="bg-gray-200 mt-2">
+          <Typography variant="h4" color="blue-gray">
+            Comment
+          </Typography>
+        </CardHeader>
+        <CardBody className="overflow-auto">
+          {data.comment ? data.comment : "No Comment"}
         </CardBody>
       </Card>
     </div>

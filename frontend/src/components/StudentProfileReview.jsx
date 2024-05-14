@@ -1,242 +1,241 @@
-import React, { useState,useEffect } from 'react';
-import { Typography, Button, Dialog, DialogBody,DialogHeader, DialogFooter, Input } from "@material-tailwind/react";
-import axios from 'axios'; // Import axios
+import { ChevronUpDownIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowDownTrayIcon,
+  PencilIcon,
+  PlusCircleIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  IconButton,
+  Spinner,
+  Tooltip,
+  Typography,
+} from "@material-tailwind/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
-const API = import.meta.env.VITE_BACKEND_URL;
-
-function AddRowDialog({ isOpen, onClose, onSave, rowDataToEdit, tableHead }) {
-  const [newRowData, setNewRowData] = useState(rowDataToEdit || {});
-
-  useEffect(() => {
-    // Update the new row data whenever the rowDataToEdit prop changes
-    setNewRowData(rowDataToEdit || {});
-
-    console.log(rowDataToEdit)
-  }, [rowDataToEdit]);
-
-  const handleCancel = () => {
-    onClose(); 
-    setNewRowData({});
-  };
-
-  const handleSave = () => {
-    onSave(newRowData); 
-    onClose(); 
-    setNewRowData({});
-  };
-
-  const handleFileChange = (e) => {
-    // Get the selected file
-    const selectedFile = e.target.files[0];
-    // Update the newRowData with the file name or other necessary information
-    setNewRowData({ ...newRowData, file: selectedFile });
-  };
-
-  return (
-    <Dialog open={isOpen} onClose={onClose}>
-      <DialogHeader>{rowDataToEdit ? 'Edit Row' : 'Add New Row'}</DialogHeader>
-      <DialogBody>
-        <div className="space-y-4">
-          {tableHead.map(({ head, value }) => (
-            <div key={value}>
-              <label>{head}:</label>
-              {value === 'file' ? ( 
-                <input
-                  type="file"
-                  accept="application/pdf" 
-                  onChange={handleFileChange}
-                />
-              ) : (
-                <input
-                  type={value === 'dateOfReview' ? 'date' : 'text'} // Adjust input type based on value
-                  value={newRowData[value] || ''}
-                  onChange={(e) => setNewRowData({ ...newRowData, [value]: e.target.value })}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      </DialogBody>
-      <DialogFooter>
-        <Button
-          variant="text"
-          color="red"
-          onClick={handleCancel}
-          className="mr-1"
-        >
-          Cancel
-        </Button>
-        <Button variant="gradient" color="green" onClick={handleSave}>
-          Save
-        </Button>
-      </DialogFooter>
-    </Dialog>
-  );
-}
-  
+import DeleteDialog from "./DeleteDialog";
+import YearlyReviewDialog from "./YearlyReviewDialog";
 
 const TABLE_HEAD = [
   {
-    head: "Date",
+    head: "Date of Review",
     value: "dateOfReview",
   },
   {
-    head: "File",
-    value: "yearlyReviewreviewFile",
-  },
-  {
     head: "Review Year",
-    value: "reviewYear"
+    value: "reviewYear",
   },
   {
     head: "Comment",
     value: "comment",
   },
   {
-    head: "Actions",
-    value: "actions",
+    head: "File",
+    value: "yearlyReviewFile",
+  },
+  {
+    head: "",
+    value: "",
   },
 ];
 
-function StudentProfileReview({ id }) {
-  const [data, setData] = useState([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [rowDataToEdit, setRowDataToEdit] = useState(null);
+function StudentProfileReview({ rno, id }) {
+  const [yearlyReviewData, setYearlyReviewData] = useState();
+  const [loading, setLoading] = useState(false);
+  const [sort, setSort] = useState("-dateOfReview");
+  const [isDeleteDialogOpen, setDeleteDialog] = useState(false);
+  const [isReviewFormOpen, setReviewForm] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const API = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
       try {
-        const response = await axios.get(`${API}/api/yearlyReview/?search=PhD20000`); // Use axios.get
-        setData(response.data.results);
-        console.log(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        setLoading(true);
+        const response = await axios.get(
+          `${API}/api/yearlyReview/?search=${rno}&ordering=${sort}`
+        );
+        setYearlyReviewData(response.data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
       }
-    };
+    }
+    fetchData();
+  }, [sort, isDeleteDialogOpen, isReviewFormOpen]);
 
-    fetchData(); // Call the fetchData function
-  }, [id]); // Add id to the dependency array to refetch data when id changes
-
-  const handleAddRow = () => {
-    setIsDialogOpen(true);
-    setRowDataToEdit(null); // Reset row data to edit when adding a new row
-  };
-
-  const handleEditRow = (rowData) => {
-    setIsDialogOpen(true);
-    setRowDataToEdit(rowData); // Set the row data to be edited
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setRowDataToEdit(null); // Reset row data to edit when closing the dialog
-  };
-
-  const handleSaveRow = async (newRowData) => {
-    console.log(newRowData);
-    try {
-      if (rowDataToEdit !== null) {
-        // Update an existing row
-        const response = await axios.put(`${API}/api/yearlyReview/${rowDataToEdit.id}`, newRowData, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!response.ok) {
-          console.log(response);
-          throw new Error('Failed to update row');
-        }
+  const handleSort = (selectedSort) => {
+    setSort((currentSort) => {
+      if (currentSort === selectedSort) {
+        return `-${selectedSort}`;
+      } else if (currentSort === `-${selectedSort}`) {
+        return selectedSort;
       } else {
-        // Add a new row
-        const response = await axios.post(`${API}/api/yearlyReview/`, {
-          ...newRowData,
-          studentId: id,
-        }, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        if (!response.ok) {
-          throw new Error('Failed to add new row');
-        }
+        return selectedSort;
       }
-  
-      fetchData();
-      setIsDialogOpen(false);
-      setRowDataToEdit(null);
+    });
+  };
+
+  const handleDelete = (row) => {
+    setDeleteDialog(!isDeleteDialogOpen);
+    setSelectedRow(row);
+  };
+
+  const handleForm = (row) => {
+    setReviewForm(!isReviewFormOpen);
+    setSelectedRow(row);
+  };
+
+  const handleDownload = async (fileUrl) => {
+    try {
+      const response = await axios.get(fileUrl, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileUrl.split("/").pop());
+      document.body.appendChild(link);
+      link.click();
     } catch (error) {
-      console.error('Error:', error);
-      // Handle error
+      console.error("Error downloading the file: ", error);
     }
   };
-  
+
   return (
-    <div className="w-90vw mx-auto">
-      {data.length > 0 ? (
-        <table className="w-full table-fixed text-left">
-          <thead className="bg-blue-gray-50">
-            <tr>
-              {TABLE_HEAD.map(({ head }) => (
-                <th key={head} className="border-b border-blue-gray-200 py-2 px-4">
-                  <Typography variant="small" color="blue-gray" className="font-medium">
-                    {head}
-                  </Typography>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, index) => (
-              <tr key={index} className="hover:bg-blue-gray-50">
-                <td className="border-b border-blue-gray-200 py-2 px-4">
-                  <Typography variant="body" className="text-sm">
-                    {row.dateOfReview}
-                  </Typography>
-                </td>
-                <td className="border-b border-blue-gray-200 py-2 px-4">
-                  <a href={row.yearlyReviewreviewFile} target="_blank" rel="noopener noreferrer">
-                    {row.yearlyReviewreviewFile}
-                  </a>
-                </td>
-                <td className="border-b border-blue-gray-200 py-2 px-4">
-                  <a href={row.reviewYear} target="_blank" rel="noopener noreferrer">
-                    {row.reviewYear}
-                  </a>
-                </td>
-                <td className="border-b border-blue-gray-200 py-2 px-4">
-                  <Typography variant="body" className="text-sm">
-                    {row.comment}
-                  </Typography>
-                </td>
-                <td className="border-b border-blue-gray-200 py-2 px-4">
-                  <div className="flex items-center space-x-2">
-                    <button
-                      className="text-blue-500"
-                      onClick={() => handleEditRow(row)}
+    <Card shadow={false} className="h-full w-full flex">
+      <CardBody className="p-0 overflow-y-auto flex-1">
+        {yearlyReviewData && yearlyReviewData.length > 0 ? (
+          <table className="w-full table-auto text-left">
+            <thead className="sticky top-0 z-20 bg-white">
+              <tr>
+                {TABLE_HEAD.map(({ head, value }, index) => (
+                  <th
+                    key={head}
+                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
+                    onClick={() =>
+                      index != TABLE_HEAD.length - 1 &&
+                      head != "File" &&
+                      handleSort(value)
+                    }
+                  >
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
                     >
-                      Edit
-                    </button>
-                    <button className="text-red-500">Delete</button>
-                  </div>
-                </td>
+                      {head}
+                      {index !== TABLE_HEAD.length - 1 && head != "File" && (
+                        <ChevronUpDownIcon
+                          strokeWidth={2}
+                          className="h-4 w-4"
+                        />
+                      )}
+                    </Typography>
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        <Typography variant="body">No data available</Typography>
-      )}
-      <Button onClick={handleAddRow}>Add New Row</Button>
+            </thead>
+            <tbody>
+              {yearlyReviewData.map((yearlyReview) => {
+                const classes = "p-4 border-b border-blue-gray-50";
+                return (
+                  <tr key={yearlyReview.reviewYear}>
+                    {TABLE_HEAD.map(({ head, value }, index) => {
+                      if (head == "") return;
+                      return (
+                        <td key={head} className={classes}>
+                          {head == "File" ? (
+                            <Button
+                              variant="outlined"
+                              size="sm"
+                              onClick={() =>
+                                handleDownload(yearlyReview[value])
+                              }
+                            >
+                              <div className="flex">
+                                <ArrowDownTrayIcon className="size-4 mr-1" />
+                                Download
+                              </div>
+                            </Button>
+                          ) : (
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {yearlyReview[value] ? yearlyReview[value] : "-"}
+                            </Typography>
+                          )}
+                        </td>
+                      );
+                    })}
+                    <td className="p-4 border-b border-blue-gray-50 whitespace-nowrap">
+                      <Tooltip content="Edit">
+                        <IconButton
+                          variant="text"
+                          onClick={() => handleForm(yearlyReview)}
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip content="Delete">
+                        <IconButton
+                          variant="text"
+                          onClick={() => handleDelete(yearlyReview)}
+                        >
+                          <TrashIcon className="size-4" />
+                        </IconButton>
+                      </Tooltip>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
 
-      <AddRowDialog
-  isOpen={isDialogOpen}
-  onClose={handleCloseDialog}
-  onSave={handleSaveRow}
-  rowDataToEdit={rowDataToEdit}
-  tableHead={TABLE_HEAD}
-/>
-
-    </div>
+            <DeleteDialog
+              isOpen={isDeleteDialogOpen}
+              setOpen={setDeleteDialog}
+              row={selectedRow}
+              model="yearlyReview"
+            />
+          </table>
+        ) : (
+          <div className="size-full flex flex-col place-content-center place-items-center">
+            {loading ? (
+              <Spinner className="size-12" />
+            ) : (
+              <div>
+                <XCircleIcon className="h-48 w-48" />
+                <Typography variant="h3" className="cursor-default">
+                  No Data Found
+                </Typography>
+              </div>
+            )}
+          </div>
+        )}
+      </CardBody>
+      <YearlyReviewDialog
+        isOpen={isReviewFormOpen}
+        setOpen={setReviewForm}
+        initVal={selectedRow}
+        studentId={id}
+      />
+      <CardFooter className="flex justify-end p-1">
+        <Button variant="outlined" size="sm" onClick={() => handleForm(null)}>
+          <div className="flex">
+            <PlusCircleIcon className="size-4 mr-1" />
+            Add New Review
+          </div>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 

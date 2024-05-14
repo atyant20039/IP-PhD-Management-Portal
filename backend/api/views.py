@@ -260,13 +260,15 @@ class AdvisorViewSet(ModelViewSet):
 class ComprehensiveViewSet(ModelViewSet):
     queryset = Comprehensive.objects.all()
     serializer_class = ComprehensiveSerializer
+    pagination_class = NoPagination
     filter_backends = [SearchFilter]
     search_fields = ['$student__rollNumber']
 
 class YearlyReviewViewSet(ModelViewSet):
     queryset = YearlyReview.objects.all()
     serializer_class = YearlyReviewSerializer
-    filter_backends = [SearchFilter, DjangoFilterBackend]
+    pagination_class = NoPagination
+    filter_backends = [SearchFilter, DjangoFilterBackend, OrderingFilter]
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
 

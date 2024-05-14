@@ -353,10 +353,10 @@ function StudentForm({ setOpen, initVal }) {
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardBody className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
+            <label htmlFor="rollNumber">Roll Number*</label>
             <Input
               type="text"
               id="rollNumber"
-              label="Roll Number*"
               error={Boolean(errors.rollNumber)}
               {...register("rollNumber", {
                 required: "Roll Number is required",
@@ -372,10 +372,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div className="col-span-2">
+            <label htmlFor="name">Name*</label>
             <Input
               type="text"
               id="name"
-              label="Name*"
               error={Boolean(errors.name)}
               {...register("name", {
                 required: "Name is required",
@@ -390,10 +390,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div className="col-span-2">
+            <label htmlFor="emailId">Email ID*</label>
             <Input
               type="email"
               id="emailId"
-              label="Email Id*"
               error={Boolean(errors.emailId)}
               {...register("emailId", {
                 required: "Email is required",
@@ -412,6 +412,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="gender">Gender*</label>
             <Controller
               name="gender"
               id="gender"
@@ -419,7 +420,7 @@ function StudentForm({ setOpen, initVal }) {
               rules={{ required: "Gender is required" }}
               render={({ field }) => (
                 <Select
-                  placeholder="Gender*"
+                  placeholder="Select Gender"
                   options={formOptions.genderOptions}
                   error={Boolean(errors.gender)}
                   {...field}
@@ -431,6 +432,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="department">Department*</label>
             <Controller
               name="department"
               id="department"
@@ -438,7 +440,7 @@ function StudentForm({ setOpen, initVal }) {
               rules={{ required: "Department is required" }}
               render={({ field }) => (
                 <Select
-                  placeholder="Department*"
+                  placeholder="Select Department"
                   options={formOptions.departmentOptions}
                   error={Boolean(errors.department)}
                   {...field}
@@ -450,13 +452,14 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="region">Region</label>
             <Controller
               name="region"
               id="region"
               control={control}
               render={({ field }) => (
                 <Select
-                  placeholder="Region"
+                  placeholder="Select Region"
                   isClearable
                   backspaceRemovesValue
                   options={formOptions.regionOptions}
@@ -470,10 +473,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="joiningDate">Joining Date*</label>
             <Input
               type="date"
               id="joiningDate"
-              label="Joining Date*"
               error={Boolean(errors.joiningDate)}
               {...register("joiningDate", {
                 required: "Joining Date is required",
@@ -484,6 +487,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="batchMonth">Batch Month*</label>
             <Controller
               name="batchMonth"
               id="batchMonth"
@@ -491,7 +495,7 @@ function StudentForm({ setOpen, initVal }) {
               rules={{ required: "Batch Month is required" }}
               render={({ field }) => (
                 <Select
-                  placeholder="Batch Month*"
+                  placeholder="Select Batch Month"
                   options={formOptions.monthOptions}
                   error={Boolean(errors.batchMonth)}
                   {...field}
@@ -503,10 +507,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="batchYear">Batch Year*</label>
             <Input
               type="number"
               id="batchYear"
-              label="Batch Year*"
               error={Boolean(errors.batchYear)}
               {...register("batchYear", {
                 required: "Batch Year is required",
@@ -523,10 +527,12 @@ function StudentForm({ setOpen, initVal }) {
           </div>
 
           <div className="col-span-2">
+            <label htmlFor="educationalQualification">
+              Educational Qualification
+            </label>
             <Input
               type="text"
               id="educationalQualification"
-              label="Educational Qualification"
               error={Boolean(errors.educationalQualification)}
               {...register("educationalQualification", {
                 maxLength: {
@@ -543,6 +549,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="admissionThrough">Admission Through*</label>
             <Controller
               name="admissionThrough"
               id="admissionThrough"
@@ -550,7 +557,7 @@ function StudentForm({ setOpen, initVal }) {
               rules={{ required: "Admission Through is required" }}
               render={({ field }) => (
                 <Select
-                  placeholder="Admission Through*"
+                  placeholder="Select Admission Through"
                   options={formOptions.admissionOptions}
                   error={Boolean(errors.admissionThrough)}
                   {...field}
@@ -564,6 +571,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="fundingType">Funding Type*</label>
             <Controller
               name="fundingType"
               id="fundingType"
@@ -571,7 +579,7 @@ function StudentForm({ setOpen, initVal }) {
               rules={{ required: "Funding Type is required" }}
               render={({ field }) => (
                 <Select
-                  placeholder="Funding Type*"
+                  placeholder="Select Funding Type"
                   options={formOptions.fundingOptions}
                   error={Boolean(errors.fundingType)}
                   {...field}
@@ -583,10 +591,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div className="col-span-2">
+            <label htmlFor="sourceOfFunding">Source Of Funding</label>
             <Input
               type="text"
               id="sourceOfFunding"
-              label="Source Of Funding"
               error={Boolean(errors.sourceOfFunding)}
               {...register("sourceOfFunding", {
                 maxLength: {
@@ -602,10 +610,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="contingencyPoints">Contingency Points*</label>
             <Input
               type="number"
               id="contingencyPoints"
-              label="Contingency Points*"
               error={Boolean(errors.contingencyPoints)}
               defaultValue={20000}
               {...register("contingencyPoints", {
@@ -633,6 +641,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="studentStatus">Student Status*</label>
             <Controller
               name="studentStatus"
               id="studentStatus"
@@ -640,7 +649,7 @@ function StudentForm({ setOpen, initVal }) {
               rules={{ required: "Student Status is required" }}
               render={({ field }) => (
                 <Select
-                  placeholder="Student Status*"
+                  placeholder="Select Status"
                   options={formOptions.statusOptions}
                   error={Boolean(errors.studentStatus)}
                   {...field}
@@ -654,9 +663,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div className="col-span-2">
-            <label className="text-gray-500 text-sm" htmlFor="advisor1_emailId">
-              Advisor 1
-            </label>
+            <label htmlFor="advisor1_emailId">Advisor 1</label>
             <Controller
               name="advisor1_emailId"
               id="advisor1_emailId"
@@ -679,9 +686,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div className="col-span-2">
-            <label className="text-gray-500 text-sm" htmlFor="advisor2_emailId">
-              Advisor 2
-            </label>
+            <label htmlFor="advisor2_emailId">Advisor 2</label>
             <Controller
               name="advisor2_emailId"
               id="advisor2_emailId"
@@ -704,12 +709,7 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div className="col-span-2">
-            <label
-              className="text-gray-500 text-sm"
-              htmlFor="coadvisor_emailId"
-            >
-              Coadvisor
-            </label>
+            <label htmlFor="coadvisor_emailId">Coadvisor</label>
             <Controller
               name="coadvisor_emailId"
               id="coadvisor_emailId"
@@ -732,10 +732,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="thesisSubmissionDate">Thesis Submission Date</label>
             <Input
               type="date"
               id="thesisSubmissionDate"
-              label="Thesis Submission Date"
               error={Boolean(errors.thesisSubmissionDate)}
               {...register("thesisSubmissionDate")}
             />
@@ -746,10 +746,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="thesisDefenceDate">Thesis Defence Date</label>
             <Input
               type="date"
               id="thesisDefenceDate"
-              label="Thesis Defence Date"
               error={Boolean(errors.thesisDefenceDate)}
               {...register("thesisDefenceDate")}
             />
@@ -760,10 +760,10 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div className="col-span-2">
+            <label htmlFor="yearOfLeaving">Year of Leaving</label>
             <Input
               type="number"
               id="yearOfLeaving"
-              label="Year of Leaving"
               error={Boolean(errors.yearOfLeaving)}
               {...register("yearOfLeaving", {
                 min: {
@@ -779,11 +779,11 @@ function StudentForm({ setOpen, initVal }) {
               </span>
             )}
           </div>
-          <div className="Student Status col-span-2">
+          <div className="col-span-2">
+            <label htmlFor="comment">Comment</label>
             <Input
               type="text"
               id="comment"
-              label="Comment"
               error={Boolean(errors.comment)}
               {...register("comment")}
             />
