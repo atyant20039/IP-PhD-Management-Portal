@@ -162,10 +162,10 @@ export default function Database() {
       fetchData(1, search, sort, setLoading, filters);
     }, delay);
     return () => clearTimeout(timer);
-  }, [search, filters]);
+  }, [search]);
 
   return (
-    <div className="flex flex-col h-screen ml-4">
+    <div className="flex flex-col h-screen">
       <Card className="relative h-full w-full flex flex-1 flex-col">
         <CardHeader
           floated={false}
@@ -290,7 +290,7 @@ export default function Database() {
 
                       return (
                         <tr
-                          key={student.id}
+                          key={student.name}
                           className="hover:bg-blue-gray-50"
                           onDoubleClick={() =>
                             handleDoubleClick(student.rollNumber)

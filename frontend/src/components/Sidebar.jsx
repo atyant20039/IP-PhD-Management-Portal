@@ -1,16 +1,16 @@
 import { NavLink } from "react-router-dom";
 
 import {
+  ArrowRightStartOnRectangleIcon,
   CircleStackIcon,
   CurrencyRupeeIcon,
   DocumentDuplicateIcon,
   HomeIcon,
-  ArrowRightStartOnRectangleIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
 
-import ShortLogo from "../assets/iiitdshortlogo.png";
 import LongLogo from "../assets/iiitdlonglogo.png";
+import ShortLogo from "../assets/iiitdshortlogo.png";
 
 function Sidebar() {
   const list = [

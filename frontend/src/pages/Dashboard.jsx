@@ -7,9 +7,9 @@ import {
 
 // Below open-source illustrations downloaded for free from: https://undraw.co/
 import DatabaseImg from "../assets/database.svg";
-import StipendImg from "../assets/stipend.svg";
 import ExamImg from "../assets/exam_invigilation.svg";
 import FacultyImg from "../assets/faculty.svg";
+import StipendImg from "../assets/stipend.svg";
 
 import { Link } from "react-router-dom";
 
@@ -45,16 +45,15 @@ function Dashboard() {
           shadow={false}
           className="rounded-none mt-0 pt-4"
         >
-          <div className="flex items-center ml-6 justify-between">
+          <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h3" color="blue-gray">
+              <Typography variant="h4" color="blue-gray">
                 Ph.D. Management Portal
               </Typography>
             </div>
           </div>
-
         </CardHeader>
-        <CardBody className="m-5 flex-1 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4">
+        <CardBody className="p-0 m-5 flex-1 overflow-y-auto grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {list.map((item, index) => (
             <Link key={index} to={item.url} className="h-min">
               <Card className="relative w-auto h-max border shadow-none border-blue-gray-100 hover:scale-105 transition-all hover:shadow-md">
