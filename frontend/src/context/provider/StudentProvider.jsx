@@ -41,8 +41,8 @@ const StudentProvider = ({ children }) => {
       const response = await axios.get(
         `${API}/api/stipendEligible/?month=${month}&year=${year}`
       );
-  
-      // Add "Eligible" key with value "Yes" to each student object
+      console.log(response)
+    
       const studentsWithEligibility = response.data.map(student => ({
         ...student,
         eligible: "Yes"

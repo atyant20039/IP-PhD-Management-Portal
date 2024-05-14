@@ -57,7 +57,7 @@ function Stipend() {
   } = useContext(StudentContext);
 
   const [month, setMonth] = useState(4);
-  const [year, setYear] = useState(2023);
+  const [year, setYear] = useState(2024);
   const [searchTerm, setSearchTerm] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const [eligibleStudents, setEligibleStudents] = useState(eligibleStudentList);
@@ -77,14 +77,9 @@ function Stipend() {
   const departments = ["CSE", "CB", "ECE", "HCD", "SSH", "MATHS"];
 
   useEffect(() => {
-    setEligibleStudents(eligibleStudentList);
-    setStudentList(eligibleStudentList);
-  }, [eligibleStudentList]);
-
-  useEffect(() => {
     if (searchTerm === "") {
       if (showHistory) {
-        setStudentList(stipendHistory);
+        // setStudentList(stipendHistory);
       } else {
         setStudentList(eligibleStudents);
       }
@@ -97,7 +92,8 @@ function Stipend() {
   }, [students, eligibleStudentList]);
 
   useEffect(() => {
-    setStudentList(stipendHistory);
+    console.log("also in");
+    // setStudentList(stipendHistory);
   }, [stipendHistory]);
 
   const fetchStipendHistory = () => {
@@ -121,6 +117,10 @@ function Stipend() {
     if (month && year) {
       await fetchEligibleStudentList({ month, year });
     }
+    console.log(eligibleStudentList);
+
+    setEligibleStudents(eligibleStudentList || []);
+    setStudentList(eligibleStudentList || []);
   };
   const handleToggleHistory = () => {
     setShowHistory((prevState) => !prevState);
@@ -202,6 +202,7 @@ function Stipend() {
 
     setStudentList(updatedStudentList);
   };
+
   const handleSearch = (event) => {
     const term = event.target.value.toLowerCase();
     setSearchTerm(term);
@@ -319,21 +320,20 @@ function Stipend() {
       const isDepartmentMatch =
         !department ||
         student.department.toLowerCase() === department.toLowerCase();
-  
+
       const isMonthMatch =
         !filterMonth ||
         parseInt(student.month, 10) === parseInt(filterMonth, 10);
-  
+
       const isYearMatch =
         !filterYear || parseInt(student.year, 10) === parseInt(filterYear, 10);
-  
+
       return isDepartmentMatch && isMonthMatch && isYearMatch;
     });
-  
+
     setStudentList(filteredHistory);
     setShowFilterDialog(false);
   };
-  
 
   const handleFilterReset = () => {
     setFilterMonth("");
@@ -382,7 +382,6 @@ function Stipend() {
             className="h-24 m-0 sticky top-0 bg-white z-50"
           >
             <div className="flex flex-col items-center justify-between gap-4 md:flex-row mx-2">
-            
               <div>
                 <Button onClick={handleToggleHistory}>
                   {showHistory ? "Show Current Data" : "Show History"}
@@ -703,54 +702,53 @@ function Stipend() {
       >
         <DialogHeader>Filter</DialogHeader>
         <DialogBody>
-        <div className="flex flex-col space-y-4">
-  <label htmlFor="month">Month:</label>
-  <Input
-    id="month"
-    type="number"
-    value={filterMonth}
-    onChange={(e) => {
-      const monthValue = parseInt(e.target.value, 10);
-      if (!isNaN(monthValue) && monthValue >= 1 && monthValue <= 12) {
-        setFilterMonth(monthValue);
-      } else if (e.target.value === '' || e.target.value === null) {
-        // Allow deletion if the input is empty or null
-        setFilterMonth('');
-      }
-    }}
-  />
+          <div className="flex flex-col space-y-4">
+            <label htmlFor="month">Month:</label>
+            <Input
+              id="month"
+              type="number"
+              value={filterMonth}
+              onChange={(e) => {
+                const monthValue = parseInt(e.target.value, 10);
+                if (!isNaN(monthValue) && monthValue >= 1 && monthValue <= 12) {
+                  setFilterMonth(monthValue);
+                } else if (e.target.value === "" || e.target.value === null) {
+                  // Allow deletion if the input is empty or null
+                  setFilterMonth("");
+                }
+              }}
+            />
 
-  <label htmlFor="year">Year:</label>
-  <Input
-    id="year"
-    type="number"
-    value={filterYear}
-    onChange={(e) => {
-      const yearValue = e.target.value.trim();
-      if (/^\d*$/.test(yearValue) && yearValue.length <= 4) {
-        setFilterYear(yearValue);
-      } else if (yearValue === '' || yearValue === null) {
-        // Allow deletion if the input is empty or null
-        setFilterYear('');
-      }
-    }}
-  />
+            <label htmlFor="year">Year:</label>
+            <Input
+              id="year"
+              type="number"
+              value={filterYear}
+              onChange={(e) => {
+                const yearValue = e.target.value.trim();
+                if (/^\d*$/.test(yearValue) && yearValue.length <= 4) {
+                  setFilterYear(yearValue);
+                } else if (yearValue === "" || yearValue === null) {
+                  // Allow deletion if the input is empty or null
+                  setFilterYear("");
+                }
+              }}
+            />
 
-  <label htmlFor="department">Department:</label>
-  <select
-    id="department"
-    value={department}
-    onChange={(e) => setDepartment(e.target.value)}
-  >
-    <option value="">Select Department</option>
-    {departments.map((dept) => (
-      <option key={dept} value={dept}>
-        {dept}
-      </option>
-    ))}
-  </select>
-</div>
-
+            <label htmlFor="department">Department:</label>
+            <select
+              id="department"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+            >
+              <option value="">Select Department</option>
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
         </DialogBody>
         <DialogFooter>
           <Button onClick={() => setShowFilterDialog(false)}>Cancel</Button>
