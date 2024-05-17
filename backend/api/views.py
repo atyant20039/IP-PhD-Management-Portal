@@ -29,6 +29,16 @@ class StudentViewSet(ModelViewSet):
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'fundingType', 'gender', 'department', 'region', 'batch', 'admissionThrough']
     search_fields = ['$name', '$emailId', '$rollNumber']
 
+class AllStudentViewSet(ModelViewSet):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    lookup_field = 'rollNumber'
+    lookup_url_kwarg = 'rollNumber'
+    pagination_class = NoPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'fundingType', 'gender', 'department', 'region', 'batch', 'admissionThrough']
+    search_fields = ['$name', '$emailId', '$rollNumber']
+
 class StudentTableViewSet(ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentTableSerializer
@@ -133,7 +143,9 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
                 'Thesis Submission Date',
                 'Thesis Defence Date',
                 'Year Of Leaving',
-                'Comment'
+                'Comment',
+                'Stipend Months',
+                'Contingency Years'
             ]
             
             if not all(col in sheet_headers for col in required_columns):
@@ -198,7 +210,7 @@ class StudentExportViewSet(ListModelMixin, GenericViewSet):
         ws = wb.active
         ws.title = "Students"
 
-        headers = ['Roll Number', 'Name', 'Email ID', 'Gender', 'Department', 'Advisor 1', 'Advisor 2', 'Coadvisor', 'Joining Date', 'Batch', 'Educational Qualification', 'Region', 'Admission Through', 'Funding Type', 'Source of Funding', 'Contingency Points', 'Student Status', 'Thesis Submission Date', 'Thesis Defence Date', 'Year of Leaving', 'Comment']
+        headers = ['Roll Number', 'Name', 'Email ID', 'Gender', 'Department', 'Advisor 1', 'Advisor 2', 'Coadvisor', 'Joining Date', 'Batch', 'Educational Qualification', 'Region', 'Admission Through', 'Funding Type', 'Source of Funding', 'Contingency Points', 'Student Status', 'Thesis Submission Date', 'Thesis Defence Date', 'Year of Leaving', 'Comment', 'Stipend Months', 'Contingency Years']
         ws.append(headers)
 
         for student in serializer.data:
@@ -223,7 +235,9 @@ class StudentExportViewSet(ListModelMixin, GenericViewSet):
                 student.get('thesisSubmissionDate', ''),
                 student.get('thesisDefenceDate', ''),
                 student.get('yearOfLeaving', ''),
-                student.get('comment', '')
+                student.get('comment', ''),
+                student.get('stipendMonths', ''),
+                student.get('contingencyYears', '')
             ]
             ws.append(data)
 
@@ -356,12 +370,11 @@ class ContingencyViewSet(ModelViewSet):
         # Customizing the response
         response_data = []
         for contingency in serializer.data:
-            student_id = contingency['student']
-            student = Student.objects.get(pk=student_id)
+            student = contingency['student']
             student_details = {
-                'name': student.name,
-                'rollNumber': student.rollNumber,
-                'department': student.department,
+                'name': student['name'],
+                'rollNumber': student['rollNumber'],
+                'department': student['department'],
             }
             contingency.update(student_details)
             response_data.append(contingency)
@@ -451,8 +464,7 @@ class ContingencyViewSet(ModelViewSet):
 class ContingencyLogsViewSet(ModelViewSet):
     queryset = ContingencyLogs.objects.all()
     serializer_class = ContingencyLogsSerializer
-    lookup_field = 'student__rollNumber'
-    lookup_url_kwarg = 'student__rollNumber'
+    pagination_class = NoPagination
     filter_backends = [SearchFilter]
     search_fields = ['$student__rollNumber']
 
@@ -504,6 +516,46 @@ class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
             except Comprehensive.DoesNotExist:
                 student_data['comprehensiveExamDate'] = None
                 student_data['baseAmount'] = 37000
+
+            response_data.append(student_data)
+
+        return Response(response_data, status=status.HTTP_200_OK)
+    
+
+
+class EligibleStudentContingencyViewSet(ReadOnlyModelViewSet):
+    serializer_class = StudentSerializer
+
+    def get_queryset(self):
+        # Existing filtering logic
+        queryset = Student.objects.filter(studentStatus="Active", contingencyYears__gt=0)
+        
+        # Extract year from request
+        year = self.request.query_params.get('year', None)
+
+        # If both year are provided, filter students without stipend for that year
+        if year is not None:
+            year = int(year)
+            # Exclude students who have a stipend record for the given month and year
+            queryset = queryset.exclude(contingency__year=year)
+
+        return queryset
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        year = self.request.query_params.get('year', None)
+
+
+        response_data = []
+        for student in queryset:
+            student_data = {
+                'id': student.id,
+                'name': student.name,
+                'rollNumber': student.rollNumber,
+                'year': year,
+                'joiningDate': student.joiningDate,
+                'department': student.department,
+            }
 
             response_data.append(student_data)
 

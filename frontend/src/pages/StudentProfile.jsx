@@ -95,7 +95,7 @@ function StudentProfile() {
       label: "Contingency Logbook",
       value: "logbook",
       icon: Square3Stack3DIcon,
-      childComponent: <StudentProfileLog id={id} />,
+      childComponent: <StudentProfileLog rno={id} id={data?.id} />,
     },
   ];
 

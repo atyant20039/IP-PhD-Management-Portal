@@ -4,6 +4,7 @@ from .views import *
 
 router = DefaultRouter()
 router.register('student', StudentViewSet, basename='student')
+router.register('allStudents', AllStudentViewSet, basename='allStudents')
 router.register('instructor', InstructorViewSet, basename='instructor')
 router.register('allInstructors', AllInstructorViewSet, basename='allInstructors')
 router.register('advisor', AdvisorViewSet, basename='advisor')
@@ -17,5 +18,6 @@ router.register('contingency', ContingencyViewSet, basename='contingency')
 router.register('contingencyLogs', ContingencyLogsViewSet, basename='contingencyLogs')
 router.register('studentDownload', StudentExportViewSet, basename='studentDownload')
 router.register('stipendEligible', EligibleStudentStipendViewSet, basename='stipendEligible')
+router.register('contingencyEligible', EligibleStudentContingencyViewSet, basename='contingencyEligible')
 urlpatterns = []
 urlpatterns += router.urls

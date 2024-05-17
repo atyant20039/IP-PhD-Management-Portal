@@ -22,7 +22,7 @@ const StudentProvider = ({ children }) => {
       setLoading && setLoading(true);
       const filterString = stringifyFilters(filters);
       const response = await axios.get(
-        `${API}/api/studentTable/?page=${page}&search=${search}&sort=${sort}&${filterString}`
+        `${API}/api/studentTable/?page=${page}&search=${search}&ordering=${sort}&${filterString}`
       );
       setStudents(response.data);
     } catch (error) {
