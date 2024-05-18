@@ -468,6 +468,13 @@ class ContingencyLogsViewSet(ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['$student__rollNumber']
 
+    def perform_destroy(self, instance):
+        if instance.santionedAmount is not None:
+            student = instance.student
+            student.contingencyPoints += instance.santionedAmount
+            student.save()
+        instance.delete()
+
 
 class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
     serializer_class = StudentSerializer

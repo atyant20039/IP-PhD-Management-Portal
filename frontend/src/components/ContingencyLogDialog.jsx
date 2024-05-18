@@ -78,11 +78,11 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
       setValue("item", initVal.item);
       setValue("quantity", initVal.quantity);
       setValue("price", initVal.price);
-      setValue("source", initVal.soruce);
+      setValue("source", initVal.source);
       setValue("credit", initVal.credit);
       setValue("claimAmount", initVal.claimAmount);
       initVal.santionedAmount
-        ? setValue("sanctionedAmount", initVal.santionedAmount)
+        ? setValue("santionedAmount", initVal.santionedAmount)
         : null;
       initVal.forwardedBy ? setValue("forwardedBy", initVal.forwardedBy) : null;
       initVal.forwardedOnDate
@@ -338,7 +338,7 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                   </span>
                 )}
               </div>
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <label htmlFor="openingBalance">Opening Balance*</label>
                 <Input
                   type="number"
@@ -408,7 +408,7 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                     {errors.closingBalanceDate.message}
                   </span>
                 )}
-              </div>
+              </div> */}
               <div className="mb-4 col-span-2">
                 <label htmlFor="comment">Comment</label>
                 <Input
@@ -449,7 +449,11 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                 )}
               </div> */}
               {errors.root && (
-                <Alert variant="ghost" color="red" className="text-red-500">
+                <Alert
+                  variant="ghost"
+                  color="red"
+                  className="text-red-500 col-span-2"
+                >
                   {errors.root.message}
                 </Alert>
               )}

@@ -124,4 +124,4 @@ class ContingencyLogs(models.Model):
     comment = models.TextField(blank = True, null = True)
 
     class Meta:
-        ordering=['student']
+        ordering = ['-id']
