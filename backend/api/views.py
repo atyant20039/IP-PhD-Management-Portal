@@ -1,10 +1,17 @@
 import os
+import re
+import subprocess
+from datetime import datetime
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Font
+from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.datavalidation import DataValidation
 from rest_framework import status
@@ -13,11 +20,450 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import (GenericViewSet, ModelViewSet,
-                                     ReadOnlyModelViewSet)
+                                     ReadOnlyModelViewSet, ViewSet)
 
 from .models import *
 from .pagination import NoPagination
 from .serializers import *
+
+
+class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
+    parser_classes = [MultiPartParser]
+
+    def get_queryset(self):
+        return []
+    
+    # To get StudentRegistration Template
+    def list(self, request, *args, **kwargs):
+        # Define the file path
+        file_path = os.path.join(settings.BASE_DIR, 'templates', 'StudentRegistrationTemplate.xlsx')
+
+        # Return the Excel file as a response for download
+        with open(file_path, 'rb') as file:
+            response = HttpResponse(
+                file.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename="StudentRegistrationTemplate.xlsx"'
+            return response
+        
+    def create(self, request, *args, **kwargs):
+        if 'file' not in request.data:
+            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        uploaded_file = request.data['file']
+
+        if not uploaded_file.name.endswith('.xlsx'):
+            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Save the file first
+            file_content = uploaded_file.read()
+            temp_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', uploaded_file.name)
+            os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
+
+            with open(temp_file_path, 'wb') as temp_file:
+                temp_file.write(file_content)
+
+
+            workbook = load_workbook(uploaded_file)
+            sheet = workbook.active
+
+            sheet_headers = [cell.value for cell in sheet[1]]
+            required_columns = [
+                'Admission No.',
+                'Name',
+                'Email ID',
+                'Course Code'
+            ]
+
+            if not all(col in sheet_headers for col in required_columns):
+                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            invalid_rows = []
+            admission_no_index = sheet_headers.index('Admission No.')
+            email_id_index = sheet_headers.index('Email ID')
+            course_code_index = sheet_headers.index('Course Code')
+
+            admission_no_pattern = re.compile(r'^(phd\d{5}|mt\d{5})$')
+            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@iiitd\.ac\.in$')
+            course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
+
+            for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+                reasons = []
+                if all(cell is None for cell in row):
+                    continue
+                elif any(cell is None for cell in row):
+                    reasons.append('Makesure all the Cells are filled!')
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+                    continue
+
+                admission_no = row[admission_no_index]
+                email_id = row[email_id_index]
+                course_code = row[course_code_index]
+
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
+                    reasons.append('Invalid Admission No. format.')
+
+                if email_id is None or not email_pattern.match(email_id.lower()):
+                    reasons.append('Invalid Email Id Format.')
+
+                if course_code is None or not course_code_pattern.match(course_code):
+                    reasons.append('Invalid Course Code format.')
+                
+                if reasons:
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+
+            if invalid_rows:
+                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Save the validated file to the MEDIA_ROOT directory
+                final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentRegistration.xlsx')
+                os.makedirs(os.path.dirname(final_file_path), exist_ok=True)
+
+                # Remove the file if it already exists
+                if default_storage.exists(final_file_path):
+                    default_storage.delete(final_file_path)
+
+                # Save the validated content
+                default_storage.save(final_file_path, ContentFile(file_content))
+                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+
+class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
+    parser_classes = [MultiPartParser]
+
+    def get_queryset(self):
+        return []
+    
+    # To get StudentList Template
+    def list(self, request, *args, **kwargs):
+        # Define the file path
+        file_path = os.path.join(settings.BASE_DIR, 'templates', 'StudentListTemplate.xlsx')
+
+        # Return the Excel file as a response for download
+        with open(file_path, 'rb') as file:
+            response = HttpResponse(
+                file.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename="StudentListTemplate.xlsx"'
+            return response
+        
+    def create(self, request, *args, **kwargs):
+        if 'file' not in request.data:
+            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        uploaded_file = request.data['file']
+
+        if not uploaded_file.name.endswith('.xlsx'):
+            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Save the file first
+            file_content = uploaded_file.read()
+            temp_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', uploaded_file.name)
+            os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
+
+            with open(temp_file_path, 'wb') as temp_file:
+                temp_file.write(file_content)
+
+            workbook = load_workbook(uploaded_file)
+            sheet = workbook.active
+
+            sheet_headers = [cell.value for cell in sheet[1]]
+            required_columns = [
+                'Admission No.',
+                'Name',
+                'Email ID'
+            ]
+
+            if not all(col in sheet_headers for col in required_columns):
+                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            invalid_rows = []
+            admission_no_index = sheet_headers.index('Admission No.')
+            email_id_index = sheet_headers.index('Email ID')
+
+            admission_no_pattern = re.compile(r'^(phd\d{5}|mt\d{5})$')
+            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@iiitd\.ac\.in$')
+
+            for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+                reasons = []
+                if all(cell is None for cell in row):
+                    continue
+                elif any(cell is None for cell in row):
+                    reasons.append('Makesure all the Cells are filled!')
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+                    continue
+
+                admission_no = row[admission_no_index]
+                email_id = row[email_id_index]
+
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
+                    reasons.append('Invalid Admission No. format.')
+
+                if email_id is None or not email_pattern.match(email_id.lower()):
+                    reasons.append('Invalid Email Id Format.')
+                
+                if reasons:
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+
+            if invalid_rows:
+                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Save the validated file to the MEDIA_ROOT directory
+                final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentList.xlsx')
+                os.makedirs(os.path.dirname(final_file_path), exist_ok=True)
+
+                # Remove the file if it already exists
+                if default_storage.exists(final_file_path):
+                    default_storage.delete(final_file_path)
+
+                # Save the validated content
+                default_storage.save(final_file_path, ContentFile(file_content))
+                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class TATemplateViewSet(ListModelMixin, GenericViewSet):
+    parser_classes = [MultiPartParser]
+
+    def get_queryset(self):
+        return []
+    
+    # To get TA Template
+    def list(self, request, *args, **kwargs):
+        # Define the file path
+        file_path = os.path.join(settings.BASE_DIR, 'templates', 'TATemplate.xlsx')
+
+        # Return the Excel file as a response for download
+        with open(file_path, 'rb') as file:
+            response = HttpResponse(
+                file.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename="TATemplate.xlsx"'
+            return response
+        
+    def create(self, request, *args, **kwargs):
+        if 'file' not in request.data:
+            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        uploaded_file = request.data['file']
+
+        if not uploaded_file.name.endswith('.xlsx'):
+            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Save the file first
+            file_content = uploaded_file.read()
+            temp_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', uploaded_file.name)
+            os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
+
+            with open(temp_file_path, 'wb') as temp_file:
+                temp_file.write(file_content)
+
+            workbook = load_workbook(uploaded_file)
+            sheet = workbook.active
+
+            sheet_headers = [cell.value for cell in sheet[1]]
+            required_columns = [
+                'Name',
+                'Admission No.',
+                'Course Code'
+            ]
+
+            if not all(col in sheet_headers for col in required_columns):
+                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            invalid_rows = []
+            course_code_index = sheet_headers.index('Course Code')
+            admission_no_index = sheet_headers.index('Admission No.')
+
+            admission_no_pattern = re.compile(r'^(phd\d{5}|mt\d{5})$')
+            course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
+
+            for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+                reasons = []
+                if all(cell is None for cell in row):
+                    continue
+                elif any(cell is None for cell in row):
+                    reasons.append('Makesure all the Cells are filled!')
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+                    continue
+
+                
+                course_code = row[course_code_index]
+                admission_no = row[admission_no_index]
+
+                if course_code is None or not course_code_pattern.match(course_code):
+                    reasons.append('Invalid Course Code format. Make sure Course Codes is "/" Separated')
+
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
+                    reasons.append('Invalid Admission No. format.')
+                
+                if reasons:
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+
+            if invalid_rows:
+                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Save the validated file to the MEDIA_ROOT directory
+                final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'TAList.xlsx')
+                os.makedirs(os.path.dirname(final_file_path), exist_ok=True)
+
+                # Remove the file if it already exists
+                if default_storage.exists(final_file_path):
+                    default_storage.delete(final_file_path)
+
+                # Save the validated content
+                default_storage.save(final_file_path, ContentFile(file_content))
+                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
+    parser_classes = [MultiPartParser]
+
+    def get_queryset(self):
+        return []
+    
+    # To get DateSheetTemplate
+    def list(self, request, *args, **kwargs):
+        # Define the file path
+        file_path = os.path.join(settings.BASE_DIR, 'templates', 'DateSheetTemplate.xlsx')
+
+        # Return the Excel file as a response for download
+        with open(file_path, 'rb') as file:
+            response = HttpResponse(
+                file.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = f'attachment; filename="DateSheetTemplate.xlsx"'
+            return response
+        
+    def create(self, request, *args, **kwargs):
+        if 'file' not in request.data:
+            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        uploaded_file = request.data['file']
+
+        if not uploaded_file.name.endswith('.xlsx'):
+            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Save the file first
+            file_content = uploaded_file.read()
+            temp_file_path = os.path.join(settings.MEDIA_ROOT, 'temp', uploaded_file.name)
+            os.makedirs(os.path.dirname(temp_file_path), exist_ok=True)
+
+            with open(temp_file_path, 'wb') as temp_file:
+                temp_file.write(file_content)
+
+            workbook = load_workbook(uploaded_file)
+            sheet = workbook.active
+
+            sheet_headers = [cell.value for cell in sheet[1]]
+            required_columns = [
+                'Date',
+                'Day',
+                'Time',
+                'Accronynm',
+                'Course Code',
+                'Strength',
+                'Room No.'
+            ]
+
+            if not all(col in sheet_headers for col in required_columns):
+                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+
+            invalid_rows = []
+            course_code_index = sheet_headers.index('Course Code')
+            room_no_index = sheet_headers.index('Room No.')
+
+            course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
+            room_no_pattern = re.compile(r'^[a-zA-Z]\d{2}(?:\s*,\s*[a-zA-Z]\d{2})*$')
+            codes = []
+
+            for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+                reasons = []
+                if all(cell is None for cell in row):
+                    continue
+                elif any(cell is None for cell in row):
+                    reasons.append('Makesure all the Cells are filled!')
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+                    continue
+                
+                course_code = row[course_code_index]
+                room_no = row[room_no_index]
+
+                if course_code is None or not course_code_pattern.match(course_code):
+                    reasons.append('Invalid Course Code format. Make sure Course Codes is "/" Separated')
+                else:
+                    for code in course_code.split('/'):
+                        codes.append(code.strip())
+                
+                if room_no is None or not room_no_pattern.match(room_no):
+                    reasons.append('Invalid Room No. format. Make sure Course Codes is "," Separated')
+                else:
+                    room_no_list = room_no.split(",")[:-1]
+                    room_no_list = [str.strip() for str in room_no_list]
+
+                    # Check if every classroom in the list exists in the database
+                    for room in room_no_list:
+                        if not (Classroom.objects.filter(roomNo=room).exists()):
+                            reasons.append(f'Classroom {room} does not exist. Kindly check the Classroom Table.')                    
+
+                if reasons:
+                    invalid_rows.append({
+                        'row': row_idx,
+                        'reasons': reasons
+                    })
+
+            if invalid_rows:
+                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                # Save the validated file to the MEDIA_ROOT directory
+                final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'ExamDateSheet.xlsx')
+                os.makedirs(os.path.dirname(final_file_path), exist_ok=True)
+
+                # Remove the file if it already exists
+                if default_storage.exists(final_file_path):
+                    default_storage.delete(final_file_path)
+
+                # Save the validated content
+                default_storage.save(final_file_path, ContentFile(file_content))
+                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class StudentViewSet(ModelViewSet):
@@ -285,6 +731,36 @@ class YearlyReviewViewSet(ModelViewSet):
     filter_backends = [SearchFilter, DjangoFilterBackend, OrderingFilter]
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
+
+class ClassroomViewSet(ModelViewSet):
+    queryset = Classroom.objects.all()
+    serializer_class = ClassroomSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['building', 'roomNo']
+    search_fields = ['$building', '$roomNo']
+
+    def create(self, request, *args, **kwargs):
+        # Check if roomNo is alphanumeric
+        roomNo = request.data['roomNo']
+        if not roomNo.isalnum():
+            return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Convert roomNo to uppercase
+        request.data['roomNo'] = roomNo.upper()
+        
+        return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        # Check if roomNo is alphanumeric
+        roomNo = request.data['roomNo']
+        if not roomNo.isalnum():
+            return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Convert roomNo to uppercase
+        request.data['roomNo'] = roomNo.upper()
+
+        return super().update(request, *args, **kwargs)
+
 
 class StipendViewSet(ModelViewSet):
     queryset = Stipend.objects.all()
@@ -567,3 +1043,41 @@ class EligibleStudentContingencyViewSet(ReadOnlyModelViewSet):
             response_data.append(student_data)
 
         return Response(response_data, status=status.HTTP_200_OK)
+    
+class AllotmentViewSet(ViewSet):
+    parser_classes = [MultiPartParser]
+
+    def create(self, request, format=None): # In the post method of the APIView, the format=None parameter indicates the format in which the response should be returned.
+        TARatio = request.data.get('TARatio')
+
+        # Define the directory to save the files
+        invigilation_files_dir = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles')
+        os.makedirs(invigilation_files_dir, exist_ok=True)
+
+        # Define the filenames to save the uploaded files
+        file_names = {
+            'file1': 'Classroom.xlsx',
+        }
+
+        for key, file in request.FILES.items():
+            file_name = file_names.get(key)
+            if file_name:
+                with open(file_name, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+
+        # Run the python script with TARatio as an argument
+        script_path = os.path.join(settings.BASE_DIR, 'algorithm', 'AllotInvigilators.py')
+        subprocess.call(['python', script_path, '--TARatio', TARatio])
+
+        # # Read the generated file and return it as a response
+        # with open('InvigilatorList.xlsx', 'rb') as f:
+        #     response = HttpResponse(f.read(), content_type='application/octet-stream')
+        #     response['Content-Disposition'] = 'attachment; filename=InvigilatorList.xlsx'
+
+        # # Delete the files
+        # for file_name in file_names.values():
+        #     os.remove(file_name)
+        # os.remove('InvigilatorList.xlsx')
+
+        return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)

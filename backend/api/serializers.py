@@ -197,3 +197,8 @@ class ContingencyLogsSerializer(ModelSerializer):
             student.save()
 
         return super().update(instance, validated_data)
+
+class ClassroomSerializer(ModelSerializer):
+    class Meta:
+        model = Classroom
+        fields = '__all__'
