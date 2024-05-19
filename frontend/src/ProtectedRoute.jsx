@@ -1,8 +1,10 @@
+import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 
 const ProtectedRoute = ({ children }) => {
+  const ALLOWED_USER = import.meta.env.ALLOWED_USER;
+
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -11,14 +13,14 @@ const ProtectedRoute = ({ children }) => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        if (decoded.email === "nikhil20530@iiitd.ac.in") {
+        if (decoded.email == "atyant20039@iiitd.ac.in") {
           setIsAuthenticated(true);
         }
       } catch (error) {
         console.error("Token decoding error:", error);
       }
     }
-    setLoading(false); 
+    setLoading(false);
   }, []);
 
   if (loading) {

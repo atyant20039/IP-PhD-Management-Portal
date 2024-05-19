@@ -21,7 +21,7 @@ class Student(models.Model):
     sourceOfFunding = models.CharField(max_length=255, null=True, blank=True)
     contingencyPoints = models.DecimalField(decimal_places=2, max_digits = 11, default=20000, validators = [MinValueValidator(0)])
     stipendMonths = models.PositiveIntegerField(default=60)
-    contingencyYears = models.PositiveIntegerField(default=5)
+    contingencyYears = models.PositiveIntegerField(default=4)
     studentStatus = models.CharField(max_length=15, default='Active', choices=[('Active','Active'), ('Terminated','Terminated'), ('Graduated','Graduated'), ('Shifted','Shifted'), ('Semester Leave','Semester Leave')])
     thesisSubmissionDate = models.DateField(blank=True, null=True)
     thesisDefenceDate = models.DateField(blank=True, null=True)
@@ -125,3 +125,15 @@ class ContingencyLogs(models.Model):
 
     class Meta:
         ordering = ['-id']
+
+class Classroom(models.Model):
+    building = models.CharField(max_length=100)
+    roomNo = models.CharField(max_length=10)
+    capacity = models.PositiveIntegerField()
+
+    class Meta:
+        # Define a composite primary key using building and roomNo
+        unique_together = ('building', 'roomNo')
+
+    def __str__(self):
+        return f'{self.venue}: Room {self.roomNo} Capacity {self.capacity}'

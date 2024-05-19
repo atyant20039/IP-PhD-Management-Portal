@@ -1,47 +1,38 @@
 // src/main.js
-import React, { useState, useEffect } from "react";
+import { Alert } from "@material-tailwind/react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
-import {
-  Alert,
-  Button,
-  Card,
-  CardBody,
-
-} from "@material-tailwind/react";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
+import { ThemeProvider } from "@material-tailwind/react";
+import { jwtDecode } from "jwt-decode";
+import FacultyProvider from "./context/provider/FacultyProvider";
+import StudentProvider from "./context/provider/StudentProvider";
+import GoogleAuthProvider from "./googleOAuth";
 import AdminLayout from "./layouts/AdminView";
-import AuthLayout from "./layouts/Auth";
-import StudentLayout from "./layouts/StudentView";
-import ProfLayout from "./layouts/ProfView";
-import ErrorPage from "./pages/ErrorPage";
 import Dashboard from "./pages/Dashboard";
 import Database from "./pages/Database";
+import ErrorPage from "./pages/ErrorPage";
+import Faculty from "./pages/Faculty";
 import Finance from "./pages/Finance";
 import Invigilation from "./pages/Invigilation";
-import Faculty from "./pages/Faculty";
-import StudentProfile from "./pages/StudentProfile";
 import LoginPage from "./pages/LoginPage";
-import StudentProvider from "./context/provider/StudentProvider";
-import FacultyProvider from "./context/provider/FacultyProvider";
-import { ThemeProvider } from "@material-tailwind/react";
-import GoogleAuthProvider from "./googleOAuth";
+import StudentProfile from "./pages/StudentProfile";
 import ProtectedRoute from "./ProtectedRoute";
-import { jwtDecode } from "jwt-decode";
 const Main = () => {
+  const ALLOWED_USER = import.meta.env.ALLOWED_USER;
+
   const [loginError, setLoginError] = useState(null);
 
-
   const handleLoginSuccess = (response) => {
-
     try {
-      const token = response.credential; 
+      const token = response.credential;
       const decoded = jwtDecode(token);
-      if (decoded.email === "nikhil20530@iiitd.ac.in") {
-        localStorage.setItem("token", token); 
-        setLoginError(null); 
+      if (decoded.email == "atyant20039@iiitd.ac.in") {
+        localStorage.setItem("token", token);
+        setLoginError(null);
       } else {
         setLoginError("Unauthorized user. Access denied.");
         localStorage.removeItem("token");
@@ -51,7 +42,6 @@ const Main = () => {
       setLoginError("An error occurred during login.");
     }
   };
-  
 
   const router = createBrowserRouter([
     {
