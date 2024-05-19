@@ -164,6 +164,8 @@ class ContingencyLogsSerializer(ModelSerializer):
         if data.get('santionedAmount') is not None:
             if data['santionedAmount'] > data['claimAmount']:
                 raise ValidationError("Sanctioned amount cannot be greater than claim amount.")
+            if data['santionedAmount'] > data['student'].contingencyPoints:
+                raise ValidationError("Sanctioned amount cannot be greater than the student's available contingency points.")
         return data
 
     def create(self, validated_data):

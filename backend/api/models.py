@@ -21,7 +21,7 @@ class Student(models.Model):
     sourceOfFunding = models.CharField(max_length=255, null=True, blank=True)
     contingencyPoints = models.DecimalField(decimal_places=2, max_digits = 11, default=20000, validators = [MinValueValidator(0)])
     stipendMonths = models.PositiveIntegerField(default=60)
-    contingencyYears = models.PositiveIntegerField(default=5)
+    contingencyYears = models.PositiveIntegerField(default=4)
     studentStatus = models.CharField(max_length=15, default='Active', choices=[('Active','Active'), ('Terminated','Terminated'), ('Graduated','Graduated'), ('Shifted','Shifted'), ('Semester Leave','Semester Leave')])
     thesisSubmissionDate = models.DateField(blank=True, null=True)
     thesisDefenceDate = models.DateField(blank=True, null=True)
