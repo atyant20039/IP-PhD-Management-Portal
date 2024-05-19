@@ -708,6 +708,13 @@ class YearlyReviewViewSet(ModelViewSet):
     filter_fields = ['reviewYear']
     search_fields = ['$student__rollNumber']
 
+class ClassroomViewSet(ModelViewSet):
+    queryset = Classroom.objects.all()
+    serializer_class = ClassroomSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['building', 'roomNo']
+    search_fields = ['$building', '$roomNo']
+
 class StipendViewSet(ModelViewSet):
     queryset = Stipend.objects.all()
     serializer_class = StipendSerializer

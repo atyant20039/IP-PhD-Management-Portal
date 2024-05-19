@@ -125,3 +125,15 @@ class ContingencyLogs(models.Model):
 
     class Meta:
         ordering=['student']
+
+class Classroom(models.Model):
+    building = models.CharField(max_length=100)
+    roomNo = models.CharField(max_length=10)
+    capacity = models.PositiveIntegerField()
+
+    class Meta:
+        # Define a composite primary key using building and roomNo
+        unique_together = ('building', 'roomNo')
+
+    def __str__(self):
+        return f'{self.venue}: Room {self.roomNo} Capacity {self.capacity}'
