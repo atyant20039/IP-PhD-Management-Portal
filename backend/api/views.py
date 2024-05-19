@@ -192,45 +192,45 @@ class StipendViewSet(ModelViewSet):
     
     pass
 
-# class AllotmentViewSet(ViewSet):
-#     parser_classes = [MultiPartParser]
+class AllotmentViewSet(ViewSet):
+    parser_classes = [MultiPartParser]
 
-#     def create(self, request, format=None): # In the post method of the APIView, the format=None parameter indicates the format in which the response should be returned.
-#         os.chdir(os.path.join(settings.BASE_DIR, 'algorithm'))
+    def create(self, request, format=None): # In the post method of the APIView, the format=None parameter indicates the format in which the response should be returned.
+        os.chdir(os.path.join(settings.BASE_DIR, 'algorithm'))
 
-#         TARatio = request.data.get('TARatio')
+        TARatio = request.data.get('TARatio')
 
-#         # # Saving the files to the 'algorithm' directory
-#         file_names = {
-#         #     'file1': 'StudentRegistration.xlsx',
-#         #     'file2': 'StudentList.xlsx',
-#             'file3': 'Classroom.xlsx',
-#         #     'file4': 'TAList.xlsx',
-#         #     'file5': 'ExamDateSheet.xlsx'
-#         }
+        # # Saving the files to the 'algorithm' directory
+        file_names = {
+        #     'file1': 'StudentRegistration.xlsx',
+        #     'file2': 'StudentList.xlsx',
+            'file3': 'Classroom.xlsx',
+        #     'file4': 'TAList.xlsx',
+        #     'file5': 'ExamDateSheet.xlsx'
+        }
 
-#         for key, file in request.FILES.items():
-#             file_name = file_names.get(key)
-#             if file_name:
-#                 with open(file_name, 'wb+') as destination:
-#                     for chunk in file.chunks():
-#                         destination.write(chunk)
-
-
-#         # Validations for Excel Files.
+        for key, file in request.FILES.items():
+            file_name = file_names.get(key)
+            if file_name:
+                with open(file_name, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
 
 
-#         # Run the python script
-#         subprocess.call(['python', 'AllotInvigilators.py', '--TARatio', TARatio])
+        # Validations for Excel Files.
 
-#         # # Read the generated file and return it as a response
-#         # with open('InvigilatorList.xlsx', 'rb') as f:
-#         #     response = HttpResponse(f.read(), content_type='application/octet-stream')
-#         #     response['Content-Disposition'] = 'attachment; filename=InvigilatorList.xlsx'
 
-#         # # Delete the files
-#         # for file_name in file_names.values():
-#         #     os.remove(file_name)
-#         # os.remove('InvigilatorList.xlsx')
+        # Run the python script
+        subprocess.call(['python', 'AllotInvigilators.py', '--TARatio', TARatio])
 
-#         return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)
+        # # Read the generated file and return it as a response
+        # with open('InvigilatorList.xlsx', 'rb') as f:
+        #     response = HttpResponse(f.read(), content_type='application/octet-stream')
+        #     response['Content-Disposition'] = 'attachment; filename=InvigilatorList.xlsx'
+
+        # # Delete the files
+        # for file_name in file_names.values():
+        #     os.remove(file_name)
+        # os.remove('InvigilatorList.xlsx')
+
+        return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)
