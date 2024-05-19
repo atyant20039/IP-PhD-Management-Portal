@@ -407,14 +407,14 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
             room_no_index = sheet_headers.index('Room No.')
 
             course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
-            room_no_pattern = re.compile(r'^[a-zA-Z]\d{2}(?:\s*,\s*[a-zA-Z]\d{2})*$')
+            room_no_pattern = re.compile(r'^[a-zA-Z0-9\s]+(?:\s*,\s*[a-zA-Z0-9\s]+)*$')
             codes = []
 
             for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
+                elif any(cell is None for cell in row[:7]):
                     reasons.append('Makesure all the Cells are Filled!')
                     invalid_rows.append({
                         'row': row_idx,
