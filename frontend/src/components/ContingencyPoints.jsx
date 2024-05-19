@@ -88,7 +88,6 @@ function ContingencyPoints() {
   }, [students, eligibleStudentList]);
 
   useEffect(() => {
-    console.log("also in");
     // setStudentList(stipendHistory);
   }, [stipendHistory]);
 
@@ -101,7 +100,7 @@ function ContingencyPoints() {
         return response.json();
       })
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         setStipendHistory(data);
       })
       .catch((error) => {
@@ -113,7 +112,7 @@ function ContingencyPoints() {
     if (month && year) {
       await fetchEligibleStudentList({ month, year });
     }
-    console.log(eligibleStudentList);
+    // console.log(eligibleStudentList);
 
     setEligibleStudents(eligibleStudentList || []);
     setStudentList(eligibleStudentList || []);
@@ -181,7 +180,7 @@ function ContingencyPoints() {
       });
 
       setIneligibleStudentList(notEligibleStudents);
-      console.log(notEligibleStudents);
+      // console.log(notEligibleStudents);
     } catch (error) {
       console.error("Error fetching comprehensive reviews:", error);
     }
@@ -249,7 +248,7 @@ function ContingencyPoints() {
       student: rest.id,
       ...rest,
     }));
-    console.log(modifiedStudentList);
+    // console.log(modifiedStudentList);
     fetch(`${API}/api/stipend/`, {
       method: "POST",
       headers: {
@@ -268,7 +267,7 @@ function ContingencyPoints() {
         } else {
           setShowFailedStudentsDialog(true);
           setFailedEntries(failed_entries);
-          console.log("Failed entries:", failed_entries);
+          // console.log("Failed entries:", failed_entries);
           ResetHandler();
         }
       })

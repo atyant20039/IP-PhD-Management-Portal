@@ -5,6 +5,7 @@ import StudentContext from "../StudentContext";
 
 const StudentProvider = ({ children }) => {
   const [students, setStudents] = useState(null);
+  const [allStudents, setAllStudents] = useState(null)
   const [eligibleStudentList, setEligibleStudentList] = useState(null);
   const [error, setError] = useState(null);
   var Error;
@@ -34,6 +35,17 @@ const StudentProvider = ({ children }) => {
       setLoading && setLoading(false);
     }
   };
+
+
+  const fetchAllStudents = async () => {
+    try {
+      const response = await axios.get(`${API}/api/allStudents`);
+      setAllStudents(response.data);
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    }
+  };
+  
 
   const downloadStudents = async (
     search = "",
@@ -70,22 +82,22 @@ const StudentProvider = ({ children }) => {
   };
 
   const fetchEligibleStudentList = async ({ month = "", year = "" } = {}) => {
+    
     try {
       const response = await axios.get(
         `${API}/api/stipendEligible/?month=${month}&year=${year}`
       );
-      console.log(response);
-
-      const studentsWithEligibility = response.data.map((student) => ({
+     const studentsWithEligibility = response.data.map((student) => ({
         ...student,
         eligible: "Yes",
       }));
-      console.log(studentsWithEligibility);
 
       setEligibleStudentList(studentsWithEligibility);
+        return studentsWithEligibility;
     } catch (error) {
       console.error("Error fetching data:", error);
       setError(error);
+      return [];
     }
   };
 
@@ -194,6 +206,7 @@ const StudentProvider = ({ children }) => {
   useEffect(() => {
     if (students === null) {
       fetchStudents();
+      fetchAllStudents();
     }
   }, []);
 
@@ -214,6 +227,7 @@ const StudentProvider = ({ children }) => {
         updateStudent,
         deleteStudent,
         Error,
+        allStudents
       }}
     >
       {children}
