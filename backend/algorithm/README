@@ -1,0 +1,10 @@
+
+
+
+-> Utility Functions:
+
+1. hasExam(course_pool, course_code)
+
+-> Extracting Course List from Exam Date Sheet
+Note: This code assumes that all classrooms allocated for a course belong to the same Building(Instructed by PhD Admin).
+
