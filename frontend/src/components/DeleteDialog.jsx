@@ -46,6 +46,14 @@ function DeleteDialog({ isOpen, setOpen, row, model }) {
             ? Object.values(error.response.data)
             : [error.message];
         }
+      } else if (model == "contingencyLogs") {
+        try {
+          await axios.delete(`${API}/api/contingencyLogs/${row.id}/`);
+        } catch (error) {
+          response = error.response?.data
+            ? Object.values(error.response.data)
+            : [error.message];
+        }
       }
 
       if (response) {

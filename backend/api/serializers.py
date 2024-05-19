@@ -1,5 +1,10 @@
+from datetime import date
+
+from django.core.exceptions import ValidationError
 from rest_framework.exceptions import NotFound
-from rest_framework.serializers import (EmailField, ModelSerializer,
+from rest_framework.serializers import (DateField, DecimalField, EmailField,
+                                        ModelSerializer,
+                                        PrimaryKeyRelatedField,
                                         StringRelatedField)
 
 from . import validator
@@ -132,10 +137,66 @@ class ContingencySerializer(ModelSerializer):
     class Meta:
         model = Contingency 
         fields = '__all__'
+
+# class ContingencyLogsSerializer(ModelSerializer):
+#     class Meta:
+#         model = ContingencyLogs
+#         fields = '__all__'
+
 class ContingencyLogsSerializer(ModelSerializer):
+    student = PrimaryKeyRelatedField(queryset=Student.objects.all())
+    openingBalance = DecimalField(max_digits=11, decimal_places=2, read_only=True)
+    openingBalanceDate = DateField(read_only=True)
+    closingBalance = DecimalField(max_digits=11, decimal_places=2, read_only=True, required=False)
+    closingBalanceDate = DateField(read_only=True, required=False)
+
     class Meta:
         model = ContingencyLogs
         fields = '__all__'
+
+    def validate(self, data):
+        """
+        Ensure that the santionedAmount is less than or equal to the claimAmount.
+        """
+        if data['claimAmount'] > data['price']:
+            raise ValidationError("Claimed amount cannot be greater than price.")
+        
+        if data.get('santionedAmount') is not None:
+            if data['santionedAmount'] > data['claimAmount']:
+                raise ValidationError("Sanctioned amount cannot be greater than claim amount.")
+            if data['santionedAmount'] > data['student'].contingencyPoints:
+                raise ValidationError("Sanctioned amount cannot be greater than the student's available contingency points.")
+        return data
+
+    def create(self, validated_data):
+        student = validated_data['student']
+        validated_data['openingBalance'] = student.contingencyPoints
+        validated_data['openingBalanceDate'] = date.today
+        if 'santionedAmount' in validated_data and validated_data['santionedAmount'] is not None:
+            validated_data['closingBalance'] = student.contingencyPoints - validated_data['santionedAmount']
+            validated_data['closingBalanceDate'] = date.today
+            student.contingencyPoints -= validated_data['santionedAmount']
+            student.save()
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        old_santioned_amount = instance.santionedAmount
+        new_santioned_amount = validated_data.get('santionedAmount', old_santioned_amount)
+        student = instance.student
+
+        if old_santioned_amount is not None and new_santioned_amount != old_santioned_amount:
+            difference = new_santioned_amount - old_santioned_amount
+            validated_data['closingBalance'] = instance.closingBalance - difference
+            student.contingencyPoints -= difference
+            student.save()
+
+        if old_santioned_amount is None and new_santioned_amount is not None:
+            validated_data['closingBalance'] = student.contingencyPoints - new_santioned_amount
+            validated_data['closingBalanceDate'] = date.today()
+            student.contingencyPoints -= new_santioned_amount
+            student.save()
+
+        return super().update(instance, validated_data)
 
 class ClassroomSerializer(ModelSerializer):
     class Meta:

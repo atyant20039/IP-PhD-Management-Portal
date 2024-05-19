@@ -88,6 +88,14 @@ const TABLE_HEAD = [
     value: "sourceOfFunding",
   },
   {
+    head: "Stipend Months Left",
+    value: "stipendMonths",
+  },
+  {
+    head: "Contingency Years Left",
+    value: "contingencyYears",
+  },
+  {
     head: "Admission",
     value: "admissionThrough",
   },
@@ -448,6 +456,28 @@ export default function Database() {
                                 >
                                   {student.sourceOfFunding
                                     ? student.sourceOfFunding
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs w-48"
+                                >
+                                  {student.stipendMonths
+                                    ? student.stipendMonths
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs w-48"
+                                >
+                                  {student.contingencyYears
+                                    ? student.contingencyYears
                                     : "-"}
                                 </Typography>
                               </td>

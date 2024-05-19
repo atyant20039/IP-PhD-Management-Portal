@@ -198,7 +198,13 @@ function StudentForm({ setOpen, initVal }) {
       initVal.sourceOfFunding
         ? setValue("sourceOfFunding", initVal.sourceOfFunding)
         : null;
+      initVal.stipendMonths
+        ? setValue("stipendMonths", initVal.stipendMonths)
+        : null;
       setValue("contingencyPoints", initVal.contingencyPoints);
+      initVal.contingencyYears
+        ? setValue("contingencyYears", initVal.contingencyYears)
+        : null;
       setValue(
         "studentStatus",
         formOptions.statusOptions.find(
@@ -610,6 +616,27 @@ function StudentForm({ setOpen, initVal }) {
             )}
           </div>
           <div>
+            <label htmlFor="stipendMonths">Stipend Months Left</label>
+            <Input
+              type="number"
+              id="stipendMonths"
+              error={Boolean(errors.stipendMonths)}
+              defaultValue={60}
+              {...register("stipendMonths", {
+                min: {
+                  value: 0,
+                  message: "Input must be greater than or equal to 0",
+                },
+                valueAsNumber: true,
+              })}
+            />
+            {errors.stipendMonths && (
+              <span className="text-red-500">
+                {errors.stipendMonths.message}
+              </span>
+            )}
+          </div>
+          <div>
             <label htmlFor="contingencyPoints">Contingency Points*</label>
             <Input
               type="number"
@@ -637,6 +664,27 @@ function StudentForm({ setOpen, initVal }) {
             {errors.contingencyPoints && (
               <span className="text-red-500">
                 {errors.contingencyPoints.message}
+              </span>
+            )}
+          </div>
+          <div>
+            <label htmlFor="contingencyYears">Contingency Years Left</label>
+            <Input
+              type="number"
+              id="contingencyYears"
+              error={Boolean(errors.contingencyYears)}
+              defaultValue={5}
+              {...register("contingencyYears", {
+                min: {
+                  value: 0,
+                  message: "Input must be greater than or equal to 0",
+                },
+                valueAsNumber: true,
+              })}
+            />
+            {errors.contingencyYears && (
+              <span className="text-red-500">
+                {errors.contingencyYears.message}
               </span>
             )}
           </div>

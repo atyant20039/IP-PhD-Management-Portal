@@ -1,22 +1,22 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
-import { saveAs } from "file-saver";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
-  Card,
-  CardHeader,
-  Input,
-  Typography,
   Button,
+  Card,
   CardBody,
   CardFooter,
+  CardHeader,
   Checkbox,
   Dialog,
-  DialogHeader,
   DialogBody,
   DialogFooter,
+  DialogHeader,
+  Input,
+  Typography,
 } from "@material-tailwind/react";
+import { saveAs } from "file-saver";
 import StudentContext from "../context/StudentContext";
 
 const TABLE_HEAD = [
@@ -56,8 +56,8 @@ function Stipend() {
     setEligibleStudentList,
   } = useContext(StudentContext);
 
-  const [month, setMonth] = useState(4);
-  const [year, setYear] = useState(2024);
+  const [month, setMonth] = useState();
+  const [year, setYear] = useState();
   const [searchTerm, setSearchTerm] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const [eligibleStudents, setEligibleStudents] = useState(eligibleStudentList);
@@ -345,70 +345,74 @@ function Stipend() {
   // Use this function to initially load the stipendHistory data or when it changes
 
   return (
-    <Card className="h-full w-full">
+    <div className="h-full w-full">
       {!studentList && (
-        <CardHeader floated={false} shadow={false} className="h-auto p-2">
-          <div className="flex flex-col items-center gap-2 md:flex-row mx-4">
-            <Typography variant="h4">
-              {" "}
-              Enter Month and year to generate Eligibility List :
-            </Typography>
+        <Card className="h-full w-full">
+          <CardHeader floated={false} shadow={false} className="h-auto p-2">
+            <div className="flex flex-col items-center gap-4">
+              <Typography variant="h4">
+                Enter Month and Year to generate Stipend Eligibility List
+              </Typography>
 
-            <div>
-              <Input
-                label="Month"
-                type="number"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
-              />
+              <div>
+                <Input
+                  label="Month"
+                  type="number"
+                  value={month}
+                  onChange={(e) => setMonth(e.target.value)}
+                />
+              </div>
+              <div>
+                <Input
+                  label="Year"
+                  type="number"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                />
+              </div>
+              <Button
+                onClick={handleGenerate}
+                disabled={
+                  month == null || month == "" || year == null || year == ""
+                }
+              >
+                Generate
+              </Button>
             </div>
-            <div>
-              <Input
-                label="Year"
-                type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-              />
-            </div>
-            <Button onClick={handleGenerate}>Generate</Button>
-          </div>
-        </CardHeader>
+          </CardHeader>
+        </Card>
       )}
       {studentList && (
-        <>
-          <CardHeader
-            floated={false}
-            shadow={false}
-            className="h-24 m-0 sticky top-0 bg-white z-50"
-          >
-            <div className="flex flex-col items-center justify-between gap-4 md:flex-row mx-2">
-              <div>
-                <Button onClick={handleToggleHistory}>
+        <Card className="h-full w-full flex flex-1" shadow={false}>
+          <CardHeader floated={false} shadow={false} className="mx-0 my-2">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mx-2">
+              <div className="flex-1">
+                <Input
+                  label="Search"
+                  icon={<MagnifyingGlassIcon className="size-5" />}
+                  onChange={handleSearch}
+                />
+              </div>
+              <div className="flex-1 md:flex-none">
+                <Button variant="outlined" onClick={handleToggleHistory}>
                   {showHistory ? "Show Current Data" : "Show History"}
                 </Button>
               </div>
-              <div>
+              {showHistory && (
+                <div className="flex-1 md:flex-none">
+                  <Button variant="outlined" onClick={handleFilterClick}>
+                    Filter
+                  </Button>
+                </div>
+              )}
+              <div className="flex-1 md:flex-none">
                 <Button onClick={!showHistory ? ResetHandler : handleDownload}>
                   {!showHistory ? "Reset Data" : "Download"}
                 </Button>
               </div>
-
-              {showHistory && (
-                <div>
-                  <Button onClick={handleFilterClick}>Filter</Button>
-                </div>
-              )}
-
-              <div className="w-full">
-                <Input
-                  label="Search"
-                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-                  onChange={handleSearch}
-                />
-              </div>
             </div>
           </CardHeader>
-          <CardBody className="overflow-scroll max-h-[550px] px-0 py-0">
+          <CardBody className="overflow-auto p-0 flex-1">
             <table className="w-full min-w-max table-auto text-left">
               <thead className="sticky top-0 bg-white z-50">
                 <tr>
@@ -647,7 +651,7 @@ function Stipend() {
             </table>
           </CardBody>
           {!showHistory && (
-            <CardFooter className="p-2">
+            <CardFooter className="p-2 flex flex-col items-end">
               <Button
                 variant="outlined"
                 size="sm"
@@ -658,7 +662,7 @@ function Stipend() {
               </Button>
             </CardFooter>
           )}
-        </>
+        </Card>
       )}
 
       <Dialog open={showSuccessDialog} handler={handleCloseSuccessDialog}>
@@ -756,7 +760,7 @@ function Stipend() {
           <Button onClick={handleFilterSubmit}>Apply</Button>
         </DialogFooter>
       </Dialog>
-    </Card>
+    </div>
   );
 }
 

@@ -33,7 +33,7 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
         },
       });
     } catch (error) {
-      Error = error.response?.data
+      var Error = error.response?.data
         ? Object.values(error.response.data)
         : [error.message];
       return Error;
@@ -48,7 +48,7 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
         },
       });
     } catch (error) {
-      Error = error.response?.data
+      var Error = error.response?.data
         ? Object.values(error.response.data)
         : [error.message];
       return Error;

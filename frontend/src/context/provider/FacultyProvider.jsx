@@ -19,7 +19,7 @@ const FacultyProvider = ({ children }) => {
       const filterString = stringifyFilters(filters);
 
       const response = await axios.get(
-        `${API}/api/instructor/?page=${page}&search=${search}&sort=${sort}&${filterString}`
+        `${API}/api/instructor/?page=${page}&search=${search}&ordering=${sort}&${filterString}`
       );
       setFaculty(response.data);
     } catch (error) {

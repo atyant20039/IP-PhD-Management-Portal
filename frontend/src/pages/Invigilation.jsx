@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 function Invigilation() {
-  return (
-    <div>Invigilation</div>
-  )
+  return <div>Invigilation</div>;
 }
 
-export default Invigilation
+export default Invigilation;
