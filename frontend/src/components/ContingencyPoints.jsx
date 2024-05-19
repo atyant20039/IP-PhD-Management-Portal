@@ -24,11 +24,7 @@ const TABLE_HEAD = [
   "Roll Number",
   "Department",
   "Joining Date",
-  "Comprehensive Exam Date",
-  "Hostler",
-  "HRA",
-  "Base Amount",
-  "Total Stipend",
+  "Year",
   "Eligible",
 ];
 
@@ -37,26 +33,30 @@ const HISTORY_TABLE_HEAD = [
   "Roll Number",
   "Department",
   "Disbursment Date",
+  "Month",
   "Year",
-  " Amount",
+  "Hostler",
+  "HRA",
+  "Base Amount",
+  "Total Stipend",
   "Comment",
 ];
 
 const API = import.meta.env.VITE_BACKEND_URL;
 
-function ContingencyPoints() {
+function ContingencyPoint() {
   const {
-    fetchEligibleStudentList,
-    eligibleStudentList,
-    students,
+    setContingencyEligible,
+    contingencyEligible,
+    fetchContigencyEligibleStudentList,
+    allStudents,
     setEligibleStudentList,
   } = useContext(StudentContext);
 
-  const [month, setMonth] = useState();
-  const [year, setYear] = useState();
+  const [year, setYear] = useState(2023);
   const [searchTerm, setSearchTerm] = useState("");
   const [showHistory, setShowHistory] = useState(false);
-  const [eligibleStudents, setEligibleStudents] = useState(eligibleStudentList);
+  const [eligibleStudents, setEligibleStudents] = useState(contingencyEligible);
   const [ineligibleStudentList, setIneligibleStudentList] = useState(null);
   const [studentList, setStudentList] = useState([]);
   const [stipendHistory, setStipendHistory] = useState([]);
@@ -75,7 +75,7 @@ function ContingencyPoints() {
   useEffect(() => {
     if (searchTerm === "") {
       if (showHistory) {
-        // setStudentList(stipendHistory);
+        setStudentList(stipendHistory);
       } else {
         setStudentList(eligibleStudents);
       }
@@ -83,13 +83,11 @@ function ContingencyPoints() {
   }, [searchTerm]);
 
   useEffect(() => {
-    NotEligibleStudents();
-    fetchStipendHistory();
-  }, [students, eligibleStudentList]);
-
-  useEffect(() => {
-    // setStudentList(stipendHistory);
-  }, [stipendHistory]);
+    if (allStudents && contingencyEligible) {
+      NotEligibleStudents();
+      fetchStipendHistory();
+    }
+  }, [allStudents, contingencyEligible]);
 
   const fetchStipendHistory = () => {
     fetch(`${API}/api/contingency/`)
@@ -100,7 +98,7 @@ function ContingencyPoints() {
         return response.json();
       })
       .then((data) => {
-        // console.log(data);
+        console.log(data);
         setStipendHistory(data);
       })
       .catch((error) => {
@@ -109,31 +107,49 @@ function ContingencyPoints() {
   };
 
   const handleGenerate = async () => {
-    if (month && year) {
-      await fetchEligibleStudentList({ month, year });
-    }
-    // console.log(eligibleStudentList);
+    if (year) {
+      const studentsWithEligibility = await fetchContigencyEligibleStudentList({
+        year,
+      });
+      console.log(studentsWithEligibility);
 
-    setEligibleStudents(eligibleStudentList || []);
-    setStudentList(eligibleStudentList || []);
+      setEligibleStudents(studentsWithEligibility);
+      setStudentList(studentsWithEligibility);
+    } else {
+      setEligibleStudents([]);
+      setStudentList([]);
+    }
   };
+
   const handleToggleHistory = () => {
     setShowHistory((prevState) => !prevState);
+
     if (!showHistory) {
-      // If toggling to show history, set studentList to stipendHistory
-      setStudentList(stipendHistory);
-    } else {
-      // If toggling back to current student list, set studentList based on term search
+      // Toggling to history data
       if (searchTerm === "") {
-        // If no search term, set studentList to eligibleStudentList
+        // If no search term, show all stipend history
+        setStudentList(stipendHistory);
+      } else {
+        // If there's a search term, filter the stipend history
+        const filteredHistory = stipendHistory.filter(
+          (student) =>
+            student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setStudentList(filteredHistory);
+      }
+    } else {
+      // Toggling back to non-history data
+      if (searchTerm === "") {
+        // If no search term, show all eligible students
         setStudentList(eligibleStudents);
       } else {
-        // If search term exists, combine eligibleStudents and ineligibleStudentList based on the term
+        // If there's a search term, filter the combined list of eligible and ineligible students
         const combinedList = [...eligibleStudents, ...ineligibleStudentList];
         const filteredStudents = combinedList.filter(
           (student) =>
-            student.name.toLowerCase().includes(searchTerm) ||
-            student.rollNumber.toLowerCase().includes(searchTerm)
+            student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setStudentList(filteredStudents);
       }
@@ -141,56 +157,62 @@ function ContingencyPoints() {
   };
 
   const NotEligibleStudents = async () => {
-    if (!students || !eligibleStudentList) return;
+    if (!allStudents.length || !contingencyEligible.length) return;
 
     try {
-      // Fetch comprehensive reviews
       const comprehensiveResponse = await fetch(`${API}/api/comprehensive`);
+
+      if (!comprehensiveResponse.ok)
+        throw new Error("Failed to fetch comprehensive reviews");
+
       const comprehensiveData = await comprehensiveResponse.json();
 
-      // Map IDs to date of review
+      console.log(comprehensiveData);
       const idToDateOfReviewMap = {};
-      comprehensiveData.results.forEach((review) => {
+      comprehensiveData.forEach((review) => {
         idToDateOfReviewMap[review.id] = review.dateOfReview;
       });
 
-      // Map comprehensive review ID to date of review for each student
-      const notEligibleStudents = students.results.map((student) => {
-        const dateOfReview =
-          student.id in idToDateOfReviewMap
-            ? idToDateOfReviewMap[student.id]
-            : null;
+      const notEligibleStudents = allStudents
+        .filter(
+          (student) =>
+            !contingencyEligible.some((eligible) => eligible.id === student.id)
+        )
+        .map((student) => {
+          const dateOfReview = idToDateOfReviewMap[student.id] || null;
+          const baseAmount = dateOfReview ? 42000 : 37000;
 
-        const baseAmount = dateOfReview ? 42000 : 37000;
-
-        return {
-          baseAmount: baseAmount,
-          comprehensiveExamDate: dateOfReview,
-          department: student.department,
-          eligible: "No",
-          hostler: "YES",
-          hra: 0,
-          id: student.id,
-          joiningDate: student.joiningDate,
-          month: "4",
-          name: student.name,
-          rollNumber: student.rollNumber,
-          year: "2023",
-        };
-      });
+          return {
+            baseAmount,
+            comprehensiveExamDate: dateOfReview,
+            department: student.department,
+            eligible: "No",
+            hostler: "YES",
+            hra: 0,
+            id: student.id,
+            joiningDate: student.joiningDate,
+            month: "4",
+            name: student.name,
+            rollNumber: student.rollNumber,
+            year: "2023",
+          };
+        });
 
       setIneligibleStudentList(notEligibleStudents);
-      // console.log(notEligibleStudents);
+      console.log(notEligibleStudents);
     } catch (error) {
       console.error("Error fetching comprehensive reviews:", error);
     }
   };
+
   const handleFieldChange = (index, fieldName, value) => {
     const updatedStudentList = [...studentList];
-    updatedStudentList[index][fieldName] = value;
+    const sanitizedValue = value === "" ? 0 : value;
+
+    updatedStudentList[index][fieldName] = sanitizedValue;
 
     if (fieldName === "hostler") {
-      const hostlerValue = value.toLowerCase();
+      const hostlerValue = sanitizedValue.toLowerCase();
       const hraValue = hostlerValue === "no" ? 5000 : 0;
       updatedStudentList[index]["hra"] = hraValue;
     }
@@ -238,18 +260,20 @@ function ContingencyPoints() {
       setIneligibleStudentList(updatedIneligibleStudents);
     }
   };
+
   const ResetHandler = () => {
     setEligibleStudentList(null);
     setStudentList(null);
     setIneligibleStudentList(null);
   };
+
   const handleSubmit = () => {
     const modifiedStudentList = studentList.map(({ eligible, ...rest }) => ({
       student: rest.id,
       ...rest,
     }));
-    // console.log(modifiedStudentList);
-    fetch(`${API}/api/stipend/`, {
+    console.log(modifiedStudentList);
+    fetch(`${API}/api/contingency/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -267,7 +291,7 @@ function ContingencyPoints() {
         } else {
           setShowFailedStudentsDialog(true);
           setFailedEntries(failed_entries);
-          // console.log("Failed entries:", failed_entries);
+          console.log("Failed entries:", failed_entries);
           ResetHandler();
         }
       })
@@ -331,7 +355,6 @@ function ContingencyPoints() {
   };
 
   const handleFilterReset = () => {
-    setFilterMonth("");
     setFilterYear("");
     setDepartment("");
     setStudentList(stipendHistory); // Reset to the original stipendHistory data
@@ -342,10 +365,11 @@ function ContingencyPoints() {
       {!studentList && (
         <Card className="h-full w-full">
           <CardHeader floated={false} shadow={false} className="h-auto p-2">
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center gap-4">
               <Typography variant="h4">
-                Enter Year to generate Contingency Eligiblity List :
+                Enter Year to generate Contingency Eligibility List
               </Typography>
+
               <div>
                 <Input
                   label="Year"
@@ -365,13 +389,13 @@ function ContingencyPoints() {
         </Card>
       )}
       {studentList && (
-        <Card className="h-full w-full flex flex-1">
+        <Card className="h-full w-full flex flex-1" shadow={false}>
           <CardHeader floated={false} shadow={false} className="mx-0 my-2">
-            <div className="flex flex-col items-center justify-between gap-4 md:flex-row mx-2">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mx-2">
               <div className="flex-1">
                 <Input
                   label="Search"
-                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                  icon={<MagnifyingGlassIcon className="size-5" />}
                   onChange={handleSearch}
                 />
               </div>
@@ -380,7 +404,6 @@ function ContingencyPoints() {
                   {showHistory ? "Show Current Data" : "Show History"}
                 </Button>
               </div>
-
               {showHistory && (
                 <div className="flex-1 md:flex-none">
                   <Button variant="outlined" onClick={handleFilterClick}>
@@ -439,13 +462,12 @@ function ContingencyPoints() {
                       joiningDate,
                       department,
                       hostler,
-                      baseAmount,
+
                       eligible,
-                      hra,
-                      comprehensiveExamDate,
+
                       disbursmentDate,
                       comment,
-                      month,
+
                       year,
                     },
                     index
@@ -488,112 +510,50 @@ function ContingencyPoints() {
                           {showHistory ? disbursmentDate : joiningDate}
                         </Typography>
                       </td>
+                      <td className="border-b border-blue-gray-100 bg-white p-4">
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal"
+                        >
+                          {year}
+                        </Typography>
+                      </td>
 
-                      {showHistory && (
-                        <>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {year}
-                            </Typography>
-                          </td>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {parseInt(hra) + parseInt(baseAmount)}
-                            </Typography>
-                          </td>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {comment ? comment : "NO COMMENT"}
-                            </Typography>
-                          </td>
-                        </>
+                      {showHistory ? (
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {comment ? comment : "NO COMMENT"}
+                          </Typography>
+                        </td>
+                      ) : (
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Button
+                            color={eligible === "Yes" ? "green" : "red"}
+                            disabled={eligible === "Yes"}
+                            onClick={() => handleUpdateEligibility(rollNumber)}
+                          >
+                            {eligible}
+                          </Button>
+                        </td>
                       )}
 
                       {!showHistory && (
-                        <>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {comprehensiveExamDate
-                                ? comprehensiveExamDate
-                                : "Null"}
-                            </Typography>
-                          </td>
-
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            <div className="flex items-center">
-                              <Checkbox
-                                checked={hostler === "YES"}
-                                disabled={showHistory}
-                                color="blue"
-                                onChange={() =>
-                                  handleFieldChange(
-                                    index,
-                                    "hostler",
-                                    hostler === "YES" ? "NO" : "YES"
-                                  )
-                                }
-                              />
-                            </div>
-                          </td>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            <Input
-                              value={hra}
-                              onChange={(e) =>
-                                handleFieldChange(index, "hra", e.target.value)
-                              }
-                            />
-                          </td>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            <Input
-                              value={baseAmount}
-                              onChange={(e) =>
-                                handleFieldChange(
-                                  index,
-                                  "baseAmount",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          {!searchTerm && (
                             <Button
-                              color={eligible === "Yes" ? "green" : "red"}
-                              disabled={eligible === "Yes"}
-                              onClick={() =>
-                                handleUpdateEligibility(rollNumber)
-                              }
+                              onClick={() => handleDeleteEntry(rollNumber)}
+                              color="red"
+                              size="sm"
                             >
-                              {eligible}
+                              Delete
                             </Button>
-                          </td>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            {!searchTerm && (
-                              <Button
-                                onClick={() => handleDeleteEntry(rollNumber)}
-                                color="red"
-                                size="sm"
-                              >
-                                Delete
-                              </Button>
-                            )}
-                          </td>
-                        </>
+                          )}
+                        </td>
                       )}
                     </tr>
                   )
@@ -715,4 +675,4 @@ function ContingencyPoints() {
   );
 }
 
-export default ContingencyPoints;
+export default ContingencyPoint;

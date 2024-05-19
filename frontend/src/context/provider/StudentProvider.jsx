@@ -7,6 +7,7 @@ const StudentProvider = ({ children }) => {
   const [students, setStudents] = useState(null);
   const [allStudents, setAllStudents] = useState(null)
   const [eligibleStudentList, setEligibleStudentList] = useState(null);
+  const [contingencyEligible, setContingencyEligible] = useState(null)
   const [error, setError] = useState(null);
   var Error;
 
@@ -100,6 +101,29 @@ const StudentProvider = ({ children }) => {
       return [];
     }
   };
+
+  const fetchContigencyEligibleStudentList  = async ({  year = "" } = {}) => {
+    
+    try {
+      const response = await axios.get(
+        `${API}/api/contingencyEligible/?year=${year}`
+      );
+     const studentsWithEligibility = response.data.map((student) => ({
+        ...student,
+        eligible: "Yes",
+      }));
+
+      console.log(studentsWithEligibility)
+
+      setContingencyEligible(studentsWithEligibility);
+        return studentsWithEligibility;
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError(error);
+      return [];
+    }
+  };
+
 
   const getStudentFileTemplate = async () => {
     try {
@@ -218,8 +242,11 @@ const StudentProvider = ({ children }) => {
         fetchData: fetchStudents,
         error,
         fetchEligibleStudentList,
+        fetchContigencyEligibleStudentList,
         eligibleStudentList,
         setEligibleStudentList,
+        setContingencyEligible,
+        contingencyEligible,
         downloadStudents,
         getTemplate: getStudentFileTemplate,
         uploadFile: uploadStudentFile,
