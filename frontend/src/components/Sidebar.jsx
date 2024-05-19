@@ -1,5 +1,5 @@
-import { NavLink } from "react-router-dom";
-
+import React from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   ArrowRightStartOnRectangleIcon,
   CircleStackIcon,
@@ -8,11 +8,19 @@ import {
   HomeIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/solid";
-
 import LongLogo from "../assets/iiitdlonglogo.png";
 import ShortLogo from "../assets/iiitdshortlogo.png";
 
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    
+    localStorage.removeItem("token");
+  
+    navigate("/login");
+  };
+
   const list = [
     {
       icon: HomeIcon,
@@ -42,7 +50,7 @@ function Sidebar() {
     {
       icon: ArrowRightStartOnRectangleIcon,
       text: "Logout",
-      url: "/logout",
+      onClick: handleLogout, 
     },
   ];
 
@@ -62,15 +70,12 @@ function Sidebar() {
       </div>
       <hr className="my-1 border-gray-500 w-11/12 flex place-self-center" />
       {list.map((item, index) => (
-        <NavLink
-          to={item.url}
-          caseSensitive
+        <div
           key={index}
-          className={({ isActive }) =>
-            `m-1 p-3 rounded-xl flex hover:bg-blue-gray-100/70 ${
-              isActive && "bg-blue-gray-300 hover:bg-blue-gray-200/70"
-            }`
-          }
+          className={`m-1 p-3 rounded-xl flex hover:bg-blue-gray-100/70 ${
+            item.onClick && "cursor-pointer"
+          }`}
+          onClick={item.onClick} // Attach onClick handler if available
         >
           <div className="flex-1 flex align-middle">
             <item.icon className="size-8" />
@@ -78,7 +83,7 @@ function Sidebar() {
               {item.text}
             </div>
           </div>
-        </NavLink>
+        </div>
       ))}
     </div>
   );
