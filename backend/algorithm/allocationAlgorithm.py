@@ -223,7 +223,7 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
             break
     
     # Normalize room name to lowercase and convert capacity to integer.
-    room = room.lower()
+    room = room.lower().strip()
     capacity = int(capacity)
 
     # Store the room capacity in a dictionary.

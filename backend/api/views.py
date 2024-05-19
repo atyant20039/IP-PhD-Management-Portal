@@ -431,6 +431,14 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                 
                 if room_no is None or not room_no_pattern.match(room_no):
                     reasons.append('Invalid Room No. format. Make sure Course Codes is "," Separated')
+                else:
+                    room_no_list = room_no.split(",")[:-1]
+                    room_no_list = [str.strip() for str in room_no_list]
+
+                    # Check if every classroom in the list exists in the database
+                    for room in room_no_list:
+                        if not (Classroom.objects.filter(roomNo=room).exists()):
+                            reasons.append(f'Classroom {room} does not exist. Kindly check the Classroom Table.')                    
 
                 if reasons:
                     invalid_rows.append({
@@ -714,6 +722,29 @@ class ClassroomViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['building', 'roomNo']
     search_fields = ['$building', '$roomNo']
+
+    def create(self, request, *args, **kwargs):
+        # Check if roomNo is alphanumeric
+        roomNo = request.data['roomNo']
+        if not roomNo.isalnum():
+            return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Convert roomNo to uppercase
+        request.data['roomNo'] = roomNo.upper()
+        
+        return super().create(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        # Check if roomNo is alphanumeric
+        roomNo = request.data['roomNo']
+        if not roomNo.isalnum():
+            return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Convert roomNo to uppercase
+        request.data['roomNo'] = roomNo.upper()
+
+        return super().update(request, *args, **kwargs)
+
 
 class StipendViewSet(ModelViewSet):
     queryset = Stipend.objects.all()
