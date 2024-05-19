@@ -22,5 +22,6 @@ router.register('taList', TATemplateViewSet, basename='taList')
 router.register('studentList', StudentListTemplateViewSet, basename='studentList')
 router.register('studentRegistrationList', StudentRegistrationTemplateViewSet, basename='studentRegistrationList')
 router.register('allotment', AllotmentViewSet, basename='allotment')
+router.register('classroom', ClassroomViewSet, basename='classroom')
 urlpatterns = []
 urlpatterns += router.urls
