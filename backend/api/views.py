@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -18,7 +19,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from datetime import datetime
 from rest_framework.viewsets import (GenericViewSet, ModelViewSet,
-                                     ReadOnlyModelViewSet)
+                                     ReadOnlyModelViewSet, ViewSet)
 
 from .models import *
 from .pagination import NoPagination
@@ -943,3 +944,41 @@ class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
             response_data.append(student_data)
 
         return Response(response_data, status=status.HTTP_200_OK)
+    
+class AllotmentViewSet(ViewSet):
+    parser_classes = [MultiPartParser]
+
+    def create(self, request, format=None): # In the post method of the APIView, the format=None parameter indicates the format in which the response should be returned.
+        TARatio = request.data.get('TARatio')
+
+        # Define the directory to save the files
+        invigilation_files_dir = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles')
+        os.makedirs(invigilation_files_dir, exist_ok=True)
+
+        # Define the filenames to save the uploaded files
+        file_names = {
+            'file1': 'Classroom.xlsx',
+        }
+
+        for key, file in request.FILES.items():
+            file_name = file_names.get(key)
+            if file_name:
+                with open(file_name, 'wb+') as destination:
+                    for chunk in file.chunks():
+                        destination.write(chunk)
+
+        # Run the python script with TARatio as an argument
+        script_path = os.path.join(settings.BASE_DIR, 'algorithm', 'AllotInvigilators.py')
+        subprocess.call(['python', script_path, '--TARatio', TARatio])
+
+        # # Read the generated file and return it as a response
+        # with open('InvigilatorList.xlsx', 'rb') as f:
+        #     response = HttpResponse(f.read(), content_type='application/octet-stream')
+        #     response['Content-Disposition'] = 'attachment; filename=InvigilatorList.xlsx'
+
+        # # Delete the files
+        # for file_name in file_names.values():
+        #     os.remove(file_name)
+        # os.remove('InvigilatorList.xlsx')
+
+        return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)
