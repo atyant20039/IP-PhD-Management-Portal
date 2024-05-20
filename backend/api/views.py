@@ -405,6 +405,7 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
             invalid_rows = []
             course_code_index = sheet_headers.index('Course Code')
             room_no_index = sheet_headers.index('Room No.')
+            strength_index = sheet_headers.index('Strength')
 
             course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
             room_no_pattern = re.compile(r'^[a-zA-Z0-9\s]+(?:\s*,\s*[a-zA-Z0-9\s]+)*$')
@@ -424,6 +425,10 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                 
                 course_code = row[course_code_index]
                 room_no = row[room_no_index]
+                strength = row[strength_index]
+
+                if not strength.isnumeric():
+                    reasons.append('Invalid Value: Strength should be numeric.')
 
                 if course_code is None or not course_code_pattern.match(course_code):
                     reasons.append('Invalid Course Code Format. Make sure Course Codes is "/" Separated')
