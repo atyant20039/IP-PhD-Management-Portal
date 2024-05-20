@@ -13,8 +13,8 @@ import {
 import axios from "axios";
 import React, { useState } from "react";
 
-function Invigilation_DateSheet({ onSubmit }) {
-  const [dateSheetFile, setDateSheetFile] = useState();
+function Invigilation_EligibleStudents({ onSubmit }) {
+  const [eligibleStudentsFile, setEligibleStudentsFile] = useState();
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
   const [isLoading, setLoading] = useState(false);
   const [errorResponse, setErrorResponse] = useState();
@@ -34,7 +34,7 @@ function Invigilation_DateSheet({ onSubmit }) {
 
       const fileLink = document.createElement("a");
       fileLink.href = fileURL;
-      fileLink.setAttribute("download", "datesheet_template.xlsx");
+      fileLink.setAttribute("download", "eligible_students_template.xlsx");
       document.body.appendChild(fileLink);
       fileLink.click();
       fileLink.remove();
@@ -47,7 +47,7 @@ function Invigilation_DateSheet({ onSubmit }) {
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
-    setDateSheetFile(file);
+    setEligibleStudentsFile(file);
 
     if (!file) {
       alert("No file uploaded");
@@ -86,12 +86,6 @@ function Invigilation_DateSheet({ onSubmit }) {
   };
 
   const handleSubmit = async () => {
-    // Extract course codes from tableData
-    // const courseCodes = tableData.map((row) => row.courseCode);
-
-    // setCourseCode(courseCodes);
-
-    // setDatesheet(tableData);
     onSubmit();
   };
 
@@ -105,11 +99,11 @@ function Invigilation_DateSheet({ onSubmit }) {
         >
           <div>
             <Typography variant="h4" color="blue-gray">
-              Datesheet
+              Eligible Students
             </Typography>
           </div>
           <div className="flex gap-4">
-            <Tooltip content="Dowload Datesheet template file">
+            <Tooltip content="Dowload Eligible Students template file">
               <Button
                 size="sm"
                 variant="outlined"
@@ -153,7 +147,9 @@ function Invigilation_DateSheet({ onSubmit }) {
                   <path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4-4-4 4h3v3h2v-3z" />
                 </svg>
                 <span className="mt-2 text-base leading-normal">
-                  {dateSheetFile ? dateSheetFile.name : "Select a file"}
+                  {eligibleStudentsFile
+                    ? eligibleStudentsFile.name
+                    : "Select a file"}
                 </span>
                 <input
                   type="file"
@@ -246,4 +242,4 @@ function Invigilation_DateSheet({ onSubmit }) {
   );
 }
 
-export default Invigilation_DateSheet;
+export default Invigilation_EligibleStudents;

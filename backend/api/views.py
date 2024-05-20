@@ -407,7 +407,7 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
             room_no_index = sheet_headers.index('Room No.')
 
             course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
-            room_no_pattern = re.compile(r'^[a-zA-Z]\d{2}(?:\s*,\s*[a-zA-Z]\d{2})*$')
+            room_no_pattern = re.compile(r'^[a-zA-Z0-9\s]+(?:\s*,\s*[a-zA-Z0-9\s]+)*$')
             codes = []
 
             for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
@@ -752,12 +752,13 @@ class ClassroomViewSet(ModelViewSet):
     
     def update(self, request, *args, **kwargs):
         # Check if roomNo is alphanumeric
-        roomNo = request.data['roomNo']
-        if not roomNo.isalnum():
-            return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Convert roomNo to uppercase
-        request.data['roomNo'] = roomNo.upper()
+        if "roomNo" in request.data.keys():
+            roomNo = request.data['roomNo']
+            if not roomNo.isalnum():
+                return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Convert roomNo to uppercase
+            request.data['roomNo'] = roomNo.upper()
 
         return super().update(request, *args, **kwargs)
 

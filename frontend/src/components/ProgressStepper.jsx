@@ -1,26 +1,32 @@
+import { BuildingLibraryIcon } from "@heroicons/react/24/outline";
 import {
-  BuildingLibraryIcon,
-  CogIcon,
-  UserIcon,
-} from "@heroicons/react/24/outline";
+  CalendarDaysIcon,
+  ListBulletIcon,
+  UserPlusIcon,
+  UsersIcon,
+} from "@heroicons/react/24/solid";
 import { Step, Stepper, Typography } from "@material-tailwind/react";
 import React from "react";
 
 export function ProgressStepper({ setActiveStep, activeStep, completedSteps }) {
   const steps = [
     {
-      icon: UserIcon,
-      title: "Step 1",
-      description: "Enter Classrooms for allocation",
-    },
-    { icon: CogIcon, title: "Step 2", description: "Prepare Datesheet" },
-    {
       icon: BuildingLibraryIcon,
-      title: "Step 3",
-      description: "Enter list of TAs",
+      title: "Step 1",
+      description: "Classroom",
     },
-    { icon: UserIcon, title: "Step 4", description: "Enter File 1" },
-    { icon: CogIcon, title: "Step 5", description: "Enter File 2" },
+    { icon: CalendarDaysIcon, title: "Step 2", description: "Datesheet" },
+    {
+      icon: ListBulletIcon,
+      title: "Step 3",
+      description: "TA List",
+    },
+    {
+      icon: UserPlusIcon,
+      title: "Step 4",
+      description: "Student Registration",
+    },
+    { icon: UsersIcon, title: "Step 5", description: "Eligible Students" },
   ];
 
   return (
@@ -30,11 +36,12 @@ export function ProgressStepper({ setActiveStep, activeStep, completedSteps }) {
           <Step
             key={index}
             onClick={() => {
-              if (completedSteps >= index) {
+              if (activeStep >= index) {
                 setActiveStep(index);
               }
             }}
             disabled={index > activeStep || completedSteps < index}
+            className={`${activeStep >= index ? "cursor-pointer" : ""}`}
           >
             <step.icon className="h-5 w-5" />
             <div className="absolute top-[3rem] w-max text-center">

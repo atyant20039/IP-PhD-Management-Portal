@@ -30,6 +30,7 @@ const TABLE_HEAD = [
   "Base Amount",
   "Total Stipend",
   "Eligible",
+  "",
 ];
 
 const HISTORY_TABLE_HEAD = [
@@ -112,51 +113,54 @@ function Stipend() {
 
   const handleGenerate = async () => {
     if (month && year) {
-        const studentsWithEligibility = await fetchEligibleStudentList({ month, year });
-        console.log(studentsWithEligibility);
+      const studentsWithEligibility = await fetchEligibleStudentList({
+        month,
+        year,
+      });
+      console.log(studentsWithEligibility);
 
-        setEligibleStudents(studentsWithEligibility);
-        setStudentList(studentsWithEligibility);
+      setEligibleStudents(studentsWithEligibility);
+      setStudentList(studentsWithEligibility);
     } else {
-        setEligibleStudents([]);
-        setStudentList([]);
+      setEligibleStudents([]);
+      setStudentList([]);
     }
-};
+  };
 
-const handleToggleHistory = () => {
-  setShowHistory((prevState) => !prevState);
+  const handleToggleHistory = () => {
+    setShowHistory((prevState) => !prevState);
 
-  if (!showHistory) {
-    // Toggling to history data
-    if (searchTerm === "") {
-      // If no search term, show all stipend history
-      setStudentList(stipendHistory);
+    if (!showHistory) {
+      // Toggling to history data
+      if (searchTerm === "") {
+        // If no search term, show all stipend history
+        setStudentList(stipendHistory);
+      } else {
+        // If there's a search term, filter the stipend history
+        const filteredHistory = stipendHistory.filter(
+          (student) =>
+            student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setStudentList(filteredHistory);
+      }
     } else {
-      // If there's a search term, filter the stipend history
-      const filteredHistory = stipendHistory.filter(
-        (student) =>
-          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setStudentList(filteredHistory);
+      // Toggling back to non-history data
+      if (searchTerm === "") {
+        // If no search term, show all eligible students
+        setStudentList(eligibleStudents);
+      } else {
+        // If there's a search term, filter the combined list of eligible and ineligible students
+        const combinedList = [...eligibleStudents, ...ineligibleStudentList];
+        const filteredStudents = combinedList.filter(
+          (student) =>
+            student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setStudentList(filteredStudents);
+      }
     }
-  } else {
-    // Toggling back to non-history data
-    if (searchTerm === "") {
-      // If no search term, show all eligible students
-      setStudentList(eligibleStudents);
-    } else {
-      // If there's a search term, filter the combined list of eligible and ineligible students
-      const combinedList = [...eligibleStudents, ...ineligibleStudentList];
-      const filteredStudents = combinedList.filter(
-        (student) =>
-          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setStudentList(filteredStudents);
-    }
-  }
-};
+  };
 
   const NotEligibleStudents = async () => {
     if (!allStudents.length || !eligibleStudentList.length) return;
@@ -164,38 +168,41 @@ const handleToggleHistory = () => {
     try {
       const comprehensiveResponse = await fetch(`${API}/api/comprehensive`);
 
-
-      if (!comprehensiveResponse.ok) throw new Error("Failed to fetch comprehensive reviews");
+      if (!comprehensiveResponse.ok)
+        throw new Error("Failed to fetch comprehensive reviews");
 
       const comprehensiveData = await comprehensiveResponse.json();
 
-      console.log(comprehensiveData)
+      console.log(comprehensiveData);
       const idToDateOfReviewMap = {};
       comprehensiveData.forEach((review) => {
         idToDateOfReviewMap[review.id] = review.dateOfReview;
       });
 
-      const notEligibleStudents = allStudents.filter(student => 
-        !eligibleStudentList.some(eligible => eligible.id === student.id)
-      ).map((student) => {
-        const dateOfReview = idToDateOfReviewMap[student.id] || null;
-        const baseAmount = dateOfReview ? 42000 : 37000;
+      const notEligibleStudents = allStudents
+        .filter(
+          (student) =>
+            !eligibleStudentList.some((eligible) => eligible.id === student.id)
+        )
+        .map((student) => {
+          const dateOfReview = idToDateOfReviewMap[student.id] || null;
+          const baseAmount = dateOfReview ? 42000 : 37000;
 
-        return {
-          baseAmount,
-          comprehensiveExamDate: dateOfReview,
-          department: student.department,
-          eligible: "No",
-          hostler: "YES",
-          hra: 0,
-          id: student.id,
-          joiningDate: student.joiningDate,
-          month: "4",
-          name: student.name,
-          rollNumber: student.rollNumber,
-          year: "2023",
-        };
-      });
+          return {
+            baseAmount,
+            comprehensiveExamDate: dateOfReview,
+            department: student.department,
+            eligible: "No",
+            hostler: "YES",
+            hra: 0,
+            id: student.id,
+            joiningDate: student.joiningDate,
+            month: "4",
+            name: student.name,
+            rollNumber: student.rollNumber,
+            year: "2023",
+          };
+        });
 
       setIneligibleStudentList(notEligibleStudents);
       console.log(notEligibleStudents);
@@ -207,18 +214,18 @@ const handleToggleHistory = () => {
   const handleFieldChange = (index, fieldName, value) => {
     const updatedStudentList = [...studentList];
     const sanitizedValue = value === "" ? 0 : value;
-  
+
     updatedStudentList[index][fieldName] = sanitizedValue;
-  
+
     if (fieldName === "hostler") {
       const hostlerValue = sanitizedValue.toLowerCase();
       const hraValue = hostlerValue === "no" ? 5000 : 0;
       updatedStudentList[index]["hra"] = hraValue;
     }
-  
+
     setStudentList(updatedStudentList);
   };
-  
+
   const handleSearch = (event) => {
     const term = event.target.value.toLowerCase();
     setSearchTerm(term);
@@ -360,7 +367,6 @@ const handleToggleHistory = () => {
     setStudentList(stipendHistory); // Reset to the original stipendHistory data
   };
 
- 
   return (
     <div className="h-full w-full">
       {!studentList && (
