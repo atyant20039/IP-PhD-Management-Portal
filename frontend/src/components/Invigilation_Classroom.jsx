@@ -21,9 +21,8 @@ import {
   Tooltip,
   Typography,
 } from "@material-tailwind/react";
-import React, { useContext, useEffect, useState } from "react";
-
-import InvigilationContext from "../context/InvigilationContext";
+import React, { useEffect, useState } from "react";
+import convertDataToXLSX from "./utils/TabletoXlxs";
 
 const TABLE_HEAD = [
   {
@@ -199,8 +198,7 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
     </Dialog>
   );
 }
-function Classroom({ onSubmit }) {
-  const { buildingRoomMap, setClassroom } = useContext(InvigilationContext);
+function Classroom({ onSubmit, setClassroomFile }) {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingRowId, setEditingRowId] = useState(null);
@@ -298,8 +296,17 @@ function Classroom({ onSubmit }) {
   };
 
   const handleSubmit = async () => {
-    onSubmit();
-    setClassroom(tableData);
+    try {
+      const classRoomXLSX = await convertDataToXLSX(
+        tableData,
+        "Classroom.xlsx"
+      );
+      setClassroomFile(classRoomXLSX);
+      onSubmit();
+    } catch (error) {
+      alert("Error occured: ", error);
+      console.error("Error: ", error);
+    }
   };
 
   return (

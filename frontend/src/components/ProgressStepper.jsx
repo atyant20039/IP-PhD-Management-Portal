@@ -1,5 +1,6 @@
 import { BuildingLibraryIcon } from "@heroicons/react/24/outline";
 import {
+  AdjustmentsHorizontalIcon,
   CalendarDaysIcon,
   ListBulletIcon,
   UserPlusIcon,
@@ -17,16 +18,21 @@ export function ProgressStepper({ setActiveStep, activeStep, completedSteps }) {
     },
     { icon: CalendarDaysIcon, title: "Step 2", description: "Datesheet" },
     {
-      icon: ListBulletIcon,
+      icon: AdjustmentsHorizontalIcon,
       title: "Step 3",
+      description: "TA Student Ratio",
+    },
+    {
+      icon: ListBulletIcon,
+      title: "Step 4",
       description: "TA List",
     },
     {
       icon: UserPlusIcon,
-      title: "Step 4",
+      title: "Step 5",
       description: "Student Registration",
     },
-    { icon: UsersIcon, title: "Step 5", description: "Eligible Students" },
+    { icon: UsersIcon, title: "Step 6", description: "Eligible Students" },
   ];
 
   return (
