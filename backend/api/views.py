@@ -778,6 +778,7 @@ class StipendViewSet(ModelViewSet):
         for stipend in serializer.data:
             student_id = stipend['student']
             student = Student.objects.get(pk=student_id)
+            
             student_details = {
                 'name': student.name,
                 'rollNumber': student.rollNumber,
@@ -846,11 +847,16 @@ class ContingencyViewSet(ModelViewSet):
         # Customizing the response
         response_data = []
         for contingency in serializer.data:
-            student = contingency['student']
+            student_id = contingency['student']
+            # print(student_id)
+            student = Student.objects.get(pk=student_id)
+           
+            print(student)
+            
             student_details = {
-                'name': student['name'],
-                'rollNumber': student['rollNumber'],
-                'department': student['department'],
+                'name': student.name,
+                'rollNumber': student.rollNumber,
+                'department': student.department,
             }
             contingency.update(student_details)
             response_data.append(contingency)
@@ -902,11 +908,13 @@ class ContingencyViewSet(ModelViewSet):
         return Response(response_data, status=status.HTTP_201_CREATED)
     
     def update(self, request, *args, **kwargs):
+        print("update in")
         instance = self.get_object()
         original_amount = instance.amount
 
         # Don't allow editing student field
         request.data.pop('student')
+        print("in 2")
 
         # Update other fields
         serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -1038,12 +1046,13 @@ class EligibleStudentContingencyViewSet(ReadOnlyModelViewSet):
                 'year': year,
                 'joiningDate': student.joiningDate,
                 'department': student.department,
+                'amount':20000
             }
 
             response_data.append(student_data)
 
         return Response(response_data, status=status.HTTP_200_OK)
-    
+     
 class AllotmentViewSet(ViewSet):
     parser_classes = [MultiPartParser]
 

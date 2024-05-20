@@ -25,6 +25,7 @@ const TABLE_HEAD = [
   "Department",
   "Joining Date",
   "Year",
+  "Amount",
   "Eligible",
 ];
 
@@ -33,13 +34,8 @@ const HISTORY_TABLE_HEAD = [
   "Roll Number",
   "Department",
   "Disbursment Date",
-  "Month",
   "Year",
-  "Hostler",
-  "HRA",
-  "Base Amount",
-  "Total Stipend",
-  "Comment",
+  "Amount"
 ];
 
 const API = import.meta.env.VITE_BACKEND_URL;
@@ -102,7 +98,7 @@ function ContingencyPoint() {
         setStipendHistory(data);
       })
       .catch((error) => {
-        console.error("Error fetching stipend history:", error);
+        console.error("Error fetching Contingency history:", error);
       });
   };
 
@@ -251,6 +247,8 @@ function ContingencyPoint() {
       (student) => student.rollNumber === rollNumber
     );
 
+    // console.log(studentToUpdate.eligible)
+
     if (studentToUpdate) {
       studentToUpdate.eligible = "Yes";
       const updatedIneligibleStudents = ineligibleStudentList.filter(
@@ -268,8 +266,14 @@ function ContingencyPoint() {
   };
 
   const handleSubmit = () => {
+    const currentDate = new Date();
+
+// Format the date as YYYY-MM-DD
+const formattedDate = currentDate.toISOString().split('T')[0];
+
     const modifiedStudentList = studentList.map(({ eligible, ...rest }) => ({
       student: rest.id,
+      disbursementDate: formattedDate,
       ...rest,
     }));
     console.log(modifiedStudentList);
@@ -461,7 +465,8 @@ function ContingencyPoint() {
                       rollNumber,
                       joiningDate,
                       department,
-                      hostler,
+                     
+                      amount,
 
                       eligible,
 
@@ -520,29 +525,38 @@ function ContingencyPoint() {
                         </Typography>
                       </td>
 
-                      {showHistory ? (
-                        <td className="border-b border-blue-gray-100 bg-white p-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {comment ? comment : "NO COMMENT"}
-                          </Typography>
-                        </td>
-                      ) : (
-                        <td className="border-b border-blue-gray-100 bg-white p-4">
-                          <Button
-                            color={eligible === "Yes" ? "green" : "red"}
-                            disabled={eligible === "Yes"}
-                            onClick={() => handleUpdateEligibility(rollNumber)}
-                          >
-                            {eligible}
-                          </Button>
-                        </td>
-                      )}
+                      <td className="border-b border-blue-gray-100 bg-white p-4">
+                       
+                          <Input
+                            value={amount}
+                            type="number"
+                            onChange={(e) =>
+                              handleFieldChange(
+                                index,
+                                "amount",
+                                e.target.value
+                              )
+                            }
+                          />
+                        
+                      </td>
+                        
 
-                      {!showHistory && (
+                    {!showHistory && (
+                      <td className="border-b border-blue-gray-100 bg-white p-4">
+                      <Button
+                        color={eligible === "Yes" ? "green" : "red"}
+                        
+                        onClick={() => handleUpdateEligibility(rollNumber)}
+                      >
+                        {eligible}
+                      </Button>
+                    </td>
+                    )}  
+
+                    
+
+                     
                         <td className="border-b border-blue-gray-100 bg-white p-4">
                           {!searchTerm && (
                             <Button
@@ -554,7 +568,7 @@ function ContingencyPoint() {
                             </Button>
                           )}
                         </td>
-                      )}
+                   
                     </tr>
                   )
                 )}

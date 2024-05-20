@@ -594,29 +594,7 @@ const handleToggleHistory = () => {
                         )}
                       </td>
 
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        {showHistory ? (
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {baseAmount}
-                          </Typography>
-                        ) : (
-                          <Input
-                            value={baseAmount}
-                            type="number"
-                            onChange={(e) =>
-                              handleFieldChange(
-                                index,
-                                "baseAmount",
-                                e.target.value
-                              )
-                            }
-                          />
-                        )}
-                      </td>
+                   
 
                       <td className="border-b border-blue-gray-100 bg-white p-4">
                         <Typography
