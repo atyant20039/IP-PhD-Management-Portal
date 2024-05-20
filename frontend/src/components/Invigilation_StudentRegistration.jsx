@@ -48,6 +48,8 @@ function Invigilation_StudentRegistration({ onSubmit }) {
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     setStudentRegistrationFile(file);
+    setErrorResponse();
+    setIsSubmitDisabled(true);
 
     if (!file) {
       alert("No file uploaded");

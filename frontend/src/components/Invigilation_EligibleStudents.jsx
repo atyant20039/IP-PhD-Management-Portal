@@ -22,7 +22,7 @@ function Invigilation_EligibleStudents({ onSubmit }) {
 
   const getFileTemplate = async () => {
     try {
-      const response = await axios.get(`${API}/api/examDateSheet/`, {
+      const response = await axios.get(`${API}/api/studentList/`, {
         responseType: "blob",
       });
       console.log(response);
@@ -47,6 +47,8 @@ function Invigilation_EligibleStudents({ onSubmit }) {
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
+    setErrorResponse();
+    setIsSubmitDisabled(true);
     setEligibleStudentsFile(file);
 
     if (!file) {
@@ -66,7 +68,7 @@ function Invigilation_EligibleStudents({ onSubmit }) {
 
     try {
       setLoading(true);
-      const response = await axios.post(`${API}/api/examDateSheet/`, formData, {
+      const response = await axios.post(`${API}/api/studentList/`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

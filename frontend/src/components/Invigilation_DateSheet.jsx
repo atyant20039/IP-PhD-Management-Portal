@@ -47,6 +47,8 @@ function Invigilation_DateSheet({ onSubmit }) {
 
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
+    setErrorResponse();
+    setIsSubmitDisabled(true);
     setDateSheetFile(file);
 
     if (!file) {
@@ -73,7 +75,7 @@ function Invigilation_DateSheet({ onSubmit }) {
       });
 
       if (response.status === 200) {
-        alert("File uploaded successfully");
+        alert("File validated & uploaded successfully");
         setIsSubmitDisabled(false);
       } else {
         setErrorResponse(response.data);

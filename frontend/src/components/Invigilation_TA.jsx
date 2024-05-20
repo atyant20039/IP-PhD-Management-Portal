@@ -417,6 +417,8 @@ function Invigilation_TA({ onSubmit }) {
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     setTaListFile(file);
+    setErrorResponse();
+    setIsSubmitDisabled(true);
 
     if (!file) {
       alert("No file uploaded");

@@ -93,7 +93,7 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
+                elif any(cell is None for cell in row[:4]  or any(str(cell).isspace() for cell in row[:4])):
                     reasons.append('Makesure all the Cells are filled!')
                     invalid_rows.append({
                         'row': row_idx,
@@ -105,11 +105,11 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
                 email_id = row[email_id_index]
                 course_code = row[course_code_index]
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
                     reasons.append('Invalid Admission No. Format.')
 
-                if email_id is None or not email_pattern.match(email_id.lower()):
-                    reasons.append('Invalid Email Id Format.')
+                if email_id is None or not email_pattern.match(email_id.lower().strip()):
+                    reasons.append('Invalid Email Id Format. Please use IIITD Emails only')
 
                 if course_code is None or not course_code_pattern.match(course_code):
                     reasons.append('Invalid Course Code Format.')
@@ -202,7 +202,7 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
+                elif any(cell is None for cell in row[:3]  or any(str(cell).isspace() for cell in row[:3])):
                     reasons.append('Makesure all the Cells are Filled!')
                     invalid_rows.append({
                         'row': row_idx,
@@ -213,10 +213,10 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
                 admission_no = row[admission_no_index]
                 email_id = row[email_id_index]
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
                     reasons.append('Invalid Admission No. Format.')
 
-                if email_id is None or not email_pattern.match(email_id.lower()):
+                if email_id is None or not email_pattern.match(email_id.lower().strip()):
                     reasons.append('Invalid Email Id Format.')
                 
                 if reasons:
@@ -286,8 +286,8 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
 
             sheet_headers = [cell.value for cell in sheet[1]]
             required_columns = [
-                'Name',
                 'Admission No.',
+                'Name',
                 'Course Code'
             ]
 
@@ -305,7 +305,7 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
+                elif any(cell is None for cell in row[:3] or any(str(cell).isspace() for cell in row[:3])):
                     reasons.append('Makesure all the Cells are Filled!')
                     invalid_rows.append({
                         'row': row_idx,
@@ -320,7 +320,7 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
                 if course_code is None or not course_code_pattern.match(course_code):
                     reasons.append('Invalid Course Code Format. Make sure Course Codes is "/" Separated')
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
                     reasons.append('Invalid Admission No. Format.')
                 
                 if reasons:
@@ -414,7 +414,7 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row[:7]):
+                elif any(cell is None for cell in row[:7]) or any(str(cell).isspace() for cell in row[:7]):
                     reasons.append('Makesure all the Cells are Filled!')
                     invalid_rows.append({
                         'row': row_idx,
@@ -1082,4 +1082,4 @@ class AllotmentViewSet(ViewSet):
         #     os.remove(file_name)
         # os.remove('InvigilatorList.xlsx')
 
-        return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)        return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)
