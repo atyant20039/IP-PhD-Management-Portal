@@ -36,7 +36,7 @@ function Invigilation() {
       }
 
       const formData = new FormData();
-      formData.append("file", classroomFile);
+      formData.append("file1", classroomFile);
       formData.append("TARatio", taRatio);
 
       const response = await axios.post(`${API}/api/allotment/`, formData, {
@@ -48,16 +48,11 @@ function Invigilation() {
       if (response.status === 200) {
         alert("Process Successful");
       }
-      console.log(response);
     } catch (error) {
-      alert("Error occured", error);
+      alert("Some Error occured");
       console.error(error);
     }
   };
-
-  // useEffect(() => {
-  //   console.log(classroomFile);
-  // }, [classroomFile]);
 
   const renderActiveComponent = () => {
     switch (activeStep) {
@@ -98,11 +93,6 @@ function Invigilation() {
           activeStep={activeStep}
           completedSteps={completedSteps}
         />
-        {/* <div className="flex justify-center mt-4">
-          <Button color="green" disabled={activeStep != 5} onClick={uploadData}>
-            Generate!
-          </Button>
-        </div> */}
       </div>
       <div className="h-1 flex-1 overflow-auto">{renderActiveComponent()}</div>
     </div>

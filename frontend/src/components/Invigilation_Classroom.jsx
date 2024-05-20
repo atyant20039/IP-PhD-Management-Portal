@@ -354,7 +354,7 @@ function Classroom({ onSubmit, setClassroomFile }) {
           </div>
         </CardHeader>
         <CardBody className="p-0 mt-5 flex flex-1 overflow-y-auto">
-          {tableData.length === 0 ? (
+          {tableData && tableData.length === 0 ? (
             <div className="w-full h-full flex flex-col place-content-center place-items-center">
               {loading ? (
                 <Spinner className="size-12" />

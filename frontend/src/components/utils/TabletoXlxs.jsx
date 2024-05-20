@@ -20,7 +20,7 @@ function convertDataToXLSX(data) {
   });
 
   // Create a File from the Blob
-  const file = new File([workbookBlob], "DataSheet.xlsx", {
+  const file = new File([workbookBlob], "Classroom.xlsx", {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
 

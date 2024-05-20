@@ -1,11 +1,12 @@
-import re
-import os
-import math
-import openpyxl
 import argparse
+import math
+import os
+import re
+from datetime import datetime
+
+import openpyxl
 import pandas as pd
 from course import Course
-from datetime import datetime
 from django.conf import settings
 from phdStudent import PhDStudent
 
@@ -185,7 +186,7 @@ def format_name(input_name):
 room_capacity = {}
 
 # Relative Path of the Excel File.
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'Classroom.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'Classroom.xlsx')
 
 # Names of the Relevant Columns in the Excel File.
 building_col = 'building'
@@ -218,8 +219,8 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     capacity = row[capacity_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [building, room, capacity]):
-            print("Error: Make sure the Columns(Building, Room No., Capacity) are Filled")
+    if all(val is None for val in [building, room, capacity]):
+            # print("Error: Make sure the Columns(Building, Room No., Capacity) are Filled")
             break
     
     # Normalize room name to lowercase and convert capacity to integer.
@@ -237,12 +238,12 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
 phd_students = {}
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentRegistration.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'StudentRegistration.xlsx')
 
 # Names of the relevant Columns in the Excel file
 admission_no_col = 'Admission No.'
 name_col = 'Name'
-email_col = 'Email Id'
+email_col = 'Email ID'
 course_code_col = 'Course Code'
 
 # Open the Excel file
@@ -275,8 +276,8 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     course_code = row[course_code_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [admission_no, name, email, course_code]):
-            print("Error: Make sure the Columns(Admission No., Name, Email ID, Course Code) are Filled")
+    if all(val is None for val in [admission_no, name, email, course_code]):
+            # print("Error: Make sure the Columns(Admission No., Name, Email ID, Course Code) are Filled")
             break
     
     # Convert admission number to lowercase
@@ -309,7 +310,7 @@ course_pool = {}
 course_list = []
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'ExamDateSheet.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'ExamDateSheet.xlsx')
 
 # Names of the relevant Columns in the Excel file
 date_col = 'Date'
@@ -357,8 +358,8 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     room_no = row[room_no_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [date, day, time, accronynm, course_code, strength, room_no]):
-        print("Error: Make sure the Columns(Date, Day, Time, Accronynm, Course Code, Strength, Room No.) are Filled")
+    if all(val is None for val in [date, day, time, accronynm, course_code, strength, room_no]):
+        # print("Error: Make sure the Columns(Date, Day, Time, Accronynm, Course Code, Strength, Room No.) are Filled")
         break
 
     # Convert Course Code to lowercase.
@@ -389,7 +390,7 @@ students_pool = {}
 students_available = {}
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentList.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'StudentList.xlsx')
 
 # Names of the relevant Columns in the Excel file
 admission_no_col = 'Admission No.'
@@ -422,8 +423,8 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     email = row[email_col_idx - 1]
     
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [admission_no, name, email]):
-        print("Error: Make sure the Columns(Admission No., Name, Email ID) are Filled")
+    if all(val is None for val in [admission_no, name, email]):
+        # print("Error: Make sure the Columns(Admission No., Name, Email ID) are Filled")
         break
 
     # Convert the admission number to lowercase.
@@ -442,11 +443,11 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
 #########################################################################################################################
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'TAList.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'TAList.xlsx')
 
 # Names of the relevant Columns in the Excel file
 admission_no_col = 'Admission No.'
-email_col = 'Email ID'
+# email_col = 'Email ID'
 course_code_col = 'Course Code'
 name_col = 'Name'
 
@@ -466,7 +467,7 @@ try:
     # Find the indices of the relevant Columns.
     admission_no_col_idx = column_names.index(admission_no_col) + 1
     name_col_idx = column_names.index(name_col) + 1
-    email_col_idx = column_names.index(email_col) + 1
+    # email_col_idx = column_names.index(email_col) + 1
     course_code_col_idx = column_names.index(course_code_col) + 1
 except ValueError as e:
     # Print error if one or more required Columns are not found.
@@ -476,12 +477,13 @@ except ValueError as e:
 for row in worksheet.iter_rows(min_row=2, values_only=True):
     admission_no = row[admission_no_col_idx - 1]
     name = row[name_col_idx - 1]
-    email = row[email_col_idx - 1]
+    # email = row[email_col_idx - 1]
     course_code = row[course_code_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [admission_no, name, course_code]):
-        print("Error: Make sure the Columns(Admission No., Name, Course Code) are Filled - Extracting Course TAs")
+    if all(val is None for val in [admission_no, name, course_code]):
+        # print(admission_no, name, course_code)
+        # print("Error: Make sure the Columns(Admission No., Name, Course Code) are Filled - Extracting Course TAs")
         break
 
     # Convert Admission Number and Course Code to lowercase

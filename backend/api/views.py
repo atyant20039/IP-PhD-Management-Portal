@@ -427,7 +427,7 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                 room_no = row[room_no_index]
                 strength = row[strength_index]
 
-                if not strength.isnumeric():
+                if not type(strength) == int:
                     reasons.append('Invalid Value: Strength should be numeric.')
 
                 if course_code is None or not course_code_pattern.match(course_code):
@@ -740,6 +740,7 @@ class YearlyReviewViewSet(ModelViewSet):
 class ClassroomViewSet(ModelViewSet):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
+    # pagination_class = NoPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['building', 'roomNo']
     search_fields = ['$building', '$roomNo']
@@ -1063,7 +1064,7 @@ class AllotmentViewSet(ViewSet):
 
         # Define the filenames to save the uploaded files
         file_names = {
-            'file1': 'Classroom.xlsx',
+            'file1': invigilation_files_dir + '\Classroom.xlsx',
         }
 
         for key, file in request.FILES.items():
@@ -1074,7 +1075,7 @@ class AllotmentViewSet(ViewSet):
                         destination.write(chunk)
 
         # Run the python script with TARatio as an argument
-        script_path = os.path.join(settings.BASE_DIR, 'algorithm', 'AllotInvigilators.py')
+        script_path = os.path.join(settings.BASE_DIR, 'algorithm', 'allocationAlgorithm.py')
         subprocess.call(['python', script_path, '--TARatio', TARatio])
 
         # # Read the generated file and return it as a response
