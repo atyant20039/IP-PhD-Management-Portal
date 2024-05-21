@@ -46,11 +46,11 @@ function FilterStudents({ control }) {
       header: "Admission Through",
       options: ["Regular", "Rolling", "Sponsored", "Migrated", "Direct"],
     },
-    {
-      variable: "region",
-      header: "Region",
-      options: ["Delhi", "Outside Delhi"],
-    },
+    // {
+    //   variable: "region",
+    //   header: "Region",
+    //   options: ["Delhi", "Outside Delhi"],
+    // },
   ];
 
   return (

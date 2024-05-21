@@ -673,7 +673,7 @@ function StudentForm({ setOpen, initVal }) {
               type="number"
               id="contingencyYears"
               error={Boolean(errors.contingencyYears)}
-              defaultValue={5}
+              defaultValue={4}
               {...register("contingencyYears", {
                 min: {
                   value: 0,

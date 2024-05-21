@@ -57,8 +57,8 @@ function Stipend() {
     setEligibleStudentList,
   } = useContext(StudentContext);
 
-  const [month, setMonth] = useState(4);
-  const [year, setYear] = useState(2023);
+  const [month, setMonth] = useState();
+  const [year, setYear] = useState();
   const [searchTerm, setSearchTerm] = useState("");
   const [showHistory, setShowHistory] = useState(false);
   const [eligibleStudents, setEligibleStudents] = useState(eligibleStudentList);
