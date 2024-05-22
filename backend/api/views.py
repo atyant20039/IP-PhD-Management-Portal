@@ -1,17 +1,14 @@
 import os
 import re
 import subprocess
-from datetime import datetime
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font
-from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.datavalidation import DataValidation
 from rest_framework import status
@@ -498,6 +495,17 @@ class StudentTableViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
     search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__advisor1__name', '$advisor_set__advisor2__name', '$advisor_set__coadvisor__name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        advisor_name = self.request.query_params.get('advisor', None)
+        if advisor_name:
+            queryset = queryset.filter(
+                Q(advisor_set__advisor1__name__icontains=advisor_name) |
+                Q(advisor_set__advisor2__name__icontains=advisor_name) |
+                Q(advisor_set__coadvisor__name__icontains=advisor_name)
+            ).distinct()
+        return queryset
 
 class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = StudentTableSerializer
