@@ -22,6 +22,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import React, { useEffect, useState } from "react";
+import swal from "sweetalert";
 import convertDataToXLSX from "./utils/TabletoXlxs";
 
 const TABLE_HEAD = [
@@ -51,9 +52,6 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
     roomNo: "",
     capacity: "",
   });
-
-  const [selectedBuilding, setSelectedBuilding] = useState();
-
   const [rowError, setRowError] = useState();
 
   const handleChange = (e) => {
@@ -71,6 +69,14 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
       //   ...prevData,
       //   building: selectedBuilding,
       // }));
+      if (
+        classroomData.building == "" ||
+        classroomData.capacity == "" ||
+        classroomData.roomNo == ""
+      ) {
+        setRowError("All fields are required");
+        return;
+      }
       console.log(classroomData);
       const response = await fetch(`${API}/api/classroom/`, {
         method: "POST",
@@ -100,7 +106,6 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
       roomNo: "",
       capacity: "",
     });
-    setSelectedBuilding();
   };
 
   return (
@@ -125,16 +130,16 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
             <select
               required
               type="text"
-              label="Building"
+              label="Building*"
               id="building"
               placeholder="Select Building"
               name="building"
               value={classroomData.building}
               onChange={handleChange}
-              className="w-full h-10 border border-blue-gray-200/70 rounded-lg"
+              className="w-full h-10 border pl-2 border-blue-gray-200/70 rounded-lg"
             >
               <option value="" disabled selected hidden>
-                Building
+                Building*
               </option>
               <option value="LHC">LHC</option>
               <option value="RnD">RnD</option>
@@ -162,7 +167,7 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
               Capacity
             </label> */}
             <Input
-              type="text"
+              type="number"
               label="Capacity"
               required
               id="capacity"
@@ -304,7 +309,8 @@ function Classroom({ onSubmit, setClassroomFile }) {
       setClassroomFile(classRoomXLSX);
       onSubmit();
     } catch (error) {
-      alert("Error occured: ", error);
+      swal("Error", error, "error");
+
       console.error("Error: ", error);
     }
   };

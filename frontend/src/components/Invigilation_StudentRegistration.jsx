@@ -1,15 +1,16 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/solid";
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Chip,
-  Spinner,
-  Tooltip,
-  Typography,
-} from "@material-tailwind/react";
+import
+  {
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    Chip,
+    Spinner,
+    Tooltip,
+    Typography,
+  } from "@material-tailwind/react";
 import axios from "axios";
 import React, { useState } from "react";
 
@@ -41,7 +42,8 @@ function Invigilation_StudentRegistration({ onSubmit }) {
       URL.revokeObjectURL(fileURL);
     } catch (error) {
       console.error(error);
-      alert("Failed to download template");
+      swal("Error", "Failed to download template", "error");
+      // alert("Failed to download template");
     }
   };
 
@@ -52,14 +54,16 @@ function Invigilation_StudentRegistration({ onSubmit }) {
     setIsSubmitDisabled(true);
 
     if (!file) {
-      alert("No file uploaded");
+      // alert("No file uploaded");
+      swal("No file uploaded", "Please upload a file and try again", "error");
       return;
     }
     if (
       file.type !=
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     ) {
-      alert("Incorrect file format: Please select an .xlsx file");
+      // alert("Incorrect file format: Please select an .xlsx file");
+      swal("Incorrect file format", "Please select a .xlsx file", "error");
       return;
     }
 
@@ -79,7 +83,8 @@ function Invigilation_StudentRegistration({ onSubmit }) {
       );
 
       if (response.status === 200) {
-        alert("File uploaded successfully");
+        // alert("File uploaded successfully");
+        swal("Success", "File validated & uploaded successfully", "success");
         setIsSubmitDisabled(false);
       } else {
         setErrorResponse(response.data);
