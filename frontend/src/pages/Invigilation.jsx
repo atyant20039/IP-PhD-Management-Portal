@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import Classroom from "../components/Invigilation_Classroom";
 import Invigilation_DateSheet from "../components/Invigilation_DateSheet";
 import Invigilation_TA from "../components/Invigilation_TA";
@@ -9,7 +9,6 @@ import axios from "axios";
 
 import Invigilation_EligibleStudents from "../components/Invigilation_EligibleStudents";
 import Invigilation_StudentRegistration from "../components/Invigilation_StudentRegistration";
-import InvigilationContext from "../context/InvigilationContext";
 
 function Invigilation() {
   const API = import.meta.env.VITE_BACKEND_URL;
@@ -17,7 +16,6 @@ function Invigilation() {
   const [completedSteps, setCompletedSteps] = useState(-1);
   const [classroomFile, setClassroomFile] = useState();
   const [taRatio, setTaRatio] = useState();
-  const { uploadData } = useContext(InvigilationContext);
 
   const handleNextStep = () => {
     setCompletedSteps((prevSteps) => prevSteps + 1);
@@ -27,11 +25,17 @@ function Invigilation() {
   const finalSubmit = async () => {
     try {
       if (!taRatio || taRatio == null) {
-        alert("TA Ratio invalid value");
+        // alert("TA Ratio invalid value");
+        swal("Invalid Input", "TA Ratio invalid value", "error");
         return;
       }
       if (!classroomFile || classroomFile == null) {
-        alert("Error generating Classroom XLSX file");
+        // alert("Error generating Classroom XLSX file");
+        swal(
+          "Error",
+          "Error generating Classroom XLSX file. Please try again after some time.",
+          "error"
+        );
         return;
       }
 
@@ -46,10 +50,16 @@ function Invigilation() {
       });
 
       if (response.status === 200) {
-        alert("Process Successful");
+        // alert("Process Successful");
+        swal(
+          "Success",
+          "Invigilation duties allocated. The file will start downloading.",
+          "success"
+        );
       }
     } catch (error) {
-      alert("Some Error occured");
+      // alert("Some Error occured");
+      swal("Error", error, "error");
       console.error(error);
     }
   };
