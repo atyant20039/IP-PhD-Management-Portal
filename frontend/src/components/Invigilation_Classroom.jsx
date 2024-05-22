@@ -21,6 +21,7 @@ import {
   Tooltip,
   Typography,
 } from "@material-tailwind/react";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import swal from "sweetalert";
 import convertDataToXLSX from "./utils/TabletoXlxs";
@@ -78,22 +79,15 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
         return;
       }
       console.log(classroomData);
-      const response = await fetch(`${API}/api/classroom/`, {
-        method: "POST",
+      await axios.post(`${API}/api/classroom/`, classroomData, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(classroomData),
       });
 
-      if (!response.ok) {
-        setRowError("Failed to add classroom");
-      } else {
-        handleCancel();
-      }
+      handleCancel();
     } catch (error) {
-      console.error("Error adding classroom:", error);
-      setRowError(error);
+      setRowError(error.response.data.error);
     }
     fetchData();
   };
@@ -134,11 +128,11 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
               id="building"
               placeholder="Select Building"
               name="building"
-              value={classroomData.building}
+              defaultValue=""
               onChange={handleChange}
               className="w-full h-10 border pl-2 border-blue-gray-200/70 rounded-lg"
             >
-              <option value="" disabled selected hidden>
+              <option value="" disabled hidden>
                 Building*
               </option>
               <option value="LHC">LHC</option>

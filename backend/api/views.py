@@ -759,9 +759,9 @@ class ClassroomViewSet(ModelViewSet):
         roomNo = request.data['roomNo']
         capacity = request.data['capacity']
         if not roomNo.isalnum():
-            return Response({'error': 'Incorrect Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Incorrect Room No. Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
         elif not capacity.isdigit():
-            return Response({'error': 'Incorrect Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Incorrect Capacity Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Convert roomNo to uppercase
         request.data['roomNo'] = roomNo.upper()
@@ -774,7 +774,7 @@ class ClassroomViewSet(ModelViewSet):
             roomNo = request.data['roomNo']
 
             if not roomNo.isalnum():
-                return Response({'error': 'Incorrect Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Incorrect Room No. Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
             
             # Convert roomNo to uppercase
             request.data['roomNo'] = roomNo.upper()
@@ -782,7 +782,7 @@ class ClassroomViewSet(ModelViewSet):
         elif "capacity" in request.data.keys():
             capacity = request.data['capacity']
             if not capacity.isdigit():
-                return Response({'error': 'Incorrect Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Incorrect Capacity Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
             
         return super().update(request, *args, **kwargs)
 
