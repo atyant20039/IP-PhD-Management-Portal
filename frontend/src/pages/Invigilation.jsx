@@ -47,19 +47,32 @@ function Invigilation() {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        responseType: "blob",
       });
 
       if (response.status === 200) {
         // alert("Process Successful");
         swal(
           "Success",
-          "Invigilation duties allocated. The file will start downloading.",
+          "Invigilation duties allocated. The file will start downloading automatically.",
           "success"
         );
+        const file = new Blob([response.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const fileURL = URL.createObjectURL(file);
+
+        const fileLink = document.createElement("a");
+        fileLink.href = fileURL;
+        fileLink.setAttribute("download", "invigilationDuties.xlsx");
+        document.body.appendChild(fileLink);
+        fileLink.click();
+        fileLink.remove();
+        URL.revokeObjectURL(fileURL);
       }
     } catch (error) {
       // alert("Some Error occured");
-      swal("Error", error, "error");
+      swal("Error", error.response?.data?.error, "error");
       console.error(error);
     }
   };

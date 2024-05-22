@@ -87,7 +87,12 @@ function AddRowDialog({ isOpen, setOpen, fetchData }) {
 
       handleCancel();
     } catch (error) {
-      setRowError(error.response.data.error);
+      console.error(error);
+      if (error.response.data.error) {
+        setRowError(error.response?.data?.error);
+      } else if (error.response.data.non_field_errors) {
+        setRowError(error.response.data.non_field_errors[0]);
+      }
     }
     fetchData();
   };
@@ -274,6 +279,18 @@ function Classroom({ onSubmit, setClassroomFile }) {
       console.error("Error editing row:", error);
     } finally {
       setIsEditing(false);
+    }
+  };
+
+  const showAlert = async (rowId) => {
+    const userResponse = await swal({
+      title: "Are you sure?",
+      icon: "warning",
+      buttons: ["Cancel", "Confirm"],
+      dangerMode: true,
+    });
+    if (userResponse) {
+      handleDelete(rowId);
     }
   };
 
@@ -502,7 +519,7 @@ function Classroom({ onSubmit, setClassroomFile }) {
                             </Tooltip>
                             <Tooltip content="Delete">
                               <IconButton
-                                onClick={() => handleDelete(row.id)}
+                                onClick={() => showAlert(row.id)}
                                 color="black"
                                 size="sm"
                                 ripple={true}
