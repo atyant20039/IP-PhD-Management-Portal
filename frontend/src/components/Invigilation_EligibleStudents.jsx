@@ -34,7 +34,7 @@ function Invigilation_EligibleStudents({ onSubmit }) {
 
       const fileLink = document.createElement("a");
       fileLink.href = fileURL;
-      fileLink.setAttribute("download", "eligible_students_template.xlsx");
+      fileLink.setAttribute("download", "EligibleStudent.xlsx");
       document.body.appendChild(fileLink);
       fileLink.click();
       fileLink.remove();

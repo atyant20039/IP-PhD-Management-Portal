@@ -3,11 +3,9 @@ import math
 import os
 import re
 from datetime import datetime
-
 import openpyxl
 import pandas as pd
 from course import Course
-from django.conf import settings
 from phdStudent import PhDStudent
 
 #########################################################################################################################

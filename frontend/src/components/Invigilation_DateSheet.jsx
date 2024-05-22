@@ -34,7 +34,7 @@ function Invigilation_DateSheet({ onSubmit }) {
 
       const fileLink = document.createElement("a");
       fileLink.href = fileURL;
-      fileLink.setAttribute("download", "datesheet_template.xlsx");
+      fileLink.setAttribute("download", "ExamDateSheet.xlsx");
       document.body.appendChild(fileLink);
       fileLink.click();
       fileLink.remove();

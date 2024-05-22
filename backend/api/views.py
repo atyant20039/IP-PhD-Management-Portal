@@ -746,10 +746,14 @@ class ClassroomViewSet(ModelViewSet):
     search_fields = ['$building', '$roomNo']
 
     def create(self, request, *args, **kwargs):
+
         # Check if roomNo is alphanumeric
         roomNo = request.data['roomNo']
+        capacity = request.data['capacity']
         if not roomNo.isalnum():
             return Response({'error': 'Incorrect Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif not capacity.isdigit():
+            return Response({'error': 'Incorrect Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Convert roomNo to uppercase
         request.data['roomNo'] = roomNo.upper()
@@ -760,12 +764,18 @@ class ClassroomViewSet(ModelViewSet):
         # Check if roomNo is alphanumeric
         if "roomNo" in request.data.keys():
             roomNo = request.data['roomNo']
+
             if not roomNo.isalnum():
                 return Response({'error': 'Incorrect Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
             
             # Convert roomNo to uppercase
             request.data['roomNo'] = roomNo.upper()
 
+        elif "capacity" in request.data.keys():
+            capacity = request.data['capacity']
+            if not capacity.isdigit():
+                return Response({'error': 'Incorrect Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
+            
         return super().update(request, *args, **kwargs)
 
 

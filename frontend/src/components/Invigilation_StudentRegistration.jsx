@@ -34,7 +34,7 @@ function Invigilation_StudentRegistration({ onSubmit }) {
 
       const fileLink = document.createElement("a");
       fileLink.href = fileURL;
-      fileLink.setAttribute("download", "student_registration_template.xlsx");
+      fileLink.setAttribute("download", "StudentRegistration.xlsx");
       document.body.appendChild(fileLink);
       fileLink.click();
       fileLink.remove();

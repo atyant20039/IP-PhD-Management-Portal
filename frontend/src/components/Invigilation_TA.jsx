@@ -403,7 +403,7 @@ function Invigilation_TA({ onSubmit }) {
 
       const fileLink = document.createElement("a");
       fileLink.href = fileURL;
-      fileLink.setAttribute("download", "taList_template.xlsx");
+      fileLink.setAttribute("download", "TAList.xlsx");
       document.body.appendChild(fileLink);
       fileLink.click();
       fileLink.remove();
