@@ -2,7 +2,6 @@ import argparse
 import math
 import os
 import re
-import sys
 from datetime import datetime
 import openpyxl
 import pandas as pd
@@ -175,20 +174,6 @@ def format_name(input_name):
     words = input_name.split()  # Split the input string into a list of words
     formatted_name = ' '.join(word.capitalize() for word in words)
     return formatted_name
-
-def hash_function(n, mod_base=100, offset=50):
-    """
-    Improved hash function that takes a number `n` and returns a hash value.
-    
-    Parameters:
-    - n: The number to be hashed.
-    - mod_base: The base for the modulo operation (default is 300).
-    - offset: The offset to adjust the hash value (default is 100).
-    
-    Returns:
-    - A hash value with controlled collisions.
-    """
-    return ((n * 7 + 3) % mod_base) + offset
 
 
 ##########################################################################################################################
@@ -592,9 +577,6 @@ for course in course_list:
             if req_invigilators == len(course.get_invigilators()):
                 full_allotment = True
                 break
-            elif hash_function(int(re.search(r'\d{5}$', student).group())) == 72 and len(students_pool[student].get_duties()) >= 1:
-                continue
-
             student_course = students_available[student].get_enrolled_courses()
             can_allot = True
             for student_course_code in student_course:
@@ -658,10 +640,10 @@ for course in sorted_courses:
 
 
     if course.get_req_invigilator() == 0:
+        df = df._append({'Date': date, 'Day': day, 'Time': time, 'Course Acronym': course_acronym, 'Course Code': course_code.upper(),
+                        'Admission No.': None, 'Name': None, 'Email ID': None, 'Room No.' : room_list, 'Building' : building, 'No. Of. Duties' : None}, ignore_index=True)
         empty_row = pd.Series([None] * len(df.columns), index=df.columns)
         df = df._append(empty_row, ignore_index=True)
-        df = df._append({'Date': date, 'Day': day, 'Time': time, 'Course Acronym': course_acronym, 'Course Code': course_code.upper(),
-                        'Admission No.': None, 'Name': None, 'Email ID': None, 'Room No.' : room_list[0], 'Building' : building, 'No. Of. Duties' : None}, ignore_index=True)
         continue
 
     distribution_index = 0
@@ -679,8 +661,6 @@ for course in sorted_courses:
         name = format_name(invigilator.get_name())
         email = invigilator.get_email().lower()
         num_duties = len(invigilator.get_duties())
-        if hash_function(int(re.search(r'\d{5}$', admission_no).group())) == 72:
-            num_duties = 2
 
         # Check if prev_course_code is different from course_code
         if (prev_course_code != course_code) and (prev_course_code != ""):
@@ -710,14 +690,14 @@ for course in sorted_courses:
         prev_day = day
         prev_course_code = course_code
 
-# write the dataframe to an Excel file
-file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'InvigilatorList.xlsx')
+# # write the dataframe to an Excel file
+# file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'InvigilatorList.xlsx')
 
-# Check if the file exists
-if os.path.exists(file_path):
-    # Delete the file if it exists
-    os.remove(file_path)
+# # Check if the file exists
+# if os.path.exists(file_path):
+#     # Delete the file if it exists
+#     os.remove(file_path)
 
-# Ensure the directory exists
-os.makedirs(os.path.dirname(file_path), exist_ok=True)
-df.to_excel(file_path, index=False)
+# # Ensure the directory exists
+# os.makedirs(os.path.dirname(file_path), exist_ok=True)
+df.to_excel('InvigilatorList.xlsx', index=False)
