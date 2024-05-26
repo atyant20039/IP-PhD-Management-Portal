@@ -85,6 +85,13 @@ function ContingencyPoint() {
     }
   }, [allStudents, contingencyEligible]);
 
+
+  useEffect(() => {
+   
+      fetchStipendHistory();
+  
+  }, []);
+
   const fetchStipendHistory = () => {
     fetch(`${API}/api/contingency/`)
       .then((response) => {
@@ -387,6 +394,12 @@ const formattedDate = currentDate.toISOString().split('T')[0];
                 disabled={year == null || year == ""}
               >
                 Generate
+              </Button>
+              <Button
+                onClick={handleToggleHistory}
+              
+              >
+                Show History
               </Button>
             </div>
           </CardHeader>
