@@ -1,12 +1,11 @@
-import re
-import os
-import math
-import openpyxl
 import argparse
+import math
+import os
+import re
+from datetime import datetime
+import openpyxl
 import pandas as pd
 from course import Course
-from datetime import datetime
-from django.conf import settings
 from phdStudent import PhDStudent
 
 #########################################################################################################################
@@ -185,7 +184,7 @@ def format_name(input_name):
 room_capacity = {}
 
 # Relative Path of the Excel File.
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'Classroom.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'Classroom.xlsx')
 
 # Names of the Relevant Columns in the Excel File.
 building_col = 'building'
@@ -218,8 +217,8 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     capacity = row[capacity_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [building, room, capacity]):
-            print("Error: Make sure the Columns(Building, Room No., Capacity) are Filled")
+    if all(val is None for val in [building, room, capacity]):
+            # print("Error: Make sure the Columns(Building, Room No., Capacity) are Filled")
             break
     
     # Normalize room name to lowercase and convert capacity to integer.
@@ -237,12 +236,12 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
 phd_students = {}
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentRegistration.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'StudentRegistration.xlsx')
 
 # Names of the relevant Columns in the Excel file
 admission_no_col = 'Admission No.'
 name_col = 'Name'
-email_col = 'Email Id'
+email_col = 'Email ID'
 course_code_col = 'Course Code'
 
 # Open the Excel file
@@ -275,15 +274,16 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     course_code = row[course_code_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [admission_no, name, email, course_code]):
-            print("Error: Make sure the Columns(Admission No., Name, Email ID, Course Code) are Filled")
+    if all(val is None for val in [admission_no, name, email, course_code]):
+            # print("Error: Make sure the Columns(Admission No., Name, Email ID, Course Code) are Filled")
             break
     
     # Convert admission number to lowercase
-    admission_no = admission_no.lower()
+    admission_no = admission_no.lower().strip()
 
-    # Extracting Course Codes
+    # Converting Course Codes to Lower Case
     course_code = course_code.lower()
+
     # Get list of course codes
     course_code_list = extract_codes(course_code)
 
@@ -308,7 +308,7 @@ course_pool = {}
 course_list = []
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'ExamDateSheet.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'ExamDateSheet.xlsx')
 
 # Names of the relevant Columns in the Excel file
 date_col = 'Date'
@@ -356,8 +356,8 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     room_no = row[room_no_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [date, day, time, accronynm, course_code, strength, room_no]):
-        print("Error: Make sure the Columns(Date, Day, Time, Accronynm, Course Code, Strength, Room No.) are Filled")
+    if all(val is None for val in [date, day, time, accronynm, course_code, strength, room_no]):
+        # print("Error: Make sure the Columns(Date, Day, Time, Accronynm, Course Code, Strength, Room No.) are Filled")
         break
 
     # Convert Course Code to lowercase.
@@ -371,7 +371,7 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     room_no = [str.strip() for str in room_no]
 
     # Create a new Course object and add the new course to the course list
-    new_course = Course(accronynm, course_code, strength, date, time, day, room_no[:-1], room_capacity, TARatio, room_no[-1])
+    new_course = Course(accronynm, course_code, strength, date, time, day, room_no[:-1], room_capacity, TARatio)
     course_list.append(new_course)
 
     # Iterate through course codes list and add the new course to the course pool with each code.
@@ -388,7 +388,7 @@ students_pool = {}
 students_available = {}
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentList.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'StudentList.xlsx')
 
 # Names of the relevant Columns in the Excel file
 admission_no_col = 'Admission No.'
@@ -421,12 +421,12 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
     email = row[email_col_idx - 1]
     
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [admission_no, name, email]):
-        print("Error: Make sure the Columns(Admission No., Name, Email ID) are Filled")
+    if all(val is None for val in [admission_no, name, email]):
+        # print("Error: Make sure the Columns(Admission No., Name, Email ID) are Filled")
         break
 
     # Convert the admission number to lowercase.
-    admission_no = admission_no.lower()
+    admission_no = admission_no.lower().strip()
 
     # Add a new PhDStudent to phd_students if not already present
     if(admission_no not in phd_students):
@@ -441,11 +441,11 @@ for row in worksheet.iter_rows(min_row=2, values_only=True):
 #########################################################################################################################
 
 # Relative Path of the Excel file
-file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'TAList.xlsx')
+file_path = os.path.join(os.getcwd(), 'media', 'invigilationFiles', 'TAList.xlsx')
 
 # Names of the relevant Columns in the Excel file
 admission_no_col = 'Admission No.'
-email_col = 'Email ID'
+# email_col = 'Email ID'
 course_code_col = 'Course Code'
 name_col = 'Name'
 
@@ -465,7 +465,7 @@ try:
     # Find the indices of the relevant Columns.
     admission_no_col_idx = column_names.index(admission_no_col) + 1
     name_col_idx = column_names.index(name_col) + 1
-    email_col_idx = column_names.index(email_col) + 1
+    # email_col_idx = column_names.index(email_col) + 1
     course_code_col_idx = column_names.index(course_code_col) + 1
 except ValueError as e:
     # Print error if one or more required Columns are not found.
@@ -475,16 +475,19 @@ except ValueError as e:
 for row in worksheet.iter_rows(min_row=2, values_only=True):
     admission_no = row[admission_no_col_idx - 1]
     name = row[name_col_idx - 1]
-    email = row[email_col_idx - 1]
+    # email = row[email_col_idx - 1]
     course_code = row[course_code_col_idx - 1]
 
     # Check for missing values in any of the relevant Columns.
-    if any(val is None for val in [admission_no, name, course_code]):
-        print("Error: Make sure the Columns(Admission No., Name, Course Code) are Filled - Extracting Course TAs")
+    if all(val is None for val in [admission_no, name, course_code]):
+        # print(admission_no, name, course_code)
+        # print("Error: Make sure the Columns(Admission No., Name, Course Code) are Filled - Extracting Course TAs")
         break
 
     # Convert Admission Number and Course Code to lowercase
-    admission_no = admission_no.lower()
+    admission_no = admission_no.lower().strip()
+
+    # Convert Course Code to Lower Case
     course_code = course_code.lower()
 
     # Extract course codes from the input
@@ -585,7 +588,7 @@ for course in course_list:
         if(len(available_sorted_keys) == 0):
             students_available = alloted_students_pool.copy()
             available_sorted_keys = sorted(students_available.keys(), key=custom_sort_key, reverse=True)
-            clearAllotedList(alloted_students_pool, students_available_copy)
+            clearAllotedList(alloted_students_pool, students_pool)
 
 
         alloted_sorted_keys = sorted(alloted_students_pool.keys(), key=custom_sort_key, reverse=True)
@@ -607,4 +610,81 @@ for course in course_list:
                     removeFromPool(alloted_students_pool, alloted_sorted_keys, alloted_students_pool[student])
 
 if(len(available_sorted_keys) == 0):
-    clearAllotedList(alloted_students_pool, students_available_copy)
+    clearAllotedList(alloted_students_pool, students_pool)
+
+###########################################################################################################################
+################################################# Updating Students List ##################################################
+########################################################################################################################### 
+
+sorted_courses = sorted(course_list, key=lambda c: (c.get_date(), datetime.strptime(c.get_time().split(' - ')[0], '%I:%M %p')))
+
+# Create an empty dataframe with the specified columns
+df = pd.DataFrame(columns=['Date', 'Day', 'Time', 'Course Acronym', 'Course Code', 'Admission No.', 'Name', 'Email ID', 'Room No.', 'Building', 'No. Of. Duties'])
+prev_day = ""
+prev_course_code = ""
+# Iterate through the sorted courses
+for course in sorted_courses:
+    date = course.get_date().date()
+    day = course.get_day()
+    time = course.get_time()
+    course_acronym = course.get_course_acronym()
+    course_code = course.get_course_code()
+    room_list = course.get_room_no()
+    building = course.get_building()
+    strength = course.get_strength()
+    distribution = course.get_distribution()
+
+
+    if course.get_req_invigilator() == 0:
+        df = df._append({'Date': date, 'Day': day, 'Time': time, 'Course Acronym': course_acronym, 'Course Code': course_code.upper(),
+                        'Admission No.': None, 'Name': None, 'Email ID': None, 'Room No.' : room_list, 'Building' : building, 'No. Of. Duties' : None}, ignore_index=True)
+        empty_row = pd.Series([None] * len(df.columns), index=df.columns)
+        df = df._append(empty_row, ignore_index=True)
+        continue
+
+    distribution_index = 0
+    global_count = distribution[distribution_index]
+    count = 0
+    index = 0
+
+    
+
+    # Iterate through the invigilators for the course
+    for invigilator in course.get_invigilators():
+        
+        count += 1
+        admission_no = invigilator.get_admission_no().upper()
+        name = format_name(invigilator.get_name())
+        email = invigilator.get_email().lower()
+        num_duties = len(invigilator.get_duties())
+
+        # Check if prev_course_code is different from course_code
+        if (prev_course_code != course_code) and (prev_course_code != ""):
+            # Append an empty row
+            empty_row = pd.Series([None] * len(df.columns), index=df.columns)
+            df = df._append(empty_row, ignore_index=True)
+
+        # Check if prev_day is different from day
+        if (prev_day != day) and (prev_day != ""):
+            # Append two empty rows
+            empty_row = pd.Series([None] * len(df.columns), index=df.columns)
+            df = df._append(empty_row, ignore_index=True)
+                
+        
+
+        # add a row to the dataframe for each invigilator
+        df = df._append({'Date': date, 'Day': day, 'Time': time, 'Course Acronym': course_acronym, 'Course Code': course_code,
+                        'Admission No.': admission_no, 'Name': name, 'Email ID': email, 'Room No.' : room_list[index], 'Building' : building, 'No. Of. Duties' : num_duties}, ignore_index=True)
+        
+        if count == global_count:
+            distribution_index += 1
+            if distribution_index < len(distribution):
+                global_count = distribution[distribution_index]
+                index += 1
+                count = 0
+        
+        prev_day = day
+        prev_course_code = course_code
+
+# write the dataframe to an Excel file
+df.to_excel('InvigilatorList.xlsx', index=False)

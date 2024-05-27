@@ -9,6 +9,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "@material-tailwind/react";
 import { jwtDecode } from "jwt-decode";
 import FacultyProvider from "./context/provider/FacultyProvider";
+import InvigilationProvider from "./context/provider/InvigilationProvider";
 import StudentProvider from "./context/provider/StudentProvider";
 import GoogleAuthProvider from "./googleOAuth";
 import AdminLayout from "./layouts/AdminView";
@@ -21,6 +22,7 @@ import Invigilation from "./pages/Invigilation";
 import LoginPage from "./pages/LoginPage";
 import StudentProfile from "./pages/StudentProfile";
 import ProtectedRoute from "./ProtectedRoute";
+
 const Main = () => {
   const ALLOWED_USER = import.meta.env.ALLOWED_USER;
 
@@ -115,16 +117,18 @@ const Main = () => {
       <ThemeProvider>
         <StudentProvider>
           <FacultyProvider>
-            <GoogleAuthProvider>
-              <RouterProvider router={router} />
-              {loginError && (
-                <div className="absolute top-0 right-0 flex justify-center items-center">
-                  <Alert color="red" onClose={() => setLoginError(null)}>
-                    {loginError}
-                  </Alert>
-                </div>
-              )}
-            </GoogleAuthProvider>
+            <InvigilationProvider>
+              <GoogleAuthProvider>
+                <RouterProvider router={router} />
+                {loginError && (
+                  <div className="absolute top-0 right-0 flex justify-center items-center">
+                    <Alert color="red" onClose={() => setLoginError(null)}>
+                      {loginError}
+                    </Alert>
+                  </div>
+                )}
+              </GoogleAuthProvider>
+            </InvigilationProvider>
           </FacultyProvider>
         </StudentProvider>
       </ThemeProvider>

@@ -1,17 +1,14 @@
 import os
 import re
 import subprocess
-from datetime import datetime
 
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font
-from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.datavalidation import DataValidation
 from rest_framework import status
@@ -49,12 +46,12 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
         
     def create(self, request, *args, **kwargs):
         if 'file' not in request.data:
-            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No File Uploaded'}, status=status.HTTP_400_BAD_REQUEST)
         
         uploaded_file = request.data['file']
 
         if not uploaded_file.name.endswith('.xlsx'):
-            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid File Format. Please upload an Excel File (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             # Save the file first
@@ -78,7 +75,7 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
             ]
 
             if not all(col in sheet_headers for col in required_columns):
-                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Missing required Columns in the Excel File'}, status=status.HTTP_400_BAD_REQUEST)
             
             invalid_rows = []
             admission_no_index = sheet_headers.index('Admission No.')
@@ -93,7 +90,7 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
+                elif any(cell is None for cell in row[:4]  or any(str(cell).isspace() for cell in row[:4])):
                     reasons.append('Makesure all the Cells are filled!')
                     invalid_rows.append({
                         'row': row_idx,
@@ -105,14 +102,14 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
                 email_id = row[email_id_index]
                 course_code = row[course_code_index]
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
-                    reasons.append('Invalid Admission No. format.')
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
+                    reasons.append('Invalid Admission No. Format.')
 
-                if email_id is None or not email_pattern.match(email_id.lower()):
-                    reasons.append('Invalid Email Id Format.')
+                if email_id is None or not email_pattern.match(email_id.lower().strip()):
+                    reasons.append('Invalid Email Id Format. Please use IIITD Emails only')
 
                 if course_code is None or not course_code_pattern.match(course_code):
-                    reasons.append('Invalid Course Code format.')
+                    reasons.append('Invalid Course Code Format.')
                 
                 if reasons:
                     invalid_rows.append({
@@ -121,7 +118,7 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
                     })
 
             if invalid_rows:
-                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid Data in Excel File', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 # Save the validated file to the MEDIA_ROOT directory
                 final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentRegistration.xlsx')
@@ -133,7 +130,7 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
 
                 # Save the validated content
                 default_storage.save(final_file_path, ContentFile(file_content))
-                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+                return Response({'message': 'File Uploaded and Validated successfully.'}, status=status.HTTP_200_OK)
             
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -162,12 +159,12 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
         
     def create(self, request, *args, **kwargs):
         if 'file' not in request.data:
-            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No File Uploaded'}, status=status.HTTP_400_BAD_REQUEST)
         
         uploaded_file = request.data['file']
 
         if not uploaded_file.name.endswith('.xlsx'):
-            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid File Format. Please upload an Excel File (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             # Save the file first
@@ -189,7 +186,7 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
             ]
 
             if not all(col in sheet_headers for col in required_columns):
-                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Missing required Columns in the Excel File'}, status=status.HTTP_400_BAD_REQUEST)
             
             invalid_rows = []
             admission_no_index = sheet_headers.index('Admission No.')
@@ -202,8 +199,8 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
-                    reasons.append('Makesure all the Cells are filled!')
+                elif any(cell is None for cell in row[:3]  or any(str(cell).isspace() for cell in row[:3])):
+                    reasons.append('Makesure all the Cells are Filled!')
                     invalid_rows.append({
                         'row': row_idx,
                         'reasons': reasons
@@ -213,10 +210,10 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
                 admission_no = row[admission_no_index]
                 email_id = row[email_id_index]
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
-                    reasons.append('Invalid Admission No. format.')
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
+                    reasons.append('Invalid Admission No. Format.')
 
-                if email_id is None or not email_pattern.match(email_id.lower()):
+                if email_id is None or not email_pattern.match(email_id.lower().strip()):
                     reasons.append('Invalid Email Id Format.')
                 
                 if reasons:
@@ -226,7 +223,7 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
                     })
 
             if invalid_rows:
-                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid Data in Excel File', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 # Save the validated file to the MEDIA_ROOT directory
                 final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'StudentList.xlsx')
@@ -238,7 +235,7 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
 
                 # Save the validated content
                 default_storage.save(final_file_path, ContentFile(file_content))
-                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+                return Response({'message': 'File Uploaded and Validated Successfully.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
@@ -265,12 +262,12 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
         
     def create(self, request, *args, **kwargs):
         if 'file' not in request.data:
-            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No File Uploaded'}, status=status.HTTP_400_BAD_REQUEST)
         
         uploaded_file = request.data['file']
 
         if not uploaded_file.name.endswith('.xlsx'):
-            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid File Format. Please upload an Excel File (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             # Save the file first
@@ -286,13 +283,13 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
 
             sheet_headers = [cell.value for cell in sheet[1]]
             required_columns = [
-                'Name',
                 'Admission No.',
+                'Name',
                 'Course Code'
             ]
 
             if not all(col in sheet_headers for col in required_columns):
-                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Missing required Columns in the Excel File'}, status=status.HTTP_400_BAD_REQUEST)
             
             invalid_rows = []
             course_code_index = sheet_headers.index('Course Code')
@@ -305,8 +302,8 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
-                    reasons.append('Makesure all the Cells are filled!')
+                elif any(cell is None for cell in row[:3] or any(str(cell).isspace() for cell in row[:3])):
+                    reasons.append('Makesure all the Cells are Filled!')
                     invalid_rows.append({
                         'row': row_idx,
                         'reasons': reasons
@@ -318,10 +315,10 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
                 admission_no = row[admission_no_index]
 
                 if course_code is None or not course_code_pattern.match(course_code):
-                    reasons.append('Invalid Course Code format. Make sure Course Codes is "/" Separated')
+                    reasons.append('Invalid Course Code Format. Make sure Course Codes is "/" Separated')
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower()):
-                    reasons.append('Invalid Admission No. format.')
+                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
+                    reasons.append('Invalid Admission No. Format.')
                 
                 if reasons:
                     invalid_rows.append({
@@ -330,7 +327,7 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
                     })
 
             if invalid_rows:
-                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid Data in Excel File', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 # Save the validated file to the MEDIA_ROOT directory
                 final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'TAList.xlsx')
@@ -342,7 +339,7 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
 
                 # Save the validated content
                 default_storage.save(final_file_path, ContentFile(file_content))
-                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+                return Response({'message': 'File Uploaded and Validated Successfully.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
@@ -369,12 +366,12 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
         
     def create(self, request, *args, **kwargs):
         if 'file' not in request.data:
-            return Response({'error': 'No file uploaded'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No File Uploaded'}, status=status.HTTP_400_BAD_REQUEST)
         
         uploaded_file = request.data['file']
 
         if not uploaded_file.name.endswith('.xlsx'):
-            return Response({'error': 'Invalid file format. Please upload an Excel file (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid File Format. Please upload an Excel File (.xlsx)'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             # Save the file first
@@ -400,22 +397,23 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
             ]
 
             if not all(col in sheet_headers for col in required_columns):
-                return Response({'error': 'Missing required columns in the Excel file'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Missing required Columns in the Excel File'}, status=status.HTTP_400_BAD_REQUEST)
 
             invalid_rows = []
             course_code_index = sheet_headers.index('Course Code')
             room_no_index = sheet_headers.index('Room No.')
+            strength_index = sheet_headers.index('Strength')
 
             course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
-            room_no_pattern = re.compile(r'^[a-zA-Z]\d{2}(?:\s*,\s*[a-zA-Z]\d{2})*$')
+            room_no_pattern = re.compile(r'^[a-zA-Z0-9\s]+(?:\s*,\s*[a-zA-Z0-9\s]+)*$')
             codes = []
 
             for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
                 reasons = []
                 if all(cell is None for cell in row):
                     continue
-                elif any(cell is None for cell in row):
-                    reasons.append('Makesure all the Cells are filled!')
+                elif any(cell is None for cell in row[:7]) or any(str(cell).isspace() for cell in row[:7]):
+                    reasons.append('Makesure all the Cells are Filled!')
                     invalid_rows.append({
                         'row': row_idx,
                         'reasons': reasons
@@ -424,15 +422,19 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                 
                 course_code = row[course_code_index]
                 room_no = row[room_no_index]
+                strength = row[strength_index]
+
+                if not type(strength) == int:
+                    reasons.append('Invalid Value: Strength should be numeric.')
 
                 if course_code is None or not course_code_pattern.match(course_code):
-                    reasons.append('Invalid Course Code format. Make sure Course Codes is "/" Separated')
+                    reasons.append('Invalid Course Code Format. Make sure Course Codes is "/" Separated')
                 else:
                     for code in course_code.split('/'):
                         codes.append(code.strip())
                 
                 if room_no is None or not room_no_pattern.match(room_no):
-                    reasons.append('Invalid Room No. format. Make sure Course Codes is "," Separated')
+                    reasons.append('Invalid Room No. Format. Make sure Course Codes is "," Separated')
                 else:
                     room_no_list = room_no.split(",")[:-1]
                     room_no_list = [str.strip() for str in room_no_list]
@@ -449,7 +451,7 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                     })
 
             if invalid_rows:
-                return Response({'error': 'Invalid data in Excel file', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Invalid Data in Excel File', 'invalid_rows': invalid_rows}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 # Save the validated file to the MEDIA_ROOT directory
                 final_file_path = os.path.join(settings.MEDIA_ROOT, 'invigilationFiles', 'ExamDateSheet.xlsx')
@@ -461,7 +463,7 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
 
                 # Save the validated content
                 default_storage.save(final_file_path, ContentFile(file_content))
-                return Response({'message': 'File uploaded and validated successfully.'}, status=status.HTTP_200_OK)
+                return Response({'message': 'File Uploaded and Validated Successfully.'}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -493,6 +495,17 @@ class StudentTableViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['name', 'emailId', 'rollNumber', 'studentStatus', 'gender', 'department', 'batch', 'admissionThrough', 'region', 'fundingType', 'yearOfLeaving']
     search_fields = ['$name', '$emailId', '$rollNumber', '$advisor_set__advisor1__name', '$advisor_set__advisor2__name', '$advisor_set__coadvisor__name']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        advisor_name = self.request.query_params.get('advisor', None)
+        if advisor_name:
+            queryset = queryset.filter(
+                Q(advisor_set__advisor1__name__icontains=advisor_name) |
+                Q(advisor_set__advisor2__name__icontains=advisor_name) |
+                Q(advisor_set__coadvisor__name__icontains=advisor_name)
+            ).distinct()
+        return queryset
 
 class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
     serializer_class = StudentTableSerializer
@@ -735,15 +748,20 @@ class YearlyReviewViewSet(ModelViewSet):
 class ClassroomViewSet(ModelViewSet):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
+    # pagination_class = NoPagination
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['building', 'roomNo']
     search_fields = ['$building', '$roomNo']
 
     def create(self, request, *args, **kwargs):
+
         # Check if roomNo is alphanumeric
         roomNo = request.data['roomNo']
+        capacity = request.data['capacity']
         if not roomNo.isalnum():
-            return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Incorrect Room No. Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+        elif not capacity.isdigit():
+            return Response({'error': 'Incorrect Capacity Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
         
         # Convert roomNo to uppercase
         request.data['roomNo'] = roomNo.upper()
@@ -752,13 +770,20 @@ class ClassroomViewSet(ModelViewSet):
     
     def update(self, request, *args, **kwargs):
         # Check if roomNo is alphanumeric
-        roomNo = request.data['roomNo']
-        if not roomNo.isalnum():
-            return Response({'error': 'Incorrect Room No. Format: No Special characters or Spaces allowed'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Convert roomNo to uppercase
-        request.data['roomNo'] = roomNo.upper()
+        if "roomNo" in request.data.keys():
+            roomNo = request.data['roomNo']
 
+            if not roomNo.isalnum():
+                return Response({'error': 'Incorrect Room No. Format: No Special Characters or Spaces Allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Convert roomNo to uppercase
+            request.data['roomNo'] = roomNo.upper()
+
+        elif "capacity" in request.data.keys():
+            capacity = request.data['capacity']
+            if not capacity.isdigit():
+                return Response({'error': 'Incorrect Capacity Format: Capacity should be a Number.'}, status=status.HTTP_400_BAD_REQUEST)
+            
         return super().update(request, *args, **kwargs)
 
 
@@ -1065,7 +1090,7 @@ class AllotmentViewSet(ViewSet):
 
         # Define the filenames to save the uploaded files
         file_names = {
-            'file1': 'Classroom.xlsx',
+            'file1': invigilation_files_dir + '\Classroom.xlsx',
         }
 
         for key, file in request.FILES.items():
@@ -1076,7 +1101,7 @@ class AllotmentViewSet(ViewSet):
                         destination.write(chunk)
 
         # Run the python script with TARatio as an argument
-        script_path = os.path.join(settings.BASE_DIR, 'algorithm', 'AllotInvigilators.py')
+        script_path = os.path.join(settings.BASE_DIR, 'algorithm', 'allocationAlgorithm.py')
         subprocess.call(['python', script_path, '--TARatio', TARatio])
 
         # # Read the generated file and return it as a response

@@ -1,7 +1,7 @@
 import math
 
 class Course:
-    def __init__(self, course_acronym, course_code, strength, date, time, day, room_no, room_capacity):
+    def __init__(self, course_acronym, course_code, strength, date, time, day, room_no, room_capacity, TARatio):
         self.course_acronym = course_acronym
         self.course_code = course_code
         self.strength = strength
@@ -10,6 +10,7 @@ class Course:
         self.day = day
         self.room_no = room_no[:-1]
         self.building = room_no[-1]
+        self.ratio = TARatio
         self.distribution = []
         self.req_invigilators = self.__set_req_invigilators(strength, self.room_no, room_capacity)
         self.course_ta = [] 
@@ -24,7 +25,7 @@ class Course:
             num_students = min(strength, room_capacity[room.lower()])
             print(f"Num Students {num_students}")
 
-            result = num_students/30
+            result = num_students/self.ratio
 
             if(num_students >= 150):
                 num_invigilator += math.floor(result)
