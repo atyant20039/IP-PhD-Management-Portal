@@ -138,17 +138,12 @@ class ContingencySerializer(ModelSerializer):
         model = Contingency 
         fields = '__all__'
 
-# class ContingencyLogsSerializer(ModelSerializer):
-#     class Meta:
-#         model = ContingencyLogs
-#         fields = '__all__'
-
 class ContingencyLogsSerializer(ModelSerializer):
     student = PrimaryKeyRelatedField(queryset=Student.objects.all())
     openingBalance = DecimalField(max_digits=11, decimal_places=2, read_only=True)
-    openingBalanceDate = DateField(read_only=True)
+    openingBalanceDate = DateField(format='%d-%m-%Y',read_only=True)
     closingBalance = DecimalField(max_digits=11, decimal_places=2, read_only=True, required=False)
-    closingBalanceDate = DateField(read_only=True, required=False)
+    closingBalanceDate = DateField(format='%d-%m-%Y',read_only=True, required=False)
 
     class Meta:
         model = ContingencyLogs
@@ -171,10 +166,10 @@ class ContingencyLogsSerializer(ModelSerializer):
     def create(self, validated_data):
         student = validated_data['student']
         validated_data['openingBalance'] = student.contingencyPoints
-        validated_data['openingBalanceDate'] = date.today
+        validated_data['openingBalanceDate'] = date.today()
         if 'santionedAmount' in validated_data and validated_data['santionedAmount'] is not None:
             validated_data['closingBalance'] = student.contingencyPoints - validated_data['santionedAmount']
-            validated_data['closingBalanceDate'] = date.today
+            validated_data['closingBalanceDate'] = date.today()
             student.contingencyPoints -= validated_data['santionedAmount']
             student.save()
         return super().create(validated_data)
