@@ -79,11 +79,11 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
             
             invalid_rows = []
             admission_no_index = sheet_headers.index('Admission No.')
-            email_id_index = sheet_headers.index('Email ID')
+            # email_id_index = sheet_headers.index('Email ID')
             course_code_index = sheet_headers.index('Course Code')
 
             admission_no_pattern = re.compile(r'^(phd\d{5}|mt\d{5})$')
-            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@iiitd\.ac\.in$')
+            # email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@iiitd\.ac\.in$')
             course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
 
             for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
@@ -98,18 +98,25 @@ class StudentRegistrationTemplateViewSet(ListModelMixin, GenericViewSet):
                     })
                     continue
 
-                admission_no = row[admission_no_index]
-                email_id = row[email_id_index]
                 course_code = row[course_code_index]
+                admission_no = row[admission_no_index]
+                # email_id = row[email_id_index]
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
-                    reasons.append('Invalid Admission No. Format.')
+                if isinstance(row[course_code_index], str):
+                    course_code = course_code.strip() 
+                if isinstance(row[admission_no_index], str):
+                    admission_no = admission_no.strip()
+                # if isinstance(row[email_id_index], str):
+                #     email_id = email_id.strip()
 
-                if email_id is None or not email_pattern.match(email_id.lower().strip()):
-                    reasons.append('Invalid Email Id Format. Please use IIITD Emails only')
+                if not isinstance(row[admission_no_index], str) or not admission_no_pattern.match(admission_no.lower()):
+                    reasons.append(f'[{admission_no}] Invalid Admission No. Format.')
 
-                if course_code is None or not course_code_pattern.match(course_code):
-                    reasons.append('Invalid Course Code Format.')
+                # if not isinstance(row[email_id_index], str) or not email_pattern.match(email_id.lower().strip()):
+                #     reasons.append(f'[{email_id}] Invalid Email Id Format. Please use IIITD Emails only')
+
+                if not isinstance(row[course_code_index], str) or not course_code_pattern.match(course_code):
+                    reasons.append(f'[{course_code}]: Invalid Format. Make sure multiple Course Codes are "/" Separated. Use (A-Z), (a-z), (0-9) characters only.')
                 
                 if reasons:
                     invalid_rows.append({
@@ -190,10 +197,10 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
             
             invalid_rows = []
             admission_no_index = sheet_headers.index('Admission No.')
-            email_id_index = sheet_headers.index('Email ID')
+            # email_id_index = sheet_headers.index('Email ID')
 
             admission_no_pattern = re.compile(r'^(phd\d{5}|mt\d{5})$')
-            email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@iiitd\.ac\.in$')
+            # email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@iiitd\.ac\.in$')
 
             for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
                 reasons = []
@@ -208,13 +215,18 @@ class StudentListTemplateViewSet(ListModelMixin, GenericViewSet):
                     continue
 
                 admission_no = row[admission_no_index]
-                email_id = row[email_id_index]
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
-                    reasons.append('Invalid Admission No. Format.')
+                if isinstance(row[admission_no_index], str):
+                    admission_no = admission_no.strip()
 
-                if email_id is None or not email_pattern.match(email_id.lower().strip()):
-                    reasons.append('Invalid Email Id Format.')
+                # if isinstance(row[email_id_index], str):
+                #     email_id = row[email_id_index].strip()
+
+                if not isinstance(row[admission_no_index], str) or not admission_no_pattern.match(admission_no.lower().strip()):
+                    reasons.append(f'[{admission_no}] Invalid Admission No. Format.')
+
+                # if not isinstance(row[email_id_index], str) or not email_pattern.match(email_id.lower().strip()):
+                #     reasons.append(f'[{email_id}] Invalid Email Id Format.')
                 
                 if reasons:
                     invalid_rows.append({
@@ -297,6 +309,7 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
 
             admission_no_pattern = re.compile(r'^(phd\d{5}|mt\d{5})$')
             course_code_pattern = re.compile(r'^[a-zA-Z0-9\s/]+$')
+            course_code_pattern_sec = r'[A-Z]{3}\d{3}'
 
             for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
                 reasons = []
@@ -314,11 +327,18 @@ class TATemplateViewSet(ListModelMixin, GenericViewSet):
                 course_code = row[course_code_index]
                 admission_no = row[admission_no_index]
 
-                if course_code is None or not course_code_pattern.match(course_code):
-                    reasons.append('Invalid Course Code Format. Make sure Course Codes is "/" Separated')
+                if isinstance(row[course_code_index], str):
+                    course_code = course_code.strip()
+                    course_code = re.findall(course_code_pattern_sec, course_code)
+                    course_code = '/'.join(course_code) 
+                if isinstance(row[admission_no_index], str):
+                    admission_no = admission_no.strip()
 
-                if admission_no is None or not admission_no_pattern.match(admission_no.lower().strip()):
-                    reasons.append('Invalid Admission No. Format.')
+                if not isinstance(course_code, str) or not course_code_pattern.match(course_code):
+                    reasons.append(f'[{course_code}] Invalid Format. Make sure multiple Course Codes are "/" Separated. Use (A-Z), (a-z), (0-9) characters only.')
+
+                if not isinstance(admission_no, str) or not admission_no_pattern.match(admission_no.lower()):
+                    reasons.append(f'[{admission_no}] Invalid Admission No. Format.')
                 
                 if reasons:
                     invalid_rows.append({
@@ -393,7 +413,8 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                 'Accronynm',
                 'Course Code',
                 'Strength',
-                'Room No.'
+                'Room No.',
+                'Building'
             ]
 
             if not all(col in sheet_headers for col in required_columns):
@@ -419,29 +440,35 @@ class ExamDateSheetTemplateViewSet(ListModelMixin, GenericViewSet):
                         'reasons': reasons
                     })
                     continue
-                
+
                 course_code = row[course_code_index]
                 room_no = row[room_no_index]
                 strength = row[strength_index]
 
-                if not type(strength) == int:
-                    reasons.append('Invalid Value: Strength should be numeric.')
+                if isinstance(row[course_code_index], str):
+                    course_code = row[course_code_index].strip()
+                
+                if isinstance(row[room_no_index], str):
+                    room_no = row[room_no_index].strip()
 
-                if course_code is None or not course_code_pattern.match(course_code):
-                    reasons.append('Invalid Course Code Format. Make sure Course Codes is "/" Separated')
+                if not type(strength) == int:
+                    reasons.append(f'[{strength}] Invalid Value: Strength should be numeric.')
+
+                if not isinstance(row[course_code_index], str) or not course_code_pattern.match(course_code):
+                    reasons.append(f'[{course_code}] Invalid Format. Make sure multiple Course Codes are "/" Separated. Use (A-Z), (a-z), (0-9) characters only.')
                 else:
                     for code in course_code.split('/'):
                         codes.append(code.strip())
                 
-                if room_no is None or not room_no_pattern.match(room_no):
-                    reasons.append('Invalid Room No. Format. Make sure Course Codes is "," Separated')
+                if not isinstance(row[room_no_index], str) or not room_no_pattern.match(room_no):
+                    reasons.append(f'[{room_no}] Invalid Format. Make sure multiple Room Nos. are "," Separated. Use (A-Z), (a-z), (0-9) characters only.')
                 else:
-                    room_no_list = room_no.split(",")[:-1]
+                    room_no_list = room_no.split(",")
                     room_no_list = [str.strip() for str in room_no_list]
 
                     # Check if every classroom in the list exists in the database
                     for room in room_no_list:
-                        if not (Classroom.objects.filter(roomNo=room).exists()):
+                        if len(room) > 0 and not (Classroom.objects.filter(roomNo=room).exists()):
                             reasons.append(f'Classroom {room} does not exist. Kindly check the Classroom Table.')                    
 
                 if reasons:
@@ -1104,14 +1131,22 @@ class AllotmentViewSet(ViewSet):
         script_path = os.path.join(settings.BASE_DIR, 'algorithm', 'allocationAlgorithm.py')
         subprocess.call(['python', script_path, '--TARatio', TARatio])
 
-        # # Read the generated file and return it as a response
-        # with open('InvigilatorList.xlsx', 'rb') as f:
-        #     response = HttpResponse(f.read(), content_type='application/octet-stream')
-        #     response['Content-Disposition'] = 'attachment; filename=InvigilatorList.xlsx'
+        # Define the path to the generated file
+        generated_file_path = os.path.join(invigilation_files_dir, 'InvigilatorList.xlsx')
 
-        # # Delete the files
-        # for file_name in file_names.values():
-        #     os.remove(file_name)
-        # os.remove('InvigilatorList.xlsx')
+        # Check if the generated file exists before attempting to open it
+        if os.path.exists(generated_file_path):
+            with open(generated_file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type='application/octet-stream')
+                response['Content-Disposition'] = f'attachment; filename={os.path.basename(generated_file_path)}'
 
-        return Response({'message': 'Files uploaded successfully'}, status=status.HTTP_200_OK)
+            # Delete the files after sending the response
+            for file_name in file_names.values():
+                if os.path.exists(file_name):
+                    os.remove(file_name)
+            if os.path.exists(generated_file_path):
+                os.remove(generated_file_path)
+
+            return response
+        else:
+            return Response({'message': 'Generated file not found'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
