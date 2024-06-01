@@ -81,18 +81,18 @@ function ContingencyPoint() {
   useEffect(() => {
     if (allStudents && contingencyEligible) {
       NotEligibleStudents();
-      fetchStipendHistory();
+      fetchContingencyHistory();
     }
   }, [allStudents, contingencyEligible]);
 
 
   useEffect(() => {
    
-      fetchStipendHistory();
+      fetchContingencyHistory();
   
   }, []);
 
-  const fetchStipendHistory = () => {
+  const fetchContingencyHistory = () => {
     fetch(`${API}/api/contingency/`)
       .then((response) => {
         if (!response.ok) {
@@ -125,6 +125,7 @@ function ContingencyPoint() {
   };
 
   const handleToggleHistory = () => {
+    fetchContingencyHistory()
     setShowHistory((prevState) => !prevState);
 
     if (!showHistory) {

@@ -15,6 +15,7 @@ import {
   DialogHeader,
   Input,
   Typography,
+  Alert,
 } from "@material-tailwind/react";
 import { saveAs } from "file-saver";
 import StudentContext from "../context/StudentContext";
@@ -77,6 +78,8 @@ function Stipend() {
     useState(false);
   const departments = ["CSE", "CB", "ECE", "HCD", "SSH", "MATHS"];
 
+  const [alert, setAlert] = useState({ show: false, name: null, color: null });
+
   useEffect(() => {
     if (searchTerm === "") {
       if (showHistory) {
@@ -93,6 +96,10 @@ function Stipend() {
       fetchStipendHistory();
     }
   }, [allStudents, eligibleStudentList]);
+
+  useEffect(() => {
+    fetchStipendHistory();
+  }, []);
 
   const fetchStipendHistory = () => {
     fetch(`${API}/api/stipend/`)
@@ -128,6 +135,7 @@ function Stipend() {
   };
 
   const handleToggleHistory = () => {
+    fetchStipendHistory();
     setShowHistory((prevState) => !prevState);
 
     if (!showHistory) {
@@ -252,7 +260,7 @@ function Stipend() {
     }
   };
 
-  const handleUpdateEligibility = (rollNumber) => {
+  const handleUpdateEligibility = (rollNumber, name) => {
     const studentToUpdate = ineligibleStudentList.find(
       (student) => student.rollNumber === rollNumber
     );
@@ -264,6 +272,7 @@ function Stipend() {
       );
       setEligibleStudents([...eligibleStudents, studentToUpdate]);
       setIneligibleStudentList(updatedIneligibleStudents);
+      showAlert(`${name} is now eligible.`, "green");
     }
   };
 
@@ -309,16 +318,28 @@ function Stipend() {
     setShowSuccessDialog(false);
   };
 
-  const handleDeleteEntry = (rollNumber) => {
+  const handleDeleteEntry = (rollNumber, name) => {
+    console.log(name);
     const updatedStudentList = studentList.filter(
       (student) => student.rollNumber !== rollNumber
     );
     setStudentList(updatedStudentList);
+    showAlert(`${name} has been deleted.`, "red");
+  };
+
+  const showAlert = (name, color) => {
+    setAlert({ show: true, name, color });
+    setTimeout(() => {
+      setAlert({ show: false, name: null, color: null });
+    }, 2000);
   };
 
   const handleDownload = () => {
     if (studentList) {
-      const worksheet = XLSX.utils.json_to_sheet(studentList);
+      // Copying studentList to avoid modifying the original data
+      const modifiedStudentList = studentList.map(({ id, ...rest }) => rest);
+  
+      const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       const excelBuffer = XLSX.write(workbook, {
@@ -331,6 +352,7 @@ function Stipend() {
       );
     }
   };
+  
 
   const handleFilterClick = () => {
     setShowFilterDialog(true);
@@ -369,6 +391,12 @@ function Stipend() {
 
   return (
     <div className="h-full w-full">
+      {alert.show && (
+        <div className="fixed top-4 right-4 z-50">
+          <Alert color={alert.color}>{alert.name} has been deleted.</Alert>
+        </div>
+      )}
+
       {!studentList && (
         <Card className="h-full w-full">
           <CardHeader floated={false} shadow={false} className="h-auto p-2">
@@ -378,12 +406,26 @@ function Stipend() {
               </Typography>
 
               <div>
-                <Input
-                  label="Month"
-                  type="number"
+                <select
+                  id="month"
                   value={month}
                   onChange={(e) => setMonth(e.target.value)}
-                />
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  <option value="">Select Month</option>
+                  <option value="1">January</option>
+                  <option value="2">February</option>
+                  <option value="3">March</option>
+                  <option value="4">April</option>
+                  <option value="5">May</option>
+                  <option value="6">June</option>
+                  <option value="7">July</option>
+                  <option value="8">August</option>
+                  <option value="9">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
+                </select>
               </div>
               <div>
                 <Input
@@ -401,6 +443,8 @@ function Stipend() {
               >
                 Generate
               </Button>
+
+              <Button onClick={handleToggleHistory}>Show History</Button>
             </div>
           </CardHeader>
         </Card>
@@ -599,8 +643,15 @@ function Stipend() {
                           />
                         )}
                       </td>
-
-                   
+                      <td className="border-b border-blue-gray-100 bg-white p-4">
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal"
+                        >
+                          {baseAmount}
+                        </Typography>
+                      </td>
 
                       <td className="border-b border-blue-gray-100 bg-white p-4">
                         <Typography
@@ -627,7 +678,9 @@ function Stipend() {
                           <Button
                             color={eligible === "Yes" ? "green" : "red"}
                             disabled={eligible === "Yes"}
-                            onClick={() => handleUpdateEligibility(rollNumber)}
+                            onClick={() =>
+                              handleUpdateEligibility(rollNumber, name)
+                            }
                           >
                             {eligible}
                           </Button>
@@ -638,7 +691,9 @@ function Stipend() {
                         <td className="border-b border-blue-gray-100 bg-white p-4">
                           {!searchTerm && (
                             <Button
-                              onClick={() => handleDeleteEntry(rollNumber)}
+                              onClick={() =>
+                                handleDeleteEntry(rollNumber, name)
+                              }
                               color="red"
                               size="sm"
                             >
@@ -655,14 +710,26 @@ function Stipend() {
           </CardBody>
           {!showHistory && (
             <CardFooter className="p-2 flex flex-col items-end">
+              <div>
               <Button
-                variant="outlined"
-                size="sm"
-                disabled={searchTerm !== ""}
-                onClick={handleSubmit}
-              >
-                Submit List
-              </Button>
+                  size="sm"
+                  disabled={searchTerm !== ""}
+                  onClick={handleDownload}
+                  className="mx-2"
+                >
+                 Download
+                </Button>
+
+                <Button
+                  variant="outlined"
+                  size="sm"
+                  disabled={searchTerm !== ""}
+                  onClick={handleSubmit}
+                >
+                  Submit List
+                </Button>{" "}
+              
+              </div>
             </CardFooter>
           )}
         </Card>
