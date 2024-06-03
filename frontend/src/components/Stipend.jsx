@@ -19,7 +19,7 @@ import {
 } from "@material-tailwind/react";
 import { saveAs } from "file-saver";
 import StudentContext from "../context/StudentContext";
-
+import { ChevronUpDownIcon, XCircleIcon } from "@heroicons/react/24/outline";
 const TABLE_HEAD = [
   "Name",
   "Roll Number",
@@ -95,6 +95,7 @@ function Stipend() {
       NotEligibleStudents();
       fetchStipendHistory();
     }
+
   }, [allStudents, eligibleStudentList]);
 
   useEffect(() => {
@@ -480,6 +481,16 @@ function Stipend() {
             </div>
           </CardHeader>
           <CardBody className="overflow-auto p-0 flex-1">
+        
+      {studentList.length === 0 ? (
+       <div className="flex flex-col items-center justify-center h-full">
+       <XCircleIcon className="h-48 w-48 text-red-500" />
+       <Typography variant="h3" className="cursor-default mt-4">
+         No Data Found
+       </Typography>
+     </div>
+      ) : (
+
             <table className="w-full min-w-max table-auto text-left">
               <thead className="sticky top-0 bg-white z-50">
                 <tr>
@@ -706,7 +717,7 @@ function Stipend() {
                   )
                 )}
               </tbody>
-            </table>
+            </table>)}
           </CardBody>
           {!showHistory && (
             <CardFooter className="p-2 flex flex-col items-end">
