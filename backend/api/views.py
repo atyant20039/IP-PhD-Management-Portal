@@ -856,7 +856,7 @@ class StipendViewSet(ModelViewSet):
             if Stipend.objects.filter(student_id=student_id, month=month, year=year).exists():
                 failed_entries.append({
                     'studentEntry': stipend,
-                    'reason': f"Stipend Entry for month {month} and year {year} already exists for {stipend.get('student__rollNumber')}."
+                    'reason': f"Stipend Entry for month {month} and year {year} already exists for this student."
                 })
 
                 continue
@@ -903,7 +903,6 @@ class ContingencyViewSet(ModelViewSet):
             # print(student_id)
             student = Student.objects.get(pk=student_id)
            
-            print(student)
             
             student_details = {
                 'name': student.name,
@@ -929,7 +928,7 @@ class ContingencyViewSet(ModelViewSet):
             if Contingency.objects.filter(student_id=student_id, year=year).exists():
                 failed_entries.append({
                     'studentEntry': contingency,
-                    'reason': f"Contingency Entry for year {year} already exists for {contingency.get('student__rollNumber')}."
+                    'reason': f"Contingency Entry for year {year} already exists for this student."
                 })
 
                 continue
@@ -945,7 +944,6 @@ class ContingencyViewSet(ModelViewSet):
                 student = Student.objects.get(pk=student_id)
                 student.contingencyYears -= 1
                 student.contingencyPoints += contingency.get('amount')
-                print(student.contingencyPoints)
                 student.save()
             else:
                 failed_entries.append({
@@ -960,13 +958,11 @@ class ContingencyViewSet(ModelViewSet):
         return Response(response_data, status=status.HTTP_201_CREATED)
     
     def update(self, request, *args, **kwargs):
-        print("update in")
         instance = self.get_object()
         original_amount = instance.amount
 
         # Don't allow editing student field
         request.data.pop('student')
-        print("in 2")
 
         # Update other fields
         serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -1050,6 +1046,7 @@ class EligibleStudentStipendViewSet(ReadOnlyModelViewSet):
                 'department': student.department,
                 'hra': 0,
                 'hostler': 'YES',
+                'comment':""
             }
 
             try:
@@ -1098,7 +1095,8 @@ class EligibleStudentContingencyViewSet(ReadOnlyModelViewSet):
                 'year': year,
                 'joiningDate': student.joiningDate,
                 'department': student.department,
-                'amount':20000
+                'amount':20000,
+                'comment':""
             }
 
             response_data.append(student_data)
