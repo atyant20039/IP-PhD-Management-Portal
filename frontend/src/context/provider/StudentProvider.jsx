@@ -93,6 +93,8 @@ const StudentProvider = ({ children }) => {
         eligible: "Yes",
       }));
 
+      console.log(studentsWithEligibility)
+
       setEligibleStudentList(studentsWithEligibility);
         return studentsWithEligibility;
     } catch (error) {

@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }) => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        if (decoded.email == "atyant20039@iiitd.ac.in") {
+        if (decoded.email == "nikhil20530@iiitd.ac.in") {
           setIsAuthenticated(true);
         }
       } catch (error) {

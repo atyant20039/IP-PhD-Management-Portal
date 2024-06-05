@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon ,XCircleIcon} from "@heroicons/react/24/outline";
 import {
   Button,
   Card,
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   Input,
   Typography,
+  Alert,
 } from "@material-tailwind/react";
 import { saveAs } from "file-saver";
 import StudentContext from "../context/StudentContext";
@@ -26,7 +27,9 @@ const TABLE_HEAD = [
   "Joining Date",
   "Year",
   "Amount",
+  "Comment",
   "Eligible",
+  "",
 ];
 
 const HISTORY_TABLE_HEAD = [
@@ -35,7 +38,9 @@ const HISTORY_TABLE_HEAD = [
   "Department",
   "Disbursment Date",
   "Year",
-  "Amount"
+  "Amount",
+  "Comment",
+  ""
 ];
 
 const API = import.meta.env.VITE_BACKEND_URL;
@@ -68,6 +73,9 @@ function ContingencyPoint() {
     useState(false);
   const departments = ["CSE", "CB", "ECE", "HCD", "SSH", "MATHS"];
 
+  
+  const [alert, setAlert] = useState({ show: false, name: null, color: null });
+
   useEffect(() => {
     if (searchTerm === "") {
       if (showHistory) {
@@ -85,11 +93,8 @@ function ContingencyPoint() {
     }
   }, [allStudents, contingencyEligible]);
 
-
   useEffect(() => {
-   
-      fetchContingencyHistory();
-  
+    fetchContingencyHistory();
   }, []);
 
   const fetchContingencyHistory = () => {
@@ -125,7 +130,7 @@ function ContingencyPoint() {
   };
 
   const handleToggleHistory = () => {
-    fetchContingencyHistory()
+    fetchContingencyHistory();
     setShowHistory((prevState) => !prevState);
 
     if (!showHistory) {
@@ -164,41 +169,27 @@ function ContingencyPoint() {
     if (!allStudents.length || !contingencyEligible.length) return;
 
     try {
-      const comprehensiveResponse = await fetch(`${API}/api/comprehensive`);
-
-      if (!comprehensiveResponse.ok)
-        throw new Error("Failed to fetch comprehensive reviews");
-
-      const comprehensiveData = await comprehensiveResponse.json();
-
-      console.log(comprehensiveData);
-      const idToDateOfReviewMap = {};
-      comprehensiveData.forEach((review) => {
-        idToDateOfReviewMap[review.id] = review.dateOfReview;
-      });
-
+      
       const notEligibleStudents = allStudents
         .filter(
           (student) =>
             !contingencyEligible.some((eligible) => eligible.id === student.id)
         )
         .map((student) => {
-          const dateOfReview = idToDateOfReviewMap[student.id] || null;
-          const baseAmount = dateOfReview ? 42000 : 37000;
+         
 
           return {
-            baseAmount,
-            comprehensiveExamDate: dateOfReview,
+            amount :"20000",
             department: student.department,
             eligible: "No",
-            hostler: "YES",
-            hra: 0,
+          
             id: student.id,
             joiningDate: student.joiningDate,
-            month: "4",
+          
             name: student.name,
             rollNumber: student.rollNumber,
-            year: "2023",
+            year: "2023",// need to change
+            comment: ""
           };
         });
 
@@ -250,7 +241,7 @@ function ContingencyPoint() {
     }
   };
 
-  const handleUpdateEligibility = (rollNumber) => {
+  const handleUpdateEligibility = (rollNumber,name) => {
     const studentToUpdate = ineligibleStudentList.find(
       (student) => student.rollNumber === rollNumber
     );
@@ -264,6 +255,7 @@ function ContingencyPoint() {
       );
       setEligibleStudents([...eligibleStudents, studentToUpdate]);
       setIneligibleStudentList(updatedIneligibleStudents);
+      showAlert(`${name} is now eligible.`, "green");
     }
   };
 
@@ -276,8 +268,8 @@ function ContingencyPoint() {
   const handleSubmit = () => {
     const currentDate = new Date();
 
-// Format the date as YYYY-MM-DD
-const formattedDate = currentDate.toISOString().split('T')[0];
+    // Format the date as YYYY-MM-DD
+    const formattedDate = currentDate.toISOString().split("T")[0];
 
     const modifiedStudentList = studentList.map(({ eligible, ...rest }) => ({
       student: rest.id,
@@ -315,11 +307,19 @@ const formattedDate = currentDate.toISOString().split('T')[0];
     setShowSuccessDialog(false);
   };
 
-  const handleDeleteEntry = (rollNumber) => {
+  const handleDeleteEntry = (id,name ) => {
     const updatedStudentList = studentList.filter(
-      (student) => student.rollNumber !== rollNumber
+      (student) => student.id !== id
     );
     setStudentList(updatedStudentList);
+    showAlert(`${name} has been deleted.`, "red");
+  };
+
+  const showAlert = (name, color) => {
+    setAlert({ show: true, name, color });
+    setTimeout(() => {
+      setAlert({ show: false, name: null, color: null });
+    }, 2000);
   };
 
   const handleDownload = () => {
@@ -373,7 +373,16 @@ const formattedDate = currentDate.toISOString().split('T')[0];
   };
 
   return (
+
+
     <div className="h-full w-full">
+
+{alert.show && (
+        <div className="fixed top-4 right-4 z-100">
+          <Alert color={alert.color}>{alert.name}</Alert>
+        </div>
+      )}
+
       {!studentList && (
         <Card className="h-full w-full">
           <CardHeader floated={false} shadow={false} className="h-auto p-2">
@@ -396,12 +405,7 @@ const formattedDate = currentDate.toISOString().split('T')[0];
               >
                 Generate
               </Button>
-              <Button
-                onClick={handleToggleHistory}
-              
-              >
-                Show History
-              </Button>
+              <Button onClick={handleToggleHistory}>Show History</Button>
             </div>
           </CardHeader>
         </Card>
@@ -437,6 +441,15 @@ const formattedDate = currentDate.toISOString().split('T')[0];
             </div>
           </CardHeader>
           <CardBody className="overflow-auto p-0 flex-1">
+
+          {studentList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full">
+                <XCircleIcon className="h-48 w-48 text-red-500" />
+                <Typography variant="h3" className="cursor-default mt-4">
+                  No Data Found
+                </Typography>
+              </div>
+            ) : (
             <table className="w-full min-w-max table-auto text-left">
               <thead className="sticky top-0 bg-white z-50">
                 <tr>
@@ -475,18 +488,15 @@ const formattedDate = currentDate.toISOString().split('T')[0];
                 {studentList.map(
                   (
                     {
+                      id,
                       name,
                       rollNumber,
                       joiningDate,
                       department,
-                     
                       amount,
-
                       eligible,
-
                       disbursmentDate,
                       comment,
-
                       year,
                     },
                     index
@@ -540,66 +550,92 @@ const formattedDate = currentDate.toISOString().split('T')[0];
                       </td>
 
                       <td className="border-b border-blue-gray-100 bg-white p-4">
-                       
-                          <Input
-                            value={amount}
-                            type="number"
-                            onChange={(e) =>
-                              handleFieldChange(
-                                index,
-                                "amount",
-                                e.target.value
-                              )
-                            }
-                          />
-                        
+                        <Input
+                          value={amount}
+                          type="number"
+                          onChange={(e) =>
+                            handleFieldChange(index, "amount", e.target.value)
+                          }
+                        />
                       </td>
-                        
 
-                    {!showHistory && (
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                      <Button
-                        color={eligible === "Yes" ? "green" : "red"}
-                        
-                        onClick={() => handleUpdateEligibility(rollNumber)}
-                      >
-                        {eligible}
-                      </Button>
-                    </td>
-                    )}  
-
-                    
-
-                     
+                      {showHistory ? (
                         <td className="border-b border-blue-gray-100 bg-white p-4">
-                          {!searchTerm && (
-                            <Button
-                              onClick={() => handleDeleteEntry(rollNumber)}
-                              color="red"
-                              size="sm"
-                            >
-                              Delete
-                            </Button>
-                          )}
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {comment ? comment : "NO COMMENT"}
+                          </Typography>
                         </td>
-                   
+                      ) : (
+
+                        <>  <td className="border-b border-blue-gray-100 bg-white p-4">
+                        <Input
+                              value={comment}
+                              type="string"
+                              onChange={(e) =>
+                                handleFieldChange(index, "comment", e.target.value)
+                              }
+                            />
+                            
+                        </td>
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Button
+                            color={eligible === "Yes" ? "green" : "red"}
+                            disabled={eligible === "Yes"}
+                            onClick={() =>
+                              handleUpdateEligibility(rollNumber, name)
+                            }
+                          >
+                            {eligible}
+                          </Button>
+                        </td></>
+
+                      
+                      )}
+                      <td className="border-b border-blue-gray-100 bg-white p-4">
+                      
+                          <Button
+                            onClick={() => handleDeleteEntry(id,name)}
+
+                            color="red"
+                            size="sm"
+                          >
+                            Delete
+                          </Button>
+                       
+                      </td>
                     </tr>
                   )
                 )}
               </tbody>
             </table>
+
+          )}
           </CardBody>
           {!showHistory && (
-            <CardFooter className="p-2 flex flex-col items-end">
-              <Button
-                variant="outlined"
-                size="sm"
-                disabled={searchTerm !== ""}
-                onClick={handleSubmit}
-              >
-                Submit List
-              </Button>
-            </CardFooter>
+           <CardFooter className="p-2 flex flex-col items-end">
+           <div>
+             <Button
+               size="sm"
+           
+               onClick={handleDownload}
+               className="mx-2"
+             >
+               Download
+             </Button>
+             <Button
+               variant="outlined"
+               size="sm"
+               disabled={searchTerm !== ""}
+               onClick={handleSubmit}
+             >
+               Submit List
+             </Button>{" "}
+           </div>
+         </CardFooter>
           )}
         </Card>
       )}
@@ -694,9 +730,14 @@ const formattedDate = currentDate.toISOString().split('T')[0];
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button onClick={() => setShowFilterDialog(false)}>Cancel</Button>
-          <Button onClick={handleFilterReset}>Reset</Button>
-          <Button onClick={handleFilterSubmit}>Apply</Button>
+          <div className="flex  ">
+          <Button className= "mx-1" onClick={handleFilterReset}>Reset</Button>
+            <Button className= "mx-1" color="red" onClick={() => setShowFilterDialog(false)}>Cancel</Button>
+          
+             
+              <Button className= "mx-1" color="green" onClick={handleFilterSubmit}>Apply</Button>
+           
+          </div>
         </DialogFooter>
       </Dialog>
     </div>

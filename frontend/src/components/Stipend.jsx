@@ -30,6 +30,7 @@ const TABLE_HEAD = [
   "HRA",
   "Base Amount",
   "Total Stipend",
+  "Comment",
   "Eligible",
   "",
 ];
@@ -95,7 +96,6 @@ function Stipend() {
       NotEligibleStudents();
       fetchStipendHistory();
     }
-
   }, [allStudents, eligibleStudentList]);
 
   useEffect(() => {
@@ -206,10 +206,11 @@ function Stipend() {
             hra: 0,
             id: student.id,
             joiningDate: student.joiningDate,
-            month: "4",
+            month: "4", // need to change
             name: student.name,
             rollNumber: student.rollNumber,
-            year: "2023",
+            year: "2023", // need to change
+            comment: "",
           };
         });
 
@@ -339,7 +340,7 @@ function Stipend() {
     if (studentList) {
       // Copying studentList to avoid modifying the original data
       const modifiedStudentList = studentList.map(({ id, ...rest }) => rest);
-  
+
       const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
@@ -353,7 +354,6 @@ function Stipend() {
       );
     }
   };
-  
 
   const handleFilterClick = () => {
     setShowFilterDialog(true);
@@ -394,7 +394,7 @@ function Stipend() {
     <div className="h-full w-full">
       {alert.show && (
         <div className="fixed top-4 right-4 z-50">
-          <Alert color={alert.color}>{alert.name} has been deleted.</Alert>
+          <Alert color={alert.color}>{alert.name} </Alert>
         </div>
       )}
 
@@ -481,256 +481,270 @@ function Stipend() {
             </div>
           </CardHeader>
           <CardBody className="overflow-auto p-0 flex-1">
-        
-      {studentList.length === 0 ? (
-       <div className="flex flex-col items-center justify-center h-full">
-       <XCircleIcon className="h-48 w-48 text-red-500" />
-       <Typography variant="h3" className="cursor-default mt-4">
-         No Data Found
-       </Typography>
-     </div>
-      ) : (
-
-            <table className="w-full min-w-max table-auto text-left">
-              <thead className="sticky top-0 bg-white z-50">
-                <tr>
-                  {showHistory
-                    ? HISTORY_TABLE_HEAD.map((head) => (
-                        <th
-                          key={head}
-                          className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
-                        >
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal leading-none opacity-70"
+            {studentList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full">
+                <XCircleIcon className="h-48 w-48 text-red-500" />
+                <Typography variant="h3" className="cursor-default mt-4">
+                  No Data Found
+                </Typography>
+              </div>
+            ) : (
+              <table className="w-full min-w-max table-auto text-left">
+                <thead className="sticky top-0 bg-white z-50">
+                  <tr>
+                    {showHistory
+                      ? HISTORY_TABLE_HEAD.map((head) => (
+                          <th
+                            key={head}
+                            className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
                           >
-                            {head}
-                          </Typography>
-                        </th>
-                      ))
-                    : TABLE_HEAD.map((head) => (
-                        <th
-                          key={head}
-                          className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
-                        >
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal leading-none opacity-70"
-                          >
-                            {head}
-                          </Typography>
-                        </th>
-                      ))}
-                </tr>
-              </thead>
-              <tbody>
-                {studentList.map(
-                  (
-                    {
-                      name,
-                      rollNumber,
-                      joiningDate,
-                      department,
-                      hostler,
-                      baseAmount,
-                      eligible,
-                      hra,
-                      comprehensiveExamDate,
-                      disbursmentDate,
-                      comment,
-                      month,
-                      year,
-                    },
-                    index
-                  ) => (
-                    <tr key={index}>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {name}
-                        </Typography>
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {rollNumber}
-                        </Typography>
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {department}
-                        </Typography>
-                      </td>
-
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {showHistory ? disbursmentDate : joiningDate}
-                        </Typography>
-                      </td>
-
-                      {showHistory ? (
-                        <>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
                             <Typography
                               variant="small"
                               color="blue-gray"
-                              className="font-normal"
+                              className="font-normal leading-none opacity-70"
                             >
-                              {month}
+                              {head}
                             </Typography>
-                          </td>
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                          </th>
+                        ))
+                      : TABLE_HEAD.map((head) => (
+                          <th
+                            key={head}
+                            className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
+                          >
                             <Typography
                               variant="small"
                               color="blue-gray"
-                              className="font-normal"
+                              className="font-normal leading-none opacity-70"
                             >
-                              {year}
+                              {head}
                             </Typography>
-                          </td>
-                        </>
-                      ) : (
+                          </th>
+                        ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {studentList.map(
+                    (
+                      {
+                        name,
+                        rollNumber,
+                        joiningDate,
+                        department,
+                        hostler,
+                        baseAmount,
+                        eligible,
+                        hra,
+                        comprehensiveExamDate,
+                        disbursmentDate,
+                        comment,
+                        month,
+                        year,
+                      },
+                      index
+                    ) => (
+                      <tr key={index}>
                         <td className="border-b border-blue-gray-100 bg-white p-4">
                           <Typography
                             variant="small"
                             color="blue-gray"
                             className="font-normal"
                           >
-                            {comprehensiveExamDate
-                              ? comprehensiveExamDate
-                              : "Null"}
+                            {name}
                           </Typography>
                         </td>
-                      )}
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {rollNumber}
+                          </Typography>
+                        </td>
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {department}
+                          </Typography>
+                        </td>
 
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <div className="flex items-center">
-                          <Checkbox
-                            checked={hostler === "YES"}
-                            disabled={showHistory}
-                            color="blue"
-                            onChange={() =>
-                              handleFieldChange(
-                                index,
-                                "hostler",
-                                hostler === "YES" ? "NO" : "YES"
-                              )
-                            }
-                          />
-                        </div>
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {showHistory ? disbursmentDate : joiningDate}
+                          </Typography>
+                        </td>
+
                         {showHistory ? (
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {hra}
-                          </Typography>
+                          <>
+                            <td className="border-b border-blue-gray-100 bg-white p-4">
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-normal"
+                              >
+                                {month}
+                              </Typography>
+                            </td>
+                            <td className="border-b border-blue-gray-100 bg-white p-4">
+                              <Typography
+                                variant="small"
+                                color="blue-gray"
+                                className="font-normal"
+                              >
+                                {year}
+                              </Typography>
+                            </td>
+                          </>
                         ) : (
-                          <Input
-                            value={hra}
-                            type="number"
-                            onChange={(e) =>
-                              handleFieldChange(index, "hra", e.target.value)
-                            }
-                          />
-                        )}
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {baseAmount}
-                        </Typography>
-                      </td>
-
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {parseInt(hra) + parseInt(baseAmount)}
-                        </Typography>
-                      </td>
-
-                      {showHistory ? (
-                        <td className="border-b border-blue-gray-100 bg-white p-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {comment ? comment : "NO COMMENT"}
-                          </Typography>
-                        </td>
-                      ) : (
-                        <td className="border-b border-blue-gray-100 bg-white p-4">
-                          <Button
-                            color={eligible === "Yes" ? "green" : "red"}
-                            disabled={eligible === "Yes"}
-                            onClick={() =>
-                              handleUpdateEligibility(rollNumber, name)
-                            }
-                          >
-                            {eligible}
-                          </Button>
-                        </td>
-                      )}
-
-                      {!showHistory && (
-                        <td className="border-b border-blue-gray-100 bg-white p-4">
-                          {!searchTerm && (
-                            <Button
-                              onClick={() =>
-                                handleDeleteEntry(rollNumber, name)
-                              }
-                              color="red"
-                              size="sm"
+                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
                             >
-                              Delete
-                            </Button>
+                              {comprehensiveExamDate
+                                ? comprehensiveExamDate
+                                : "Null"}
+                            </Typography>
+                          </td>
+                        )}
+
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <div className="flex items-center">
+                            <Checkbox
+                              checked={hostler === "YES"}
+                              disabled={showHistory}
+                              color="blue"
+                              onChange={() =>
+                                handleFieldChange(
+                                  index,
+                                  "hostler",
+                                  hostler === "YES" ? "NO" : "YES"
+                                )
+                              }
+                            />
+                          </div>
+                        </td>
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          {showHistory ? (
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {hra}
+                            </Typography>
+                          ) : (
+                            <Input
+                              value={hra}
+                              type="number"
+                              onChange={(e) =>
+                                handleFieldChange(index, "hra", e.target.value)
+                              }
+                            />
                           )}
                         </td>
-                      )}
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>)}
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {baseAmount}
+                          </Typography>
+                        </td>
+
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {parseInt(hra) + parseInt(baseAmount)}
+                          </Typography>
+                        </td>
+
+                        {showHistory ? (
+                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {comment ? comment : "NO COMMENT"}
+                            </Typography>
+                          </td>
+                        ) : (
+                          <>
+                            {" "}
+                            <td className="border-b border-blue-gray-100 bg-white p-4">
+                              <Input
+                                value={comment}
+                                type="string"
+                                onChange={(e) =>
+                                  handleFieldChange(
+                                    index,
+                                    "comment",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td className="border-b border-blue-gray-100 bg-white p-4">
+                              <Button
+                                color={eligible === "Yes" ? "green" : "red"}
+                                disabled={eligible === "Yes"}
+                                onClick={() =>
+                                  handleUpdateEligibility(rollNumber, name)
+                                }
+                              >
+                                {eligible}
+                              </Button>
+                            </td>
+                          </>
+                        )}
+
+                        {!showHistory && (
+                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                            {!searchTerm && (
+                              <Button
+                                onClick={() =>
+                                  handleDeleteEntry(rollNumber, name)
+                                }
+                                color="red"
+                                size="sm"
+                              >
+                                Delete
+                              </Button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            )}
           </CardBody>
           {!showHistory && (
             <CardFooter className="p-2 flex flex-col items-end">
               <div>
-              <Button
+                <Button
                   size="sm"
                   disabled={searchTerm !== ""}
                   onClick={handleDownload}
                   className="mx-2"
                 >
-                 Download
+                  Download
                 </Button>
-
                 <Button
                   variant="outlined"
                   size="sm"
@@ -739,7 +753,6 @@ function Stipend() {
                 >
                   Submit List
                 </Button>{" "}
-              
               </div>
             </CardFooter>
           )}
@@ -836,9 +849,14 @@ function Stipend() {
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button onClick={() => setShowFilterDialog(false)}>Cancel</Button>
-          <Button onClick={handleFilterReset}>Reset</Button>
-          <Button onClick={handleFilterSubmit}>Apply</Button>
+          <div className="flex  ">
+          <Button className= "mx-1" onClick={handleFilterReset}>Reset</Button>
+            <Button className= "mx-1" color="red" onClick={() => setShowFilterDialog(false)}>Cancel</Button>
+          
+             
+              <Button className= "mx-1" color="green" onClick={handleFilterSubmit}>Apply</Button>
+           
+          </div>
         </DialogFooter>
       </Dialog>
     </div>
