@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
-import { MagnifyingGlassIcon ,XCircleIcon} from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import {
   Button,
   Card,
@@ -40,7 +40,7 @@ const HISTORY_TABLE_HEAD = [
   "Year",
   "Amount",
   "Comment",
-  ""
+  "",
 ];
 
 const API = import.meta.env.VITE_BACKEND_URL;
@@ -73,7 +73,6 @@ function ContingencyPoint() {
     useState(false);
   const departments = ["CSE", "CB", "ECE", "HCD", "SSH", "MATHS"];
 
-  
   const [alert, setAlert] = useState({ show: false, name: null, color: null });
 
   useEffect(() => {
@@ -91,7 +90,7 @@ function ContingencyPoint() {
       NotEligibleStudents();
       fetchContingencyHistory();
     }
-  }, [allStudents, contingencyEligible]);
+  }, [allStudents, contingencyEligible,]);
 
   useEffect(() => {
     fetchContingencyHistory();
@@ -169,27 +168,24 @@ function ContingencyPoint() {
     if (!allStudents.length || !contingencyEligible.length) return;
 
     try {
-      
       const notEligibleStudents = allStudents
         .filter(
           (student) =>
             !contingencyEligible.some((eligible) => eligible.id === student.id)
         )
         .map((student) => {
-         
-
           return {
-            amount :"20000",
+            amount: "20000",
             department: student.department,
             eligible: "No",
-          
+
             id: student.id,
             joiningDate: student.joiningDate,
-          
+
             name: student.name,
             rollNumber: student.rollNumber,
-            year: "2023",// need to change
-            comment: ""
+            year: "2023", // need to change
+            comment: "",
           };
         });
 
@@ -241,7 +237,7 @@ function ContingencyPoint() {
     }
   };
 
-  const handleUpdateEligibility = (rollNumber,name) => {
+  const handleUpdateEligibility = (rollNumber, name) => {
     const studentToUpdate = ineligibleStudentList.find(
       (student) => student.rollNumber === rollNumber
     );
@@ -266,6 +262,8 @@ function ContingencyPoint() {
   };
 
   const handleSubmit = () => {
+    setEligibleStudents(null)
+    fetchContingencyHistory();
     const currentDate = new Date();
 
     // Format the date as YYYY-MM-DD
@@ -307,12 +305,35 @@ function ContingencyPoint() {
     setShowSuccessDialog(false);
   };
 
-  const handleDeleteEntry = (id,name ) => {
+  const handleDeleteEntry = (id, name) => {
     const updatedStudentList = studentList.filter(
       (student) => student.id !== id
     );
     setStudentList(updatedStudentList);
     showAlert(`${name} has been deleted.`, "red");
+  };
+
+  const handleDeleteHistory = async (id, name) => {
+    try {
+      const response = await fetch(`${API}/api/contingency/${id}/`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // If the response is ok, update the student list
+        const updatedStudentList = studentList.filter(
+          (student) => student.id !== id
+        );
+        setStudentList(updatedStudentList);
+        showAlert(`${name} has been deleted.`, "red");
+      } else {
+        // If the response is not ok, show an error alert
+        showAlert(`Failed to delete ${name}.`, "red");
+      }
+    } catch (error) {
+      // If there is an error, show an error alert
+      showAlert(`An error occurred: ${error.message}`, "red");
+    }
   };
 
   const showAlert = (name, color) => {
@@ -322,18 +343,93 @@ function ContingencyPoint() {
     }, 2000);
   };
 
-  const handleDownload = () => {
+  const handleDownloadEligibility = () => {
     if (studentList) {
-      const worksheet = XLSX.utils.json_to_sheet(studentList);
+      const fieldOrder = [
+        "name",
+        "rollNumber",
+        "department",
+        "joiningDate",
+        "year",
+        "amount",
+        "comment",
+        "eligible"
+        
+      ];
+  
+      const modifiedStudentList = studentList.map((student) => {
+        const modifiedStudent = {};
+        fieldOrder.forEach((field, index) => {
+          
+            modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
+        
+        });
+        return modifiedStudent;
+      });
+  
+      const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
+        header: fieldOrder,
+      });
+  
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
+  
+      const fileName = `ContingencyEligibleStudent_${year}.xlsx`;
+  
       saveAs(
         new Blob([excelBuffer], { type: "application/octet-stream" }),
-        "student_list.xlsx"
+        fileName
+      );
+    }
+  };
+  
+  const handleDownloadContingencyHistory = () => {
+    
+    if (studentList) {
+      const fieldOrder = [
+        "name",
+        "rollNumber",
+        "department",
+        "disbursmentDate",
+        
+        "year",
+     
+      
+        "amount",
+        "comment",
+      
+      ];
+  
+      const modifiedStudentList = studentList.map((student) => {
+        const modifiedStudent = {};
+        fieldOrder.forEach((field, index) => {
+    
+            modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
+          
+        });
+        return modifiedStudent;
+      });
+  
+      const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
+        header: fieldOrder,
+      });
+  
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+  
+      const fileName = `ContingencyHistory.xlsx`;
+  
+      saveAs(
+        new Blob([excelBuffer], { type: "application/octet-stream" }),
+        fileName
       );
     }
   };
@@ -373,11 +469,8 @@ function ContingencyPoint() {
   };
 
   return (
-
-
     <div className="h-full w-full">
-
-{alert.show && (
+      {alert.show && (
         <div className="fixed top-4 right-4 z-100">
           <Alert color={alert.color}>{alert.name}</Alert>
         </div>
@@ -434,15 +527,14 @@ function ContingencyPoint() {
                 </div>
               )}
               <div className="flex-1 md:flex-none">
-                <Button onClick={!showHistory ? ResetHandler : handleDownload}>
+                <Button onClick={!showHistory ? ResetHandler : handleDownloadContingencyHistory}>
                   {!showHistory ? "Reset Data" : "Download"}
                 </Button>
               </div>
             </div>
           </CardHeader>
           <CardBody className="overflow-auto p-0 flex-1">
-
-          {studentList.length === 0 ? (
+            {studentList.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full">
                 <XCircleIcon className="h-48 w-48 text-red-500" />
                 <Typography variant="h3" className="cursor-default mt-4">
@@ -450,192 +542,192 @@ function ContingencyPoint() {
                 </Typography>
               </div>
             ) : (
-            <table className="w-full min-w-max table-auto text-left">
-              <thead className="sticky top-0 bg-white z-50">
-                <tr>
-                  {showHistory
-                    ? HISTORY_TABLE_HEAD.map((head) => (
-                        <th
-                          key={head}
-                          className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
-                        >
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal leading-none opacity-70"
+              <table className="w-full min-w-max table-auto text-left">
+                <thead className="sticky top-0 bg-white z-50">
+                  <tr>
+                    {showHistory
+                      ? HISTORY_TABLE_HEAD.map((head) => (
+                          <th
+                            key={head}
+                            className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
                           >
-                            {head}
-                          </Typography>
-                        </th>
-                      ))
-                    : TABLE_HEAD.map((head) => (
-                        <th
-                          key={head}
-                          className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
-                        >
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal leading-none opacity-70"
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal leading-none opacity-70"
+                            >
+                              {head}
+                            </Typography>
+                          </th>
+                        ))
+                      : TABLE_HEAD.map((head) => (
+                          <th
+                            key={head}
+                            className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
                           >
-                            {head}
-                          </Typography>
-                        </th>
-                      ))}
-                </tr>
-              </thead>
-              <tbody>
-                {studentList.map(
-                  (
-                    {
-                      id,
-                      name,
-                      rollNumber,
-                      joiningDate,
-                      department,
-                      amount,
-                      eligible,
-                      disbursmentDate,
-                      comment,
-                      year,
-                    },
-                    index
-                  ) => (
-                    <tr key={index}>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {name}
-                        </Typography>
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {rollNumber}
-                        </Typography>
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {department}
-                        </Typography>
-                      </td>
-
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {showHistory ? disbursmentDate : joiningDate}
-                        </Typography>
-                      </td>
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {year}
-                        </Typography>
-                      </td>
-
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Input
-                          value={amount}
-                          type="number"
-                          onChange={(e) =>
-                            handleFieldChange(index, "amount", e.target.value)
-                          }
-                        />
-                      </td>
-
-                      {showHistory ? (
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal leading-none opacity-70"
+                            >
+                              {head}
+                            </Typography>
+                          </th>
+                        ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {studentList.map(
+                    (
+                      {
+                        id,
+                        name,
+                        rollNumber,
+                        joiningDate,
+                        department,
+                        amount,
+                        eligible,
+                        disbursmentDate,
+                        comment,
+                        year,
+                      },
+                      index
+                    ) => (
+                      <tr key={index}>
                         <td className="border-b border-blue-gray-100 bg-white p-4">
                           <Typography
                             variant="small"
                             color="blue-gray"
                             className="font-normal"
                           >
-                            {comment ? comment : "NO COMMENT"}
+                            {name}
                           </Typography>
                         </td>
-                      ) : (
-
-                        <>  <td className="border-b border-blue-gray-100 bg-white p-4">
-                        <Input
-                              value={comment}
-                              type="string"
-                              onChange={(e) =>
-                                handleFieldChange(index, "comment", e.target.value)
-                              }
-                            />
-                            
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {rollNumber}
+                          </Typography>
                         </td>
                         <td className="border-b border-blue-gray-100 bg-white p-4">
-                          <Button
-                            color={eligible === "Yes" ? "green" : "red"}
-                            disabled={eligible === "Yes"}
-                            onClick={() =>
-                              handleUpdateEligibility(rollNumber, name)
-                            }
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
                           >
-                            {eligible}
-                          </Button>
-                        </td></>
+                            {department}
+                          </Typography>
+                        </td>
 
-                      
-                      )}
-                      <td className="border-b border-blue-gray-100 bg-white p-4">
-                      
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {showHistory ? disbursmentDate : joiningDate}
+                          </Typography>
+                        </td>
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {year}
+                          </Typography>
+                        </td>
+
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Input
+                            value={amount}
+                            type="number"
+                            onChange={(e) =>
+                              handleFieldChange(index, "amount", e.target.value)
+                            }
+                          />
+                        </td>
+
+                        {showHistory ? (
+                          <td className="border-b border-blue-gray-100 bg-white p-4">
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {comment ? comment : "NO COMMENT"}
+                            </Typography>
+                          </td>
+                        ) : (
+                          <>
+                            {" "}
+                            <td className="border-b border-blue-gray-100 bg-white p-4">
+                              <Input
+                                value={comment}
+                                type="string"
+                                onChange={(e) =>
+                                  handleFieldChange(
+                                    index,
+                                    "comment",
+                                    e.target.value
+                                  )
+                                }
+                              />
+                            </td>
+                            <td className="border-b border-blue-gray-100 bg-white p-4">
+                              <Button
+                                color={eligible === "Yes" ? "green" : "red"}
+                                disabled={eligible === "Yes"}
+                                onClick={() =>
+                                  handleUpdateEligibility(rollNumber, name)
+                                }
+                              >
+                                {eligible}
+                              </Button>
+                            </td>
+                          </>
+                        )}
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
                           <Button
-                            onClick={() => handleDeleteEntry(id,name)}
-
+                            onClick={() => {
+                              if (showHistory) {
+                                handleDeleteHistory(id, name);
+                              } else {
+                                handleDeleteEntry(id, name);
+                              }
+                            }}
                             color="red"
                             size="sm"
                           >
                             Delete
                           </Button>
-                       
-                      </td>
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-
-          )}
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            )}
           </CardBody>
           {!showHistory && (
-           <CardFooter className="p-2 flex flex-col items-end">
-           <div>
-             <Button
-               size="sm"
-           
-               onClick={handleDownload}
-               className="mx-2"
-             >
-               Download
-             </Button>
-             <Button
-               variant="outlined"
-               size="sm"
-               disabled={searchTerm !== ""}
-               onClick={handleSubmit}
-             >
-               Submit List
-             </Button>{" "}
-           </div>
-         </CardFooter>
+            <CardFooter className="p-2 flex flex-col items-end">
+              <div>
+                <Button size="sm" onClick={handleDownloadEligibility} className="mx-2">
+                  Download
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="sm"
+                  disabled={searchTerm !== ""}
+                  onClick={handleSubmit}
+                >
+                  Submit List
+                </Button>{" "}
+              </div>
+            </CardFooter>
           )}
         </Card>
       )}
@@ -682,22 +774,6 @@ function ContingencyPoint() {
         <DialogHeader>Filter</DialogHeader>
         <DialogBody>
           <div className="flex flex-col space-y-4">
-            <label htmlFor="month">Month:</label>
-            <Input
-              id="month"
-              type="number"
-              value={filterMonth}
-              onChange={(e) => {
-                const monthValue = parseInt(e.target.value, 10);
-                if (!isNaN(monthValue) && monthValue >= 1 && monthValue <= 12) {
-                  setFilterMonth(monthValue);
-                } else if (e.target.value === "" || e.target.value === null) {
-                  // Allow deletion if the input is empty or null
-                  setFilterMonth("");
-                }
-              }}
-            />
-
             <label htmlFor="year">Year:</label>
             <Input
               id="year"
@@ -731,12 +807,20 @@ function ContingencyPoint() {
         </DialogBody>
         <DialogFooter>
           <div className="flex  ">
-          <Button className= "mx-1" onClick={handleFilterReset}>Reset</Button>
-            <Button className= "mx-1" color="red" onClick={() => setShowFilterDialog(false)}>Cancel</Button>
-          
-             
-              <Button className= "mx-1" color="green" onClick={handleFilterSubmit}>Apply</Button>
-           
+            <Button className="mx-1" onClick={handleFilterReset}>
+              Reset
+            </Button>
+            <Button
+              className="mx-1"
+              color="red"
+              onClick={() => setShowFilterDialog(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button className="mx-1" color="green" onClick={handleFilterSubmit}>
+              Apply
+            </Button>
           </div>
         </DialogFooter>
       </Dialog>

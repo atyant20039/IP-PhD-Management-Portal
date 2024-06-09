@@ -47,6 +47,7 @@ const HISTORY_TABLE_HEAD = [
   "Base Amount",
   "Total Stipend",
   "Comment",
+  ""
 ];
 
 const API = import.meta.env.VITE_BACKEND_URL;
@@ -285,6 +286,8 @@ function Stipend() {
   };
 
   const handleSubmit = () => {
+    setEligibleStudents(null)
+    fetchStipendHistory()
     const modifiedStudentList = studentList.map(({ eligible, ...rest }) => ({
       student: rest.id,
       ...rest,
@@ -321,12 +324,36 @@ function Stipend() {
   };
 
   const handleDeleteEntry = (rollNumber, name) => {
-    console.log(name);
+    console.log("in")
     const updatedStudentList = studentList.filter(
       (student) => student.rollNumber !== rollNumber
     );
     setStudentList(updatedStudentList);
     showAlert(`${name} has been deleted.`, "red");
+  };
+
+  const handleDeleteHistory = async (id, name) => {
+   
+    try {
+      const response = await fetch(`${API}/api/stipend/${id}/`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // If the response is ok, update the student list
+        const updatedStudentList = studentList.filter(
+          (student) => student.id !== id
+        );
+        setStudentList(updatedStudentList);
+        showAlert(`${name} has been deleted.`, "red");
+      } else {
+        // If the response is not ok, show an error alert
+        showAlert(`Failed to delete ${name}.`, "red");
+      }
+    } catch (error) {
+      // If there is an error, show an error alert
+      showAlert(`An error occurred: ${error.message}`, "red");
+    }
   };
 
   const showAlert = (name, color) => {
@@ -335,22 +362,108 @@ function Stipend() {
       setAlert({ show: false, name: null, color: null });
     }, 2000);
   };
-
-  const handleDownload = () => {
+  const handleDownloadEligibility = () => {
     if (studentList) {
-      // Copying studentList to avoid modifying the original data
-      const modifiedStudentList = studentList.map(({ id, ...rest }) => rest);
-
-      const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList);
+      const fieldOrder = [
+        "name",
+        "rollNumber",
+        "department",
+        "joiningDate",
+        "comprehensiveExamDate",
+        "hostler",
+        "hra",
+        "baseAmount",
+        "total_stipend",
+        "comment",
+        "eligible",
+      ];
+  
+      const modifiedStudentList = studentList.map((student) => {
+        const modifiedStudent = {};
+        fieldOrder.forEach((field, index) => {
+          if (field === "total_stipend") {
+            // Parse hra and baseAmount as integers before addition
+            const hra = parseInt(student["hra"]) || 0;
+            const baseAmount = parseInt(student["baseAmount"]) || 0;
+            // Calculate total_stipend as the sum of hra and baseAmount
+            modifiedStudent[field] = hra + baseAmount;
+          } else {
+            modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
+          }
+        });
+        return modifiedStudent;
+      });
+  
+      const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
+        header: fieldOrder,
+      });
+  
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
+  
+      const fileName = `eligibleStudent_${month}_${year}.xlsx`;
+  
       saveAs(
         new Blob([excelBuffer], { type: "application/octet-stream" }),
-        "student_list.xlsx"
+        fileName
+      );
+    }
+  };
+  
+  const handleDownloadStipendHistory = () => {
+    
+    if (studentList) {
+      const fieldOrder = [
+        "name",
+        "rollNumber",
+        "department",
+        "disbursmentDate",
+        "month",
+        "year",
+        "hostler",
+        "hra",
+        "baseAmount",
+        "total_stipend",
+        "comment",
+        "eligible",
+      ];
+  
+      const modifiedStudentList = studentList.map((student) => {
+        const modifiedStudent = {};
+        fieldOrder.forEach((field, index) => {
+          if (field === "total_stipend") {
+            // Parse hra and baseAmount as integers before addition
+            const hra = parseInt(student["hra"]) || 0;
+            const baseAmount = parseInt(student["baseAmount"]) || 0;
+            // Calculate total_stipend as the sum of hra and baseAmount
+            modifiedStudent[field] = hra + baseAmount;
+          } else {
+            modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
+          }
+        });
+        return modifiedStudent;
+      });
+  
+      const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
+        header: fieldOrder,
+      });
+  
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
+  
+      const fileName = `StipendHistory.xlsx`;
+  
+      saveAs(
+        new Blob([excelBuffer], { type: "application/octet-stream" }),
+        fileName
       );
     }
   };
@@ -474,7 +587,7 @@ function Stipend() {
                 </div>
               )}
               <div className="flex-1 md:flex-none">
-                <Button onClick={!showHistory ? ResetHandler : handleDownload}>
+                <Button onClick={!showHistory ? ResetHandler : handleDownloadStipendHistory}>
                   {!showHistory ? "Reset Data" : "Download"}
                 </Button>
               </div>
@@ -527,6 +640,7 @@ function Stipend() {
                   {studentList.map(
                     (
                       {
+                        id,
                         name,
                         rollNumber,
                         joiningDate,
@@ -712,21 +826,21 @@ function Stipend() {
                           </>
                         )}
 
-                        {!showHistory && (
-                          <td className="border-b border-blue-gray-100 bg-white p-4">
-                            {!searchTerm && (
-                              <Button
-                                onClick={() =>
-                                  handleDeleteEntry(rollNumber, name)
-                                }
-                                color="red"
-                                size="sm"
-                              >
-                                Delete
-                              </Button>
-                            )}
-                          </td>
-                        )}
+                        <td className="border-b border-blue-gray-100 bg-white p-4">
+                          <Button
+                            onClick={() => {
+                              if (showHistory) {
+                                handleDeleteHistory(id, name);
+                              } else {
+                                handleDeleteEntry(rollNumber, name);
+                              }
+                            }}
+                            color="red"
+                            size="sm"
+                          >
+                            Delete
+                          </Button>
+                        </td>
                       </tr>
                     )
                   )}
@@ -740,7 +854,7 @@ function Stipend() {
                 <Button
                   size="sm"
                   disabled={searchTerm !== ""}
-                  onClick={handleDownload}
+                  onClick={handleDownloadEligibility}
                   className="mx-2"
                 >
                   Download
@@ -802,20 +916,25 @@ function Stipend() {
         <DialogBody>
           <div className="flex flex-col space-y-4">
             <label htmlFor="month">Month:</label>
-            <Input
+            <select
               id="month"
-              type="number"
               value={filterMonth}
-              onChange={(e) => {
-                const monthValue = parseInt(e.target.value, 10);
-                if (!isNaN(monthValue) && monthValue >= 1 && monthValue <= 12) {
-                  setFilterMonth(monthValue);
-                } else if (e.target.value === "" || e.target.value === null) {
-                  // Allow deletion if the input is empty or null
-                  setFilterMonth("");
-                }
-              }}
-            />
+              onChange={(e) => setFilterMonth(e.target.value)}
+            >
+              <option value="">Select a month</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
 
             <label htmlFor="year">Year:</label>
             <Input
@@ -850,12 +969,20 @@ function Stipend() {
         </DialogBody>
         <DialogFooter>
           <div className="flex  ">
-          <Button className= "mx-1" onClick={handleFilterReset}>Reset</Button>
-            <Button className= "mx-1" color="red" onClick={() => setShowFilterDialog(false)}>Cancel</Button>
-          
-             
-              <Button className= "mx-1" color="green" onClick={handleFilterSubmit}>Apply</Button>
-           
+            <Button className="mx-1" onClick={handleFilterReset}>
+              Reset
+            </Button>
+            <Button
+              className="mx-1"
+              color="red"
+              onClick={() => setShowFilterDialog(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button className="mx-1" color="green" onClick={handleFilterSubmit}>
+              Apply
+            </Button>
           </div>
         </DialogFooter>
       </Dialog>
