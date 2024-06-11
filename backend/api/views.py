@@ -883,6 +883,17 @@ class StipendViewSet(ModelViewSet):
             'failed_entries': failed_entries
         }
         return Response(response_data, status=status.HTTP_201_CREATED)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Subtract amount from student.contingencyPoints
+        student = instance.student
+        student.stipendMonths += 1
+        student.save()
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ContingencyViewSet(ModelViewSet):
