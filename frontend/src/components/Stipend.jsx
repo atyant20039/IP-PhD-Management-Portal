@@ -793,7 +793,7 @@ function Stipend() {
                               color="blue-gray"
                               className="font-normal"
                             >
-                              {comment ? comment : "NO COMMENT"}
+                              {comment ? comment : "-"}
                             </Typography>
                           </td>
                         ) : (
