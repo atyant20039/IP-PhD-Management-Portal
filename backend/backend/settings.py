@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-cc5nh7o3^1wn420gl4v8fj(l9awia0i*0i!ov=mz7n2nduqr9z'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "phd-portal.iiitd.edu.in", "192.168.3.166"]
 
 
 # Application definition
@@ -134,8 +134,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT =BASE_DIR /"media"
 MEDIA_URL ="/media/"
 
-CORS_ALLOW_ALL_ORIGINS = True
-# CORS_ALLOWED_ORIGINS = ['http://*', 'https://*'] # TODO: Update after deployement
+CORS_ALLOW_ALL_ORIGINS = ["http://127.0.0.1", "https://127.0.0.1", "phd-portal.iiitd.edu.in", "192.168.3.166"] 
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageNumberPaginationWithCount',
