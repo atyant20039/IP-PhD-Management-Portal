@@ -1,7 +1,10 @@
 from datetime import date
+
+from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator,FileExtensionValidator
+
 from . import validator
+
 
 class Student(models.Model):
     rollNumber = models.CharField(max_length=10, unique=True, validators = [validator.rollNo]) 
@@ -17,6 +20,8 @@ class Student(models.Model):
     fundingType = models.CharField(max_length=10, choices=[('Institute', 'Institute'), ('Sponsored', 'Sponsored'), ('Others', 'Others')])
     sourceOfFunding = models.CharField(max_length=255, null=True, blank=True)
     contingencyPoints = models.DecimalField(decimal_places=2, max_digits = 11, default=20000, validators = [MinValueValidator(0)])
+    stipendMonths = models.PositiveIntegerField(default=60)
+    contingencyYears = models.PositiveIntegerField(default=4)
     studentStatus = models.CharField(max_length=15, default='Active', choices=[('Active','Active'), ('Terminated','Terminated'), ('Graduated','Graduated'), ('Shifted','Shifted'), ('Semester Leave','Semester Leave')])
     thesisSubmissionDate = models.DateField(blank=True, null=True)
     thesisDefenceDate = models.DateField(blank=True, null=True)
@@ -60,24 +65,13 @@ class Comprehensive(models.Model):
 
     def __str__(self):
         return f"RollNo: {self.student.rollNumber} Date: {self.dateOfReview}"
-    
-class Finance(models.Model):
-    student = models.OneToOneField(Student, on_delete=models.CASCADE, related_name="finance_details")
-    stipendMonths = models.PositiveIntegerField(default=0)
-    contingencyYears = models.PositiveIntegerField(default=0)
-
-    class Meta:
-        ordering=['student']
-
-    def __str__(self):
-        return f"RollNo: {self.student.rollNumber} StipendMonths: {self.stipendMonths} ContingencyYears: {self.contingencyYears}"
 
 class YearlyReview(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='yearly_reviews')
     dateOfReview = models.DateField(default = date.today)
     reviewYear = models.PositiveIntegerField(help_text="Enter the review year as a number (e.g., 1, 2, 3, etc.)")
     comment = models.TextField(blank=True, null=True)
-    yearlyReviewreviewFile = models.FileField(upload_to="yearly_review_files/", max_length=255, validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])])
+    yearlyReviewFile = models.FileField(upload_to="yearly_review_files/", max_length=255, validators=[FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])])
 
     def __str__(self):
         return f"RollNo: {self.student.rollNumber} Review Year: {self.reviewYear} Date: {self.dateOfReview}"
@@ -88,16 +82,31 @@ class YearlyReview(models.Model):
 
 class Stipend(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='stipend')
-    # TODO: Update default value of stipend amount according to regulations
-    amount = models.DecimalField(max_digits=11, decimal_places=2, default=20000, validators=[MinValueValidator(0)])
     disbursmentDate = models.DateField(default = date.today)
+    month = models.IntegerField(default=date.today().month)
+    year = models.IntegerField(default=date.today().year)
+    hostler = models.CharField(max_length=10, choices=[('YES', 'YES'), ('NO', 'NO')], default="YES")
+    baseAmount = models.DecimalField(max_digits=11, decimal_places=2, default=37000, validators=[MinValueValidator(0)])
+    hra = models.DecimalField(max_digits=11, decimal_places=2, default=0, validators=[MinValueValidator(0)])
     comment = models.TextField(null=True, blank=True)
 
     class Meta:
         ordering=['student']
+        unique_together = ['student', 'month', 'year']
+
+class Contingency(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingency')
+    disbursmentDate = models.DateField(default = date.today)
+    year = models.IntegerField(default=date.today().year)
+    amount = models.DecimalField(max_digits=11, decimal_places=2, default=15000, validators=[MinValueValidator(0)])
+    comment = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering=['student']
+        unique_together = ['student', 'year']
 
 class ContingencyLogs(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingency')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='contingencyLogs')
     item = models.TextField()
     quantity = models.PositiveIntegerField(default = 1)
     price = models.DecimalField(max_digits=11, decimal_places=2, validators=[MinValueValidator(0)])
@@ -115,4 +124,16 @@ class ContingencyLogs(models.Model):
     comment = models.TextField(blank = True, null = True)
 
     class Meta:
-        ordering=['student']
+        ordering = ['-id']
+
+class Classroom(models.Model):
+    building = models.CharField(max_length=100)
+    roomNo = models.CharField(max_length=10)
+    capacity = models.PositiveIntegerField()
+
+    class Meta:
+        # Define a composite primary key using building and roomNo
+        unique_together = ('building', 'roomNo')
+
+    def __str__(self):
+        return f'{self.venue}: Room {self.roomNo} Capacity {self.capacity}'

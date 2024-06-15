@@ -7,9 +7,9 @@ import {
 
 // Below open-source illustrations downloaded for free from: https://undraw.co/
 import DatabaseImg from "../assets/database.svg";
-import StipendImg from "../assets/stipend.svg";
 import ExamImg from "../assets/exam_invigilation.svg";
 import FacultyImg from "../assets/faculty.svg";
+import StipendImg from "../assets/stipend.svg";
 
 import { Link } from "react-router-dom";
 
@@ -21,8 +21,8 @@ function Dashboard() {
       img: DatabaseImg,
     },
     {
-      text: "Stipend",
-      url: "/stipend",
+      text: "Finance",
+      url: "/finance",
       img: StipendImg,
     },
     {
@@ -64,6 +64,7 @@ function Dashboard() {
                   <img
                     src={item.img}
                     className="size-20 md:size-40 xl:size-60 2xl:size-80"
+                    alt={item.text}
                   />
                 </CardHeader>
                 <CardBody className="static text-center">

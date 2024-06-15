@@ -3,9 +3,9 @@ import React from "react";
 import {
   Button,
   Dialog,
-  DialogHeader,
   DialogBody,
   DialogFooter,
+  DialogHeader,
 } from "@material-tailwind/react";
 
 function AlertDialog({ isOpen, setOpen, message }) {

@@ -1,0 +1,19 @@
+/* In your CSS stylesheet */
+.academic-card {
+    background: rgb(54,250,248);
+background: linear-gradient(45deg, rgba(54,250,248,0.5) 0%, rgba(182,242,251,0.55) 43%, rgba(253,253,253,1) 100%);
+  }
+
+.financial-card{
+    background: rgb(68,255,70);
+    background: linear-gradient(45deg, rgba(68,255,70,0.5) 0%, rgba(194,255,186,0.55) 43%, rgba(253,253,253,1) 100%);}
+
+.thesis-card{
+    background: rgb(249,252,104);
+background: linear-gradient(45deg, rgba(249,252,104,0.5) 0%, rgba(251,251,205,0.55) 43%, rgba(253,253,253,1) 100%);
+}    
+
+.comment{
+    background: rgb(168,168,168);
+background: linear-gradient(45deg, rgba(168,168,168,0.5) 0%, rgba(212,212,212,0.6559518338585435) 33%, rgba(253,253,253,1) 100%);
+}

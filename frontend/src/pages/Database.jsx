@@ -1,34 +1,34 @@
 import {
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XCircleIcon,
-  ChevronUpDownIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
+  ChevronUpDownIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
-import { UserPlusIcon } from "@heroicons/react/24/solid";
+import { ArrowDownTrayIcon, UserPlusIcon } from "@heroicons/react/24/solid";
 
 import {
-  Card,
-  CardHeader,
-  Input,
-  Typography,
   Button,
+  Card,
   CardBody,
   CardFooter,
+  CardHeader,
   Chip,
-  Spinner,
   IconButton,
+  Input,
+  Spinner,
+  Typography,
 } from "@material-tailwind/react";
 
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import StudentContext from "../context/StudentContext";
+import AddStudentDialog from "../components/AddStudentDialog";
 import FilterDialog from "../components/FilterDialog";
-import AddMemberDialog from "../components/AddMemberDialog";
+import StudentContext from "../context/StudentContext";
 
 const TABLE_HEAD = [
   {
@@ -61,15 +61,15 @@ const TABLE_HEAD = [
   },
   {
     head: "Advisor 1",
-    value: "advisor1",
+    value: "advisor_set__advisor1",
   },
   {
     head: "Advisor 2",
-    value: "advisor2",
+    value: "advisor_set__advisor2",
   },
   {
     head: "Co-Advisor",
-    value: "coadvisor",
+    value: "advisor_set__coadvisor",
   },
   {
     head: "Joining Date",
@@ -86,6 +86,14 @@ const TABLE_HEAD = [
   {
     head: "Source of Funding",
     value: "sourceOfFunding",
+  },
+  {
+    head: "Stipend Months Left",
+    value: "stipendMonths",
+  },
+  {
+    head: "Contingency Years Left",
+    value: "contingencyYears",
   },
   {
     head: "Admission",
@@ -118,32 +126,48 @@ const TABLE_HEAD = [
 ];
 
 export default function Database() {
-  const { students, fetchData } = useContext(StudentContext);
+  const { students, fetchData, Error, downloadStudents } =
+    useContext(StudentContext);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("rollNumber");
   const [isExpanded, setExpanded] = useState(false);
   const [isFilterDialogOpen, setFilterDialog] = useState(false);
   const [isAddDialogOpen, setAddDialog] = useState(false);
+  const [filters, setFilters] = useState({});
   const navigate = useNavigate();
 
   const page = students?.page || 1;
   const total_pages = students?.total_pages || 1;
 
+  const handleFilterSelect = (selectedOptions) => {
+    setFilters(selectedOptions);
+  };
+
+  const handleSort = (selectedSort) => {
+    setSort((currentSort) => {
+      if (currentSort === selectedSort) {
+        return `-${selectedSort}`;
+      } else if (currentSort === `-${selectedSort}`) {
+        return selectedSort;
+      } else {
+        return selectedSort;
+      }
+    });
+  };
+
   useEffect(() => {
-    if (students === null) {
-      fetchData(undefined, undefined, undefined, setLoading);
-    }
+    fetchData(1, "", "rollNumber", setLoading, filters);
   }, []);
 
   useEffect(() => {
-    fetchData(1, search, sort, setLoading);
-  }, [sort]);
+    fetchData(1, search, sort, setLoading, filters);
+  }, [sort, filters]);
 
   useEffect(() => {
     const delay = 500;
     const timer = setTimeout(() => {
-      fetchData(1, search, sort, setLoading);
+      fetchData(1, search, sort, setLoading, filters);
     }, delay);
     return () => clearTimeout(timer);
   }, [search]);
@@ -158,7 +182,11 @@ export default function Database() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <Typography variant="h4" color="blue-gray">
+              <Typography
+                variant="h4"
+                color="blue-gray"
+                className="cursor-default"
+              >
                 Students list
               </Typography>
             </div>
@@ -184,7 +212,17 @@ export default function Database() {
                 isOpen={isFilterDialogOpen}
                 setOpen={setFilterDialog}
                 member="Students"
+                onApplyFilters={handleFilterSelect}
               />
+              <Button
+                className="flex items-center gap-3 h-10"
+                size="sm"
+                variant="outlined"
+                onClick={() => downloadStudents(search, sort, filters)}
+              >
+                <ArrowDownTrayIcon strokeWidth={2} className="size-4" />
+                Download
+              </Button>
               <Button
                 className="flex items-center gap-3 h-10"
                 size="sm"
@@ -192,20 +230,19 @@ export default function Database() {
               >
                 <UserPlusIcon strokeWidth={2} className="size-4" /> Add Student
               </Button>
-              <AddMemberDialog
+              <AddStudentDialog
                 isOpen={isAddDialogOpen}
                 setOpen={setAddDialog}
-                member="Student"
               />
             </div>
           </div>
         </CardHeader>
-        <CardBody className="p-0 mt-5 flex flex-1 overflow-auto">
+        <CardBody className="p-0 px-2 mt-5 flex flex-1 overflow-auto">
           {/* TODO: students && students.results -> check this conditions works on empty (not null) students.results list or not */}
           {students && students.results && students.results.length != 0 ? (
             <div className="flex flex-row flex-1 w-full h-full">
               <div className="overflow-auto flex-1">
-                <table className="w-full min-w-max table-auto text-left">
+                <table className="w-full min-w-max table-auto text-left h-min">
                   <thead className="sticky top-0 bg-white z-20">
                     <tr>
                       {TABLE_HEAD.map(
@@ -214,7 +251,7 @@ export default function Database() {
                             <th
                               key={head}
                               className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                              onClick={() => setSort(value)}
+                              onClick={() => handleSort(value)}
                             >
                               <Typography
                                 variant="small"
@@ -233,7 +270,7 @@ export default function Database() {
                             <th
                               key={head}
                               className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                              onClick={() => setSort(value)}
+                              onClick={() => handleSort(value)}
                             >
                               <Typography
                                 variant="small"
@@ -423,6 +460,28 @@ export default function Database() {
                                 </Typography>
                               </td>
                               <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs w-48"
+                                >
+                                  {student.stipendMonths
+                                    ? student.stipendMonths
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
+                                <Typography
+                                  variant="small"
+                                  color="blue-gray"
+                                  className="font-normal text-xs w-48"
+                                >
+                                  {student.contingencyYears
+                                    ? student.contingencyYears
+                                    : "-"}
+                                </Typography>
+                              </td>
+                              <td className={classes}>
                                 <div className="w-max">
                                   <Chip
                                     variant="ghost"
@@ -445,14 +504,22 @@ export default function Database() {
                               </td>
                               <td className={classes}>
                                 <div className="w-max">
-                                  <Chip
-                                    variant="ghost"
-                                    size="sm"
-                                    className="px-1.5"
-                                    value={
-                                      student.region ? student.region : "-"
-                                    }
-                                  />
+                                  {student.region ? (
+                                    <Chip
+                                      variant="ghost"
+                                      size="sm"
+                                      className="px-1.5"
+                                      value={student.region}
+                                    />
+                                  ) : (
+                                    <Typography
+                                      variant="small"
+                                      color="blue-gray"
+                                      className="font-normal text-xs"
+                                    >
+                                      -
+                                    </Typography>
+                                  )}
                                 </div>
                               </td>
                               <td className={classes}>
@@ -528,7 +595,9 @@ export default function Database() {
               ) : (
                 <div>
                   <XCircleIcon className="h-48 w-48" />
-                  <Typography variant="h3">No Data Found</Typography>
+                  <Typography variant="h3" className="cursor-default">
+                    No Data Found
+                  </Typography>
                 </div>
               )}
             </div>
@@ -541,14 +610,14 @@ export default function Database() {
               variant="outlined"
               onClick={() => {
                 if (students.previous) {
-                  fetchData(page - 1, search, sort, setLoading);
+                  fetchData(page - 1, search, sort, setLoading, filters);
                 }
               }}
               disabled={page === 1}
             >
               <ArrowLeftIcon strokeWidth={2} className="h-4 w-4" />
             </IconButton>
-            <Typography color="gray" className="font-normal">
+            <Typography color="gray" className="font-normal cursor-default">
               Page <strong className="text-gray-900">{page}</strong> of{" "}
               <strong className="text-gray-900">{total_pages}</strong>
             </Typography>
@@ -557,7 +626,7 @@ export default function Database() {
               variant="outlined"
               onClick={() => {
                 if (students.next) {
-                  fetchData(page + 1, search, sort, setLoading);
+                  fetchData(page + 1, search, sort, setLoading, filters);
                 }
               }}
               disabled={page === total_pages}
