@@ -198,13 +198,15 @@ function StudentForm({ setOpen, initVal }) {
       initVal.sourceOfFunding
         ? setValue("sourceOfFunding", initVal.sourceOfFunding)
         : null;
-      initVal.stipendMonths
-        ? setValue("stipendMonths", initVal.stipendMonths)
-        : null;
+      setValue("stipendMonths", initVal.stipendMonths);
+      setValue("contingencyYears", initVal.contingencyYears);
+      // initVal.stipendMonths
+      //   ? setValue("stipendMonths", initVal.stipendMonths)
+      //   : null;
       setValue("contingencyPoints", initVal.contingencyPoints);
-      initVal.contingencyYears
-        ? setValue("contingencyYears", initVal.contingencyYears)
-        : null;
+      // initVal.contingencyYears
+      //   ? setValue("contingencyYears", initVal.contingencyYears)
+      //   : null;
       setValue(
         "studentStatus",
         formOptions.statusOptions.find(
