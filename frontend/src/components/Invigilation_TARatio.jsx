@@ -70,6 +70,7 @@ function Invigilation_TARatio({ onSubmit, taRatio, setTaRatio }) {
                 label="TA Student Ratio"
                 type="number"
                 value={taRatio}
+                onWheel={(e) => e.target.blur()}
                 onChange={(e) => handleInputChange(e.target.value)}
               />
             </div>

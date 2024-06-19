@@ -2,21 +2,21 @@ import React, { useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
 import { MagnifyingGlassIcon, XCircleIcon } from "@heroicons/react/24/outline";
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  Checkbox,
-  Dialog,
-  DialogBody,
-  DialogFooter,
-  DialogHeader,
-  Input,
-  Typography,
-  Alert,
-} from "@material-tailwind/react";
+import
+  {
+    Alert,
+    Button,
+    Card,
+    CardBody,
+    CardFooter,
+    CardHeader,
+    Dialog,
+    DialogBody,
+    DialogFooter,
+    DialogHeader,
+    Input,
+    Typography,
+  } from "@material-tailwind/react";
 import { saveAs } from "file-saver";
 import StudentContext from "../context/StudentContext";
 
@@ -90,7 +90,7 @@ function ContingencyPoint() {
       NotEligibleStudents();
       fetchContingencyHistory();
     }
-  }, [allStudents, contingencyEligible,]);
+  }, [allStudents, contingencyEligible]);
 
   useEffect(() => {
     fetchContingencyHistory();
@@ -262,7 +262,7 @@ function ContingencyPoint() {
   };
 
   const handleSubmit = () => {
-    setEligibleStudents(null)
+    setEligibleStudents(null);
     fetchContingencyHistory();
     const currentDate = new Date();
 
@@ -353,80 +353,72 @@ function ContingencyPoint() {
         "year",
         "amount",
         "comment",
-        "eligible"
-        
+        "eligible",
       ];
-  
+
       const modifiedStudentList = studentList.map((student) => {
         const modifiedStudent = {};
         fieldOrder.forEach((field, index) => {
-          
-            modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
-        
+          modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
         });
         return modifiedStudent;
       });
-  
+
       const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
         header: fieldOrder,
       });
-  
+
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
-  
+
       const fileName = `ContingencyEligibleStudent_${year}.xlsx`;
-  
+
       saveAs(
         new Blob([excelBuffer], { type: "application/octet-stream" }),
         fileName
       );
     }
   };
-  
+
   const handleDownloadContingencyHistory = () => {
-    
     if (studentList) {
       const fieldOrder = [
         "name",
         "rollNumber",
         "department",
         "disbursmentDate",
-        
+
         "year",
-     
-      
+
         "amount",
         "comment",
-      
       ];
-  
+
       const modifiedStudentList = studentList.map((student) => {
         const modifiedStudent = {};
         fieldOrder.forEach((field, index) => {
-    
-            modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
-          
+          modifiedStudent[field] = student[field] || ""; // Set empty string if the field doesn't exist
         });
         return modifiedStudent;
       });
-  
+
       const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
         header: fieldOrder,
       });
-  
+
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
-  
+
       const fileName = `ContingencyHistory.xlsx`;
-  
+
       saveAs(
         new Blob([excelBuffer], { type: "application/octet-stream" }),
         fileName
@@ -488,6 +480,7 @@ function ContingencyPoint() {
                 <Input
                   label="Year"
                   type="number"
+                  onWheel={(e) => e.target.blur()}
                   value={year}
                   onChange={(e) => setYear(e.target.value)}
                 />
@@ -527,7 +520,13 @@ function ContingencyPoint() {
                 </div>
               )}
               <div className="flex-1 md:flex-none">
-                <Button onClick={!showHistory ? ResetHandler : handleDownloadContingencyHistory}>
+                <Button
+                  onClick={
+                    !showHistory
+                      ? ResetHandler
+                      : handleDownloadContingencyHistory
+                  }
+                >
                   {!showHistory ? "Reset Data" : "Download"}
                 </Button>
               </div>
@@ -645,6 +644,7 @@ function ContingencyPoint() {
                           <Input
                             value={amount}
                             type="number"
+                            onWheel={(e) => e.target.blur()}
                             onChange={(e) =>
                               handleFieldChange(index, "amount", e.target.value)
                             }
@@ -715,7 +715,11 @@ function ContingencyPoint() {
           {!showHistory && (
             <CardFooter className="p-2 flex flex-col items-end">
               <div>
-                <Button size="sm" onClick={handleDownloadEligibility} className="mx-2">
+                <Button
+                  size="sm"
+                  onClick={handleDownloadEligibility}
+                  className="mx-2"
+                >
                   Download
                 </Button>
                 <Button
@@ -779,6 +783,7 @@ function ContingencyPoint() {
               id="year"
               type="number"
               value={filterYear}
+              onWheel={(e) => e.target.blur()}
               onChange={(e) => {
                 const yearValue = e.target.value.trim();
                 if (/^\d*$/.test(yearValue) && yearValue.length <= 4) {

@@ -134,7 +134,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT =BASE_DIR /"media"
 MEDIA_URL ="/media/"
 
-CORS_ALLOWED_ORIGINS = ['http://127.0.0.1', 'https://127.0.0.1', 'https://phd-portal.iiitd.edu.in', 'https://192.168.3.166', 'http://192.168.3.166', 'http://phd-portal.iitd.edu.in'] 
+CORS_ALLOWED_ORIGINS = ['http://127.0.0.1', 'http://localhost', 'https://phd-portal.iiitd.edu.in', 'https://192.168.3.166', 'http://192.168.3.166', 'http://phd-portal.iitd.edu.in', 'http://127.0.0.1:5173', 'http://localhost:5173'] 
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageNumberPaginationWithCount',

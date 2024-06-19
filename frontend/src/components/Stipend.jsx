@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
-import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import {
+  Alert,
   Button,
   Card,
   CardBody,
@@ -15,11 +16,9 @@ import {
   DialogHeader,
   Input,
   Typography,
-  Alert,
 } from "@material-tailwind/react";
 import { saveAs } from "file-saver";
 import StudentContext from "../context/StudentContext";
-import { ChevronUpDownIcon, XCircleIcon } from "@heroicons/react/24/outline";
 const TABLE_HEAD = [
   "Name",
   "Roll Number",
@@ -47,7 +46,7 @@ const HISTORY_TABLE_HEAD = [
   "Base Amount",
   "Total Stipend",
   "Comment",
-  ""
+  "",
 ];
 
 const API = import.meta.env.VITE_BACKEND_URL;
@@ -286,8 +285,8 @@ function Stipend() {
   };
 
   const handleSubmit = () => {
-    setEligibleStudents(null)
-    fetchStipendHistory()
+    setEligibleStudents(null);
+    fetchStipendHistory();
     const modifiedStudentList = studentList.map(({ eligible, ...rest }) => ({
       student: rest.id,
       ...rest,
@@ -324,7 +323,7 @@ function Stipend() {
   };
 
   const handleDeleteEntry = (rollNumber, name) => {
-    console.log("in")
+    console.log("in");
     const updatedStudentList = studentList.filter(
       (student) => student.rollNumber !== rollNumber
     );
@@ -333,7 +332,6 @@ function Stipend() {
   };
 
   const handleDeleteHistory = async (id, name) => {
-   
     try {
       const response = await fetch(`${API}/api/stipend/${id}/`, {
         method: "DELETE",
@@ -377,7 +375,7 @@ function Stipend() {
         "comment",
         "eligible",
       ];
-  
+
       const modifiedStudentList = studentList.map((student) => {
         const modifiedStudent = {};
         fieldOrder.forEach((field, index) => {
@@ -393,29 +391,28 @@ function Stipend() {
         });
         return modifiedStudent;
       });
-  
+
       const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
         header: fieldOrder,
       });
-  
+
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
-  
+
       const fileName = `eligibleStudent_${month}_${year}.xlsx`;
-  
+
       saveAs(
         new Blob([excelBuffer], { type: "application/octet-stream" }),
         fileName
       );
     }
   };
-  
+
   const handleDownloadStipendHistory = () => {
-    
     if (studentList) {
       const fieldOrder = [
         "name",
@@ -431,7 +428,7 @@ function Stipend() {
         "comment",
         "eligible",
       ];
-  
+
       const modifiedStudentList = studentList.map((student) => {
         const modifiedStudent = {};
         fieldOrder.forEach((field, index) => {
@@ -447,20 +444,20 @@ function Stipend() {
         });
         return modifiedStudent;
       });
-  
+
       const worksheet = XLSX.utils.json_to_sheet(modifiedStudentList, {
         header: fieldOrder,
       });
-  
+
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
       });
-  
+
       const fileName = `StipendHistory.xlsx`;
-  
+
       saveAs(
         new Blob([excelBuffer], { type: "application/octet-stream" }),
         fileName
@@ -546,6 +543,7 @@ function Stipend() {
                   label="Year"
                   type="number"
                   value={year}
+                  onWheel={(e) => e.target.blur()}
                   onChange={(e) => setYear(e.target.value)}
                 />
               </div>
@@ -587,7 +585,11 @@ function Stipend() {
                 </div>
               )}
               <div className="flex-1 md:flex-none">
-                <Button onClick={!showHistory ? ResetHandler : handleDownloadStipendHistory}>
+                <Button
+                  onClick={
+                    !showHistory ? ResetHandler : handleDownloadStipendHistory
+                  }
+                >
                   {!showHistory ? "Reset Data" : "Download"}
                 </Button>
               </div>
@@ -760,6 +762,7 @@ function Stipend() {
                             <Input
                               value={hra}
                               type="number"
+                              onWheel={(e) => e.target.blur()}
                               onChange={(e) =>
                                 handleFieldChange(index, "hra", e.target.value)
                               }
@@ -941,6 +944,7 @@ function Stipend() {
               id="year"
               type="number"
               value={filterYear}
+              onWheel={(e) => e.target.blur()}
               onChange={(e) => {
                 const yearValue = e.target.value.trim();
                 if (/^\d*$/.test(yearValue) && yearValue.length <= 4) {

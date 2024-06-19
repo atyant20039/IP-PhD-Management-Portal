@@ -519,6 +519,7 @@ function StudentForm({ setOpen, initVal }) {
             <Input
               type="number"
               id="batchYear"
+              onWheel={(e) => e.target.blur()}
               error={Boolean(errors.batchYear)}
               {...register("batchYear", {
                 required: "Batch Year is required",
@@ -622,6 +623,7 @@ function StudentForm({ setOpen, initVal }) {
             <Input
               type="number"
               id="stipendMonths"
+              onWheel={(e) => e.target.blur()}
               error={Boolean(errors.stipendMonths)}
               defaultValue={60}
               {...register("stipendMonths", {
@@ -643,6 +645,7 @@ function StudentForm({ setOpen, initVal }) {
             <Input
               type="number"
               id="contingencyPoints"
+              onWheel={(e) => e.target.blur()}
               error={Boolean(errors.contingencyPoints)}
               defaultValue={20000}
               {...register("contingencyPoints", {
@@ -674,6 +677,7 @@ function StudentForm({ setOpen, initVal }) {
             <Input
               type="number"
               id="contingencyYears"
+              onWheel={(e) => e.target.blur()}
               error={Boolean(errors.contingencyYears)}
               defaultValue={4}
               {...register("contingencyYears", {
@@ -814,6 +818,7 @@ function StudentForm({ setOpen, initVal }) {
             <Input
               type="number"
               id="yearOfLeaving"
+              onWheel={(e) => e.target.blur()}
               error={Boolean(errors.yearOfLeaving)}
               {...register("yearOfLeaving", {
                 min: {

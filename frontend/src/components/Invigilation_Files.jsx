@@ -104,6 +104,7 @@ function Invigilation_Files({ onSubmission1, onSubmission2 }) {
           <div className="m-2">
             <input
               type="number"
+              onWheel={(e) => e.target.blur()}
               placeholder="Student TA Ratio"
               value={TARatio}
               onChange={handleStudentTaRatioChange}

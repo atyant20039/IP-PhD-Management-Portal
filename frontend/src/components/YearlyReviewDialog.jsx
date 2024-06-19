@@ -153,6 +153,7 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
                 <Input
                   type="number"
                   id="reviewYear"
+                  onWheel={(e) => e.target.blur()}
                   error={Boolean(errors.reviewYear)}
                   {...register("reviewYear", {
                     required: "Review Year is required",

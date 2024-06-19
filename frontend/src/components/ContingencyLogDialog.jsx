@@ -206,6 +206,7 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                   type="number"
                   id="quantity"
                   error={Boolean(errors.quantity)}
+                  onWheel={(e) => e.target.blur()}
                   defaultValue={1}
                   {...register("quantity", {
                     required: "Quantity is required",
@@ -228,6 +229,7 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                   type="number"
                   id="price"
                   step="0.01"
+                  onWheel={(e) => e.target.blur()}
                   error={Boolean(errors.price)}
                   {...register("price", {
                     required: "Price is required",
@@ -273,6 +275,7 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                   type="number"
                   id="claimAmount"
                   step="0.01"
+                  onWheel={(e) => e.target.blur()}
                   error={Boolean(errors.claimAmount)}
                   {...register("claimAmount", {
                     required: "Claim Amount is required",
@@ -295,6 +298,7 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                   type="number"
                   id="santionedAmount"
                   step="0.01"
+                  onWheel={(e) => e.target.blur()}
                   error={Boolean(errors.santionedAmount)}
                   {...register("santionedAmount", {
                     min: {

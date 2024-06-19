@@ -1,20 +1,20 @@
-import React, { useState } from "react";
 import {
   Button,
-  Input,
   Card,
-  Typography,
-  Tooltip,
-  IconButton,
-  CardHeader,
   CardBody,
+  CardHeader,
+  IconButton,
+  Input,
+  Tooltip,
+  Typography,
 } from "@material-tailwind/react";
+import React, { useState } from "react";
 
 import {
+  BookmarkIcon,
   PencilIcon,
   TrashIcon,
   UserPlusIcon,
-  BookmarkIcon
 } from "@heroicons/react/24/solid";
 
 const TABLE_HEAD = [
@@ -175,13 +175,18 @@ function TAtable() {
                         <Input
                           type="text"
                           value={value}
+                          onWheel={(e) => e.target.blur()}
                           onChange={(e) => handleEdit(id, key, e.target.value)}
                           size="sm"
                           color="lightBlue"
                           outline={false}
                         />
                       ) : (
-                        <Typography variant="small" color="blue-gray" className="font-normal text-xs">
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal text-xs"
+                        >
                           {value}
                         </Typography>
                       )}
