@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-cc5nh7o3^1wn420gl4v8fj(l9awia0i*0i!ov=mz7n2nduqr9z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "phd-portal.iiitd.edu.in", "192.168.3.166"]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'phd-portal.iiitd.edu.in', '192.168.3.166']
 
 
 # Application definition
@@ -134,7 +134,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_ROOT =BASE_DIR /"media"
 MEDIA_URL ="/media/"
 
-CORS_ALLOW_ALL_ORIGINS = ["http://127.0.0.1", "https://127.0.0.1", "phd-portal.iiitd.edu.in", "192.168.3.166"] 
+CORS_ALLOWED_ORIGINS = ['http://127.0.0.1', 'https://127.0.0.1', 'https://phd-portal.iiitd.edu.in', 'https://192.168.3.166', 'http://192.168.3.166', 'http://phd-portal.iitd.edu.in'] 
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageNumberPaginationWithCount',
