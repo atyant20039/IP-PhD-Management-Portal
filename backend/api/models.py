@@ -35,7 +35,7 @@ class Student(models.Model):
         return f"RollNo. {self.rollNumber}"
     
 class Instructor(models.Model):
-    emailId = models.EmailField(max_length=255, unique=True, validators = [validator.email])
+    emailId = models.EmailField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
     department = models.CharField(max_length=10, choices=[('CSE', 'CSE'), ('CB', 'CB'), ('ECE', 'ECE'), ('HCD', 'HCD'), ('SSH', 'SSH'), ('MATHS', 'MATHS')])
 

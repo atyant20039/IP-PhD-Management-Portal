@@ -1,17 +1,18 @@
 import React, { useContext, useEffect } from "react";
 
-import {
-  Alert,
-  Button,
-  Card,
-  CardBody,
-  Dialog,
-  DialogBody,
-  DialogFooter,
-  DialogHeader,
-  Input,
-  Spinner,
-} from "@material-tailwind/react";
+import
+  {
+    Alert,
+    Button,
+    Card,
+    CardBody,
+    Dialog,
+    DialogBody,
+    DialogFooter,
+    DialogHeader,
+    Input,
+    Spinner,
+  } from "@material-tailwind/react";
 
 import Select from "react-select";
 
@@ -119,10 +120,10 @@ function ProfessorDialog({ isOpen, setOpen, initVal }) {
                       value: 255,
                       message: "Email cannot exceed 255 characters",
                     },
-                    pattern: {
-                      value: /^[^@]+@iiitd\.ac\.in$/,
-                      message: "Email must be of the domain iiitd.ac.in",
-                    },
+                    // pattern: {
+                    //   value: /^[^@]+@iiitd\.ac\.in$/,
+                    //   message: "Email must be of the domain iiitd.ac.in",
+                    // },
                   })}
                 />
                 {errors.emailId && (
