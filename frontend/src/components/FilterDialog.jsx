@@ -245,7 +245,7 @@ function FilterDialog({ isOpen, setOpen, member, onApplyFilters }) {
   };
 
   return (
-    <Dialog open={isOpen} handler={handleOpen}>
+    <Dialog open={isOpen} handler={handleOpen} dismiss={{ enabled: false }}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <DialogHeader className="cursor-default">Filter {member}</DialogHeader>
         <DialogBody>
