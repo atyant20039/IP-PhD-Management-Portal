@@ -2,21 +2,20 @@ import React, { useContext, useEffect, useState } from "react";
 import * as XLSX from "xlsx";
 
 import { MagnifyingGlassIcon, XCircleIcon } from "@heroicons/react/24/outline";
-import
-  {
-    Alert,
-    Button,
-    Card,
-    CardBody,
-    CardFooter,
-    CardHeader,
-    Dialog,
-    DialogBody,
-    DialogFooter,
-    DialogHeader,
-    Input,
-    Typography,
-  } from "@material-tailwind/react";
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  Dialog,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
+  Input,
+  Typography,
+} from "@material-tailwind/react";
 import { saveAs } from "file-saver";
 import StudentContext from "../context/StudentContext";
 
@@ -641,14 +640,28 @@ function ContingencyPoint() {
                         </td>
 
                         <td className="border-b border-blue-gray-100 bg-white p-4">
-                          <Input
-                            value={amount}
-                            type="number"
-                            onWheel={(e) => e.target.blur()}
-                            onChange={(e) =>
-                              handleFieldChange(index, "amount", e.target.value)
-                            }
-                          />
+                          {showHistory ? (
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {amount}
+                            </Typography>
+                          ) : (
+                            <Input
+                              value={amount}
+                              type="number"
+                              onWheel={(e) => e.target.blur()}
+                              onChange={(e) =>
+                                handleFieldChange(
+                                  index,
+                                  "amount",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          )}
                         </td>
 
                         {showHistory ? (
