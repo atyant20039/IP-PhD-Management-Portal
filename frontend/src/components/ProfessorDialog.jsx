@@ -1,18 +1,17 @@
 import React, { useContext, useEffect } from "react";
 
-import
-  {
-    Alert,
-    Button,
-    Card,
-    CardBody,
-    Dialog,
-    DialogBody,
-    DialogFooter,
-    DialogHeader,
-    Input,
-    Spinner,
-  } from "@material-tailwind/react";
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  Dialog,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
+  Input,
+  Spinner,
+} from "@material-tailwind/react";
 
 import Select from "react-select";
 

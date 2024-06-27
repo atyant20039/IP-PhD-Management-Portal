@@ -73,6 +73,10 @@ function YearlyReviewDialog({ isOpen, setOpen, initVal, studentId }) {
       );
       setValue("reviewYear", initVal.reviewYear);
       initVal.comment ? setValue("comment", initVal.comment) : null;
+    } else {
+      setValue("dateOfReview", "");
+      setValue("reviewYear", "");
+      setValue("comment", "");
     }
   }, [initVal, setValue]);
 

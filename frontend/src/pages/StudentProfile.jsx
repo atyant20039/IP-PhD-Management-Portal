@@ -39,7 +39,7 @@ import StudentProfileLog from "../components/StudentProfileLog";
 import StudentProfileReview from "../components/StudentProfileReview";
 
 import DeleteDialog from "../components/DeleteDialog";
-import StudenForm from "../components/StudentForm";
+import StudentForm from "../components/StudentForm";
 
 function StudentProfile() {
   const { id } = useParams();
@@ -202,7 +202,7 @@ function StudentProfile() {
                         Edit Student
                       </DialogHeader>
                       <DialogBody className="overflow-auto max-h-[75vh]">
-                        <StudenForm setOpen={setUpdateDialog} initVal={data} />
+                        <StudentForm setOpen={setUpdateDialog} initVal={data} />
                       </DialogBody>
                     </Dialog>
                     <DeleteDialog

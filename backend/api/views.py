@@ -645,9 +645,18 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
                     continue
 
                 row_data = dict(zip(processed_headers, row))
-                if not all(row_data.get(self.camel_case(header)) for header in required_columns if '*' in header):
-                    invalid_rows.append({'student': row_data, 'error': 'Missing required data'})
+
+                missing_headers = [header for header in required_columns if '*' in header and not row_data.get(self.camel_case(header))]
+                if missing_headers:
+                    invalid_rows.append({
+                        'student': row_data,
+                        'error': [f'Missing required data: {", ".join(missing_headers)}']
+                    })
                     continue
+
+                # if not all(row_data.get(self.camel_case(header)) for header in required_columns if '*' in header):
+                #     invalid_rows.append({'student': row_data, 'error': ['Missing required data']})
+                #     continue
 
                 row_data['batch'] = f"{row_data.pop('batchMonth')} {row_data.pop('batchYear')}"
             
@@ -658,7 +667,7 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
                         if email:
                             row_data[f'{advisor_key}_emailId'] = email
                         else:
-                            invalid_rows.append({'student': row_data, 'error': f'{advisor_key}: {name} not found in Faculty List'})
+                            invalid_rows.append({'student': row_data, 'error': [f'{advisor_key}: {name} not found in Faculty List']})
                             continue
                     else:
                         row_data[f'{advisor_key}_emailId'] = 'null@iiitd.ac.in'

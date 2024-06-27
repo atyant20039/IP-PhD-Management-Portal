@@ -72,6 +72,9 @@ function ComprehensiveDialog({ isOpen, setOpen, initVal, studentId }) {
         initVal.dateOfReview.split("-").reverse().join("-")
       );
       initVal.comment ? setValue("comment", initVal.comment) : null;
+    } else {
+      setValue("dateOfReview", "");
+      setValue("comment", "");
     }
   }, [initVal, setValue]);
 

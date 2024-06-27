@@ -83,13 +83,13 @@ function StudentProfileReview({ rno, id }) {
   };
 
   const handleDelete = (row) => {
-    setDeleteDialog(!isDeleteDialogOpen);
     setSelectedRow(row);
+    setDeleteDialog(!isDeleteDialogOpen);
   };
 
   const handleForm = (row) => {
-    setReviewForm(!isReviewFormOpen);
     setSelectedRow(row);
+    setReviewForm(!isReviewFormOpen);
   };
 
   const handleDownload = async (fileUrl) => {

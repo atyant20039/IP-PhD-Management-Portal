@@ -106,6 +106,21 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
           )
         : null;
       initVal.comment ? setValue("comment", initVal.comment) : null;
+    } else {
+      setValue("item", "");
+      setValue("quantity", "");
+      setValue("price", "");
+      setValue("source", "");
+      setValue("credit", "");
+      setValue("claimAmount", "");
+      setValue("santionedAmount", "");
+      setValue("forwardedBy", "");
+      setValue("forwardedOnDate", "");
+      setValue("openingBalance", "");
+      setValue("closingBalance", "");
+      setValue("openingBalanceDate", "");
+      setValue("closingBalanceDate", "");
+      setValue("comment", "");
     }
   }, [initVal, setValue]);
 
