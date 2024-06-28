@@ -9,6 +9,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from openpyxl import Workbook, load_workbook
+from openpyxl.workbook.defined_name import DefinedName
 from openpyxl.worksheet.cell_range import CellRange
 from openpyxl.worksheet.datavalidation import DataValidation
 from rest_framework import status
@@ -563,17 +564,21 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
             names_sheet[f'A{index}'].value = instructor[0]
             names_sheet[f'B{index}'].value = instructor[1]
 
-        dv_range = f'InstructorList!$A$1:$A${len(instructors)}'
+        # defn = DefinedName("InstructorNames", attr_text=f'InstructorList!$A$1:$A${len(instructors)}')
+        # wb.defined_names["InstructorNames"] = defn
 
-        dv = DataValidation(type="list", formula1=f'={dv_range}', allow_blank=True, showErrorMessage=True)
+        # dv_range = f'InstructorList!$A$1:$A${len(instructors)}'
 
-        dv.errorTitle = 'Invalid Option'
-        dv.error = 'This is not a valid option'
+        # dv = DataValidation(type="list", formula1=f'={dv_range}', allow_blank=True, showErrorMessage=True)
+        # dv = DataValidation(type="list", formula1="InstructorNames", allow_blank=True, showErrorMessage=True)
 
-        cell_range = CellRange(min_col=9, min_row=2, max_col=11, max_row=1048576)
-        dv.add(cell_range)
+        # dv.errorTitle = 'Invalid Option'
+        # dv.error = 'This is not a valid option'
 
-        ws.add_data_validation(dv)
+        # cell_range = CellRange(min_col=9, min_row=2, max_col=11, max_row=1048576)
+        # dv.add(cell_range)
+
+        # ws.add_data_validation(dv)
 
         wb.save(file_path)
 
@@ -604,7 +609,12 @@ class StudentImportViewSet(ListModelMixin, CreateModelMixin, GenericViewSet):
             workbook = load_workbook(uploaded_file)
             sheet = workbook.active
 
-            instructorList = workbook["InstructorList"]
+            # instructorList = workbook["InstructorList"]
+
+            if "InstructorList" in workbook.sheetnames:
+                instructorList = workbook["InstructorList"]
+            else:
+                raise Exception("Invalid template file uploaded. Download the template file and try again.")
 
             sheet_headers = [cell.value for cell in sheet[1]]
             required_columns = [
