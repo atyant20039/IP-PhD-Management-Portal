@@ -62,7 +62,6 @@ function ContingencyPoint() {
   const [stipendHistory, setStipendHistory] = useState([]);
   const [failedEntries, setFailedEntries] = useState([]);
   //Filter States
-  const [filterMonth, setFilterMonth] = useState();
   const [filterYear, setFilterYear] = useState();
   const [department, setDepartment] = useState("");
   // Dialog states
@@ -213,29 +212,47 @@ function ContingencyPoint() {
   const handleSearch = (event) => {
     const term = event.target.value.toLowerCase();
     setSearchTerm(term);
-
+  
+    const applyFilters = (student) => {
+      const isYearMatch =
+        !filterYear || parseInt(student.year, 10) === parseInt(filterYear, 10);
+      const isDepartmentMatch =
+        !department ||
+        student.department.toLowerCase() === department.toLowerCase();
+  
+      return isYearMatch && isDepartmentMatch;
+    };
+  
     if (!term) {
-      setStudentList(showHistory ? stipendHistory : eligibleStudents);
+      setStudentList(
+        showHistory
+          ? stipendHistory.filter(applyFilters)
+          : eligibleStudents.filter(applyFilters)
+      );
     } else {
       if (showHistory) {
-        const filteredHistory = stipendHistory.filter(
-          (student) =>
-            student.name.toLowerCase().includes(term) ||
-            student.rollNumber.toLowerCase().includes(term)
-        );
+        const filteredHistory = stipendHistory
+          .filter(applyFilters)
+          .filter(
+            (student) =>
+              student.name.toLowerCase().includes(term) ||
+              student.rollNumber.toLowerCase().includes(term)
+          );
         setStudentList(filteredHistory);
       } else {
         const combinedList = [...eligibleStudents, ...ineligibleStudentList];
-        const filteredCurrent = combinedList.filter(
-          (student) =>
-            student.name.toLowerCase().includes(term) ||
-            student.rollNumber.toLowerCase().includes(term)
-        );
+        const filteredCurrent = combinedList
+          .filter(applyFilters)
+          .filter(
+            (student) =>
+              student.name.toLowerCase().includes(term) ||
+              student.rollNumber.toLowerCase().includes(term)
+          );
         setStudentList(filteredCurrent);
       }
     }
   };
-
+  
   const handleUpdateEligibility = (rollNumber, name) => {
     const studentToUpdate = ineligibleStudentList.find(
       (student) => student.rollNumber === rollNumber
@@ -434,21 +451,24 @@ function ContingencyPoint() {
   };
 
   const handleFilterSubmit = () => {
+    const term = searchTerm.toLowerCase();
+  
     const filteredHistory = stipendHistory.filter((student) => {
       const isDepartmentMatch =
         !department ||
         student.department.toLowerCase() === department.toLowerCase();
-
-      const isMonthMatch =
-        !filterMonth ||
-        parseInt(student.month, 10) === parseInt(filterMonth, 10);
-
+  
       const isYearMatch =
         !filterYear || parseInt(student.year, 10) === parseInt(filterYear, 10);
-
-      return isDepartmentMatch && isMonthMatch && isYearMatch;
+  
+      const isSearchTermMatch =
+        !term ||
+        student.name.toLowerCase().includes(term) ||
+        student.rollNumber.toLowerCase().includes(term);
+  
+      return isDepartmentMatch  && isYearMatch && isSearchTermMatch;
     });
-
+  
     setStudentList(filteredHistory);
     setShowFilterDialog(false);
   };
