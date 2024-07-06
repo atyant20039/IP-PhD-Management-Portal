@@ -257,7 +257,7 @@ function Classroom({ onSubmit, setClassroomFile }) {
     try {
       console.log(editedRow);
       const response = await fetch(`${API}/api/classroom/${rowId}/`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
