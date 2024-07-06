@@ -1,28 +1,26 @@
 import { ArrowRightIcon, XCircleIcon } from "@heroicons/react/24/outline";
-import
-  {
-    CheckCircleIcon,
-    PencilIcon,
-    PlusIcon,
-    TrashIcon,
-  } from "@heroicons/react/24/solid";
-import
-  {
-    Alert,
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    Dialog,
-    DialogBody,
-    DialogFooter,
-    DialogHeader,
-    IconButton,
-    Input,
-    Spinner,
-    Tooltip,
-    Typography,
-  } from "@material-tailwind/react";
+import {
+  CheckCircleIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/solid";
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Dialog,
+  DialogBody,
+  DialogFooter,
+  DialogHeader,
+  IconButton,
+  Input,
+  Spinner,
+  Tooltip,
+  Typography,
+} from "@material-tailwind/react";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import swal from "sweetalert";
@@ -474,6 +472,7 @@ function Classroom({ onSubmit, setClassroomFile }) {
                       <td className="p-4">
                         {editingRowId === row.id ? (
                           <Input
+                            type="number"
                             value={
                               isEditing
                                 ? editedRowData[row.id]?.capacity
