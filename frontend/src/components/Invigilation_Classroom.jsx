@@ -253,11 +253,19 @@ function Classroom({ onSubmit, setClassroomFile }) {
 
   const handleSave = async (rowId) => {
     const editedRow = editedRowData[rowId];
+    const originalRow = tableData.find((row) => row.id === rowId);
+
+    if (editedRow.capacity === originalRow.capacity) {
+      // No change, return early
+      setEditingRowId(null);
+      setIsEditing(false);
+      return;
+    }
 
     try {
       console.log(editedRow);
       const response = await fetch(`${API}/api/classroom/${rowId}/`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -410,7 +418,14 @@ function Classroom({ onSubmit, setClassroomFile }) {
                   {tableData.map((row) => (
                     <tr key={row.id} className="hover:bg-blue-gray-50">
                       <td className="p-4">
-                        {editingRowId === row.id ? (
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal text-xs"
+                        >
+                          {row.building}
+                        </Typography>
+                        {/* {editingRowId === row.id ? (
                           <select
                             required
                             type="text"
@@ -444,10 +459,17 @@ function Classroom({ onSubmit, setClassroomFile }) {
                           >
                             {row.building}
                           </Typography>
-                        )}
+                        )} */}
                       </td>
                       <td className="p-4">
-                        {editingRowId === row.id ? (
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal text-xs"
+                        >
+                          {row.roomNo}
+                        </Typography>
+                        {/* {editingRowId === row.id ? (
                           <Input
                             value={
                               isEditing
@@ -467,7 +489,7 @@ function Classroom({ onSubmit, setClassroomFile }) {
                           >
                             {row.roomNo}
                           </Typography>
-                        )}
+                        )} */}
                       </td>
                       <td className="p-4">
                         {editingRowId === row.id ? (
@@ -478,10 +500,17 @@ function Classroom({ onSubmit, setClassroomFile }) {
                                 ? editedRowData[row.id]?.capacity
                                 : row.capacity
                             }
-                            onChange={(e) =>
-                              handleEdit(row.id, "capacity", e.target.value)
+                            onChange={
+                              (e) => {
+                                const value = e.target.value;
+                                if (value >= 0) {
+                                  handleEdit(row.id, "capacity", value);
+                                }
+                              }
+                              // handleEdit(row.id, "capacity", e.target.value)
                             }
                             color="black"
+                            min={0}
                           />
                         ) : (
                           <Typography
