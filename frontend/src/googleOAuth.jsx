@@ -1,9 +1,9 @@
 // src/googleOAuth.js
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GoogleAuthProvider = ({ children }) => {
   return (
-    <GoogleOAuthProvider clientId="844183396322-d4j1mu55m5vm2d6uonf06l7nu2gdrsri.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId="851432165884-736ttbd15ices1b4diav0e3a2606fhc8.apps.googleusercontent.com">
       {children}
     </GoogleOAuthProvider>
   );

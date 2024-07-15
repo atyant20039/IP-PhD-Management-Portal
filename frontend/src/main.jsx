@@ -32,7 +32,12 @@ const Main = () => {
     try {
       const token = response.credential;
       const decoded = jwtDecode(token);
-      if (decoded.email == "atyant20039@iiitd.ac.in") {
+      if (
+        decoded.email == "atyant20039@iiitd.ac.in" ||
+        decoded.email == "noreply-phdportal@iiitd.ac.in" ||
+        decoded.email == "ayush20133@iiitd.ac.in" ||
+        decoded.email == "nikhil20530@iiitd.ac.in"
+      ) {
         localStorage.setItem("token", token);
         setLoginError(null);
       } else {
