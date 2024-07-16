@@ -27,14 +27,28 @@ jobs:
           killall gnome-keyring-daemon || true
           echo -n "${{ secrets.SUDO_PASSWORD }}" | gnome-keyring-daemon --unlock
 
-      - name: Connect to VPN
-        run: |
-          # Go to the fortivpn directory
-          cd /opt/forticlient
-          # Create or edit the VPN configuration
-          echo -e "${{ secrets.FORTI_VPN_PASSWORD }}\n${{ secrets.FORTI_VPN_PASSWORD }}" | ./fortivpn edit IIITD --server vpn.iiitd.edu.in --port 10443 --user ${{ secrets.FORTI_VPN_USERNAME }} --password
-          # Connect to the VPN
-          ./fortivpn connect IIITD --user=${{ secrets.FORTI_VPN_USERNAME }} --password --save-password --always-up
+      - name: Forticlient VPN
+        uses: horellana/openconnect@v1.0.1
+        with:
+          # vpn user
+          VPN_USER: ${{ secrets.FORTI_VPN_USERNAME }}
+          # vpn password
+          VPN_PWD: ${{ secrets.FORTI_VPN_PASSWORD }}
+          # vpn host
+          VPN_HOST: vpn.iiitd.edu.in
+          # vpn port
+          VPN_PORT: 10443
+          # vpn server certificate
+          # VPN_SERVER_CERT: 
+          
+      # - name: Connect to VPN
+      #   run: |
+      #     # Go to the fortivpn directory
+      #     cd /opt/forticlient
+      #     # Create or edit the VPN configuration
+      #     echo -e "${{ secrets.FORTI_VPN_PASSWORD }}\n${{ secrets.FORTI_VPN_PASSWORD }}" | ./fortivpn edit IIITD --server vpn.iiitd.edu.in --port 10443 --user ${{ secrets.FORTI_VPN_USERNAME }} --password
+      #     # Connect to the VPN
+      #     ./fortivpn connect IIITD --user=${{ secrets.FORTI_VPN_USERNAME }} --password --save-password --always-up
 
       - name: Set up SSH
         run: |
