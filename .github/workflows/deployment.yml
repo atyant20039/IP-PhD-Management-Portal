@@ -1,0 +1,61 @@
+name: "Deploy Project"
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install FortiClient VPN
+        run: |
+          # Install gpg key
+          wget -O - https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/DEB-GPG-KEY | gpg --dearmor | sudo tee /usr/share/keyrings/repo.fortinet.com.gpg
+          # Create the sources.list.d file
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/repo.fortinet.com.gpg] https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/ stable non-free" | sudo tee /etc/apt/sources.list.d/repo.fortinet.com.list
+          # Update package lists
+          sudo apt-get update
+          # Install FortiClient
+          sudo apt install -y forticlient
+
+      - name: Connect to VPN
+        run: |
+          echo -e "${{ secrets.FORTI_VPN_USERNAME }}\n${{ secrets.FORTI_VPN_PASSWORD }}" | sudo forticlientvpn --server vpn.iiitd.edu.in:10443 --vpnuser ${{ secrets.FORTI_VPN_USERNAME }} --passwd-on-stdin
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY_DIR }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Sync Code to Server
+        run: |
+          rsync -avz --exclude '.git' ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/iiitd/phd-portal/IP-PhD-Management-Portal
+
+      - name: Set up Backend
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          cd /home/iiitd/phd-portal/IP-PhD-Management-Portal/backend
+          if [ ! -d "venv" ]; then
+            python3 -m venv venv
+          fi
+          source venv/bin/activate
+          pip install -r requirements.txt
+          deactivate
+          echo ${{ secrets.SUDO_PASSWORD }} | sudo -S systemctl restart gunicorn
+          EOF
+
+      - name: Set up Frontend
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+          cd /home/iiitd/phd-portal/IP-PhD-Management-Portal/frontend
+          npm install
+          export NODE_ENV=production
+          npm run build
+          echo ${{ secrets.SUDO_PASSWORD }} | sudo -S systemctl restart nginx
+          EOF
