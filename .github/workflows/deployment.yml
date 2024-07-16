@@ -50,6 +50,12 @@ jobs:
       #     # Connect to the VPN
       #     ./fortivpn connect IIITD --user=${{ secrets.FORTI_VPN_USERNAME }} --password --save-password --always-up
 
+      - name: Setup SSH key
+        uses: actions/upload-artifact@v3
+        with:
+          name: ssh-key
+          path: ${{ secrets.SSH_KEY_DIR }}
+          
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
