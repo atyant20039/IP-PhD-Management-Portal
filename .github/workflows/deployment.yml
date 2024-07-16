@@ -62,6 +62,8 @@ jobs:
           echo "${{ secrets.SSH_KEY_DIR }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          cat ~/.ssh/id_rsa  # Debugging step to check the SSH key
+          ls -la ~/.ssh      # Debugging step to check permissions
 
       - name: Sync Code to Server
         run: |
