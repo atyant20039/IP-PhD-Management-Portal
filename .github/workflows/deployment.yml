@@ -11,21 +11,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install FortiClient VPN
-        run: |
-          # Install gpg key
-          wget -O - https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/DEB-GPG-KEY | gpg --dearmor | sudo tee /usr/share/keyrings/repo.fortinet.com.gpg
-          # Create the sources.list.d file
-          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/repo.fortinet.com.gpg] https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/ stable non-free" | sudo tee /etc/apt/sources.list.d/repo.fortinet.com.list
-          # Update package lists
-          sudo apt-get update
-          # Install FortiClient
-          sudo apt install -y forticlient
-          # Install gnome-keyring
-          sudo apt install -y gnome-keyring
-          # Initialize and unlock the login keyring
-          killall gnome-keyring-daemon || true
-          echo -n "${{ secrets.SUDO_PASSWORD }}" | gnome-keyring-daemon --unlock
+      # - name: Install FortiClient VPN
+      #   run: |
+      #     # Install gpg key
+      #     wget -O - https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/DEB-GPG-KEY | gpg --dearmor | sudo tee /usr/share/keyrings/repo.fortinet.com.gpg
+      #     # Create the sources.list.d file
+      #     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/repo.fortinet.com.gpg] https://repo.fortinet.com/repo/forticlient/7.4/ubuntu22/ stable non-free" | sudo tee /etc/apt/sources.list.d/repo.fortinet.com.list
+      #     # Update package lists
+      #     sudo apt-get update
+      #     # Install FortiClient
+      #     sudo apt install -y forticlient
+      #     # Install gnome-keyring
+      #     sudo apt install -y gnome-keyring
+      #     # Initialize and unlock the login keyring
+      #     killall gnome-keyring-daemon || true
+      #     echo -n "${{ secrets.SUDO_PASSWORD }}" | gnome-keyring-daemon --unlock
 
       - name: Forticlient VPN
         uses: horellana/openconnect@v1.0.1
@@ -49,6 +49,10 @@ jobs:
       #     echo -e "${{ secrets.FORTI_VPN_PASSWORD }}\n${{ secrets.FORTI_VPN_PASSWORD }}" | ./fortivpn edit IIITD --server vpn.iiitd.edu.in --port 10443 --user ${{ secrets.FORTI_VPN_USERNAME }} --password
       #     # Connect to the VPN
       #     ./fortivpn connect IIITD --user=${{ secrets.FORTI_VPN_USERNAME }} --password --save-password --always-up
+
+      - name: Test SSH Connection (Debug Only)
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} -T  # Test connection only
 
       - name: Setup SSH key
         uses: actions/upload-artifact@v3
