@@ -34,6 +34,13 @@ function AddStudentDialog({ isOpen, setOpen }) {
 
   const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
+
+    if (uploadedFile.size > 100 * 1024 * 1024) {
+      setError("File should be less than 100 MB");
+      setLoading(false);
+      return;
+    }
+
     setFile(uploadedFile);
     setLoading(true);
     const response = await uploadFile(uploadedFile);

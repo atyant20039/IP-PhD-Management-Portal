@@ -16,11 +16,20 @@ import {
 import axios from "axios";
 import { useForm } from "react-hook-form";
 
-const validateFileType = (value) => {
+const validateFileTypeAndSize = (value) => {
   if (value.length == 0) return true;
-  if (!value[0].name.match(/\.(pdf|doc|docx)$/i)) {
+
+  const file = value[0];
+
+  if (!file.name.match(/\.(pdf|doc|docx)$/i)) {
     return "Only PDF, DOC, and DOCX files are allowed";
   }
+
+  if (file.size > 100 * 1024 * 1024) {
+    return "File size should be less than 100 MB";
+  }
+
+  return true;
 };
 
 function ComprehensiveDialog({ isOpen, setOpen, initVal, studentId }) {
@@ -180,7 +189,7 @@ function ComprehensiveDialog({ isOpen, setOpen, initVal, studentId }) {
                     required: initVal
                       ? false
                       : "Comprehensive Exam Review File is required",
-                    validate: initVal ? null : validateFileType,
+                    validate: initVal ? null : validateFileTypeAndSize,
                   })}
                 />
                 {errors.comprehensiveReviewFile && (

@@ -2,10 +2,9 @@
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GoogleAuthProvider = ({ children }) => {
+  const CLIENT_ID = import.meta.env.VITE_OAUTH_CLIENT_ID;
   return (
-    <GoogleOAuthProvider clientId="851432165884-736ttbd15ices1b4diav0e3a2606fhc8.apps.googleusercontent.com">
-      {children}
-    </GoogleOAuthProvider>
+    <GoogleOAuthProvider clientId={CLIENT_ID}>{children}</GoogleOAuthProvider>
   );
 };
 

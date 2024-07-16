@@ -65,6 +65,11 @@ function Invigilation_DateSheet({ onSubmit }) {
       return;
     }
 
+    if (file.size > 100 * 1024 * 1024) {
+      swal("File too Big!", "File size should be less than 100 MB", "error");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 

@@ -1,16 +1,15 @@
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/solid";
-import
-  {
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    Chip,
-    Spinner,
-    Tooltip,
-    Typography,
-  } from "@material-tailwind/react";
+import {
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Chip,
+  Spinner,
+  Tooltip,
+  Typography,
+} from "@material-tailwind/react";
 import axios from "axios";
 import React, { useState } from "react";
 
@@ -64,6 +63,11 @@ function Invigilation_StudentRegistration({ onSubmit }) {
     ) {
       // alert("Incorrect file format: Please select an .xlsx file");
       swal("Incorrect file format", "Please select a .xlsx file", "error");
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      swal("File too Big!", "File size should be less than 100 MB", "error");
       return;
     }
 

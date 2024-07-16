@@ -18,6 +18,11 @@ function Invigilation_Files({ onSubmission1, onSubmission2 }) {
 
   const handleFile1Change = (event) => {
     const selectedFile = event.target.files[0];
+
+    if (selectedFile.size > 100 * 1024 * 1024) {
+      return;
+    }
+
     setFile1(selectedFile);
     setFileName1(selectedFile.name);
     onSubmission1();
@@ -30,6 +35,9 @@ function Invigilation_Files({ onSubmission1, onSubmission2 }) {
 
   const handleFile2Change = (event) => {
     const selectedFile = event.target.files[0];
+    if (selectedFile.size > 100 * 1024 * 1024) {
+      return;
+    }
     setFile2(selectedFile);
     setFileName2(selectedFile.name);
     setuploadFile1(file2);

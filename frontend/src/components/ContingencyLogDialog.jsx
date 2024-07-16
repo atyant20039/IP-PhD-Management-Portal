@@ -440,33 +440,6 @@ function ContingencyLogDialog({ isOpen, setOpen, initVal, studentId }) {
                   <span className="text-red-500">{errors.comment.message}</span>
                 )}
               </div>
-              {/* <div className="mb-4">
-                <label htmlFor="comprehensiveReviewFile">
-                  Comprehensive Exam Review File*
-                </label>
-                {initVal && (
-                  <div>
-                    Current File:{" "}
-                    {initVal.comprehensiveReviewFile.split("/").pop()}
-                  </div>
-                )}
-                <input
-                  type="file"
-                  id="comprehensiveReviewFile"
-                  className="file:rounded-lg file:rounded-r-none rounded-lg border border-blue-gray-200 file:bg-white text-blue-gray-400 file:text-blue-gray-400 file:mr-2 file:px-3 file:py-1 file:border-transparent file:border-r file:border-r-blue-gray-200 w-full cursor-pointer file:hover:cursor-pointer"
-                  {...register("comprehensiveReviewFile", {
-                    required: initVal
-                      ? false
-                      : "Comprehensive Exam Review File is required",
-                    validate: initVal ? null : validateFileType,
-                  })}
-                />
-                {errors.comprehensiveReviewFile && (
-                  <span className="text-red-500">
-                    {errors.comprehensiveReviewFile.message}
-                  </span>
-                )}
-              </div> */}
               {errors.root && (
                 <Alert
                   variant="ghost"
