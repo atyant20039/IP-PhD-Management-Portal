@@ -17,7 +17,8 @@ const ProtectedRoute = ({ children }) => {
           decoded.email == "atyant20039@iiitd.ac.in" ||
           decoded.email == "noreply-phdportal@iiitd.ac.in" ||
           decoded.email == "ayush20133@iiitd.ac.in" ||
-          decoded.email == "nikhil20530@iiitd.ac.in"
+          decoded.email == "nikhil20530@iiitd.ac.in" ||
+          decoded.email == "raju@iiitd.ac.in"
         ) {
           setIsAuthenticated(true);
         }
